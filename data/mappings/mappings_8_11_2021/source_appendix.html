@@ -1,0 +1,385 @@
+<h1>Appendix: source tables</h1>
+
+<h3>Table: person.csv</h3>
+
+<table>
+	<tr>
+		<th>Field</th>
+		<th>Type</th>
+		<th>Most freq. value</th>
+		<th>Comment</th>
+	</tr>
+	<tr>
+		<td>city</td>
+		<td>VARCHAR</td>
+		<td>Ort_637</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>zip</td>
+		<td>INT</td>
+		<td>63766</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>patient_id</td>
+		<td>INT</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>death_date</td>
+		<td>VARCHAR</td>
+		<td>NA</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>death</td>
+		<td>VARCHAR</td>
+		<td>nein</td>
+		<td>Nur mappen wenn hier "JA", dann concept EHR</td>
+	</tr>
+	<tr>
+		<td>birthdate</td>
+		<td>DATE</td>
+		<td>1950-01-16</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>date_of_life</td>
+		<td>VARCHAR</td>
+		<td>2020-11-26 17:00:00</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>gender</td>
+		<td>VARCHAR</td>
+		<td>w</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>provider_id</td>
+		<td>INT</td>
+		<td>260123451</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>forname</td>
+		<td>VARCHAR</td>
+		<td>Grete</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>name</td>
+		<td>VARCHAR</td>
+		<td>Schulzen</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>insurance</td>
+		<td>VARCHAR</td>
+		<td>BKK_800</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>insurance_id</td>
+		<td>VARCHAR</td>
+		<td></td>
+		<td></td>
+	</tr>
+</table>
+
+<h3>Table: case.csv</h3>
+
+<table>
+	<tr>
+		<th>Field</th>
+		<th>Type</th>
+		<th>Most freq. value</th>
+		<th>Comment</th>
+	</tr>
+	<tr>
+		<td>patient_id</td>
+		<td>INT</td>
+		<td>0001189</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>case_id</td>
+		<td>INT</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>start_date</td>
+		<td>VARCHAR</td>
+		<td>2020-03-11 15:00:00</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>end_date</td>
+		<td>VARCHAR</td>
+		<td>2020-03-11 15:59:59</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>provider_id</td>
+		<td>INT</td>
+		<td>260123451</td>
+		<td></td>
+	</tr>
+</table>
+
+<h3>Table: diagnosis.csv</h3>
+
+<table>
+	<tr>
+		<th>Field</th>
+		<th>Type</th>
+		<th>Most freq. value</th>
+		<th>Comment</th>
+	</tr>
+	<tr>
+		<td>patient_id</td>
+		<td>INT</td>
+		<td>246</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>provider_id</td>
+		<td>INT</td>
+		<td>260123452</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>icd_primary_code</td>
+		<td>VARCHAR</td>
+		<td>I10.00</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>icd_secondary_code</td>
+		<td>VARCHAR</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>diagnosis_type</td>
+		<td>VARCHAR</td>
+		<td>HD</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>icd_version</td>
+		<td>INT</td>
+		<td>2020</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>clinical_status</td>
+		<td>VARCHAR</td>
+		<td>Aktuell</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>admission_date</td>
+		<td>VARCHAR</td>
+		<td>22.01.2020</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>admission_number</td>
+		<td>INT</td>
+		<td>440</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>orpha_code</td>
+		<td>VARCHAR</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>orpha_text</td>
+		<td>VARCHAR</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>alphaid_code</td>
+		<td>VARCHAR</td>
+		<td>I26740</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>alphaid_text</td>
+		<td>VARCHAR</td>
+		<td>Benigne Hypertonie</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>icd_text</td>
+		<td>VARCHAR</td>
+		<td>Benigne essentielle Hypertonie: Ohne Angabe einer hypertensiven Krise</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>diagnostic_explanation</td>
+		<td>VARCHAR</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>icd_manifestation</td>
+		<td>VARCHAR</td>
+		<td></td>
+		<td></td>
+	</tr>
+</table>
+
+<h3>Table: procedure.csv</h3>
+
+<table>
+	<tr>
+		<th>Field</th>
+		<th>Type</th>
+		<th>Most freq. value</th>
+		<th>Comment</th>
+	</tr>
+	<tr>
+		<td>id</td>
+		<td>VARCHAR</td>
+		<td>NA</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>patient_id</td>
+		<td>INT</td>
+		<td>0000410</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>ops_code</td>
+		<td>VARCHAR</td>
+		<td>3-990</td>
+		<td>FROM Procedure 
+WHERE Concept code = ops_code
+
+--> maps_to SNOMED.ConceptId
+</td>
+	</tr>
+	<tr>
+		<td>execution_date</td>
+		<td>VARCHAR</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>ops_version</td>
+		<td>VARCHAR</td>
+		<td>ops2020</td>
+		<td></td>
+	</tr>
+</table>
+
+<h3>Table: lab.csv</h3>
+
+<table>
+	<tr>
+		<th>Field</th>
+		<th>Type</th>
+		<th>Most freq. value</th>
+		<th>Comment</th>
+	</tr>
+	<tr>
+		<td>identifier</td>
+		<td>INT</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>patient_id</td>
+		<td>INT</td>
+		<td>0000074</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>test_date</td>
+		<td>VARCHAR</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>numeric_value</td>
+		<td>REAL</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>textual_value</td>
+		<td>VARCHAR</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>parameter_loinc</td>
+		<td>VARCHAR</td>
+		<td>2484-4</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>parameter_name</td>
+		<td>VARCHAR</td>
+		<td>IGF-I [Somatomedin C] i.S.</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>ucum_unit</td>
+		<td>VARCHAR</td>
+		<td>10*3/uL</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>unit</td>
+		<td>VARCHAR</td>
+		<td>mmol/L</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>normal_values</td>
+		<td>VARCHAR</td>
+		<td>(null)</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>category</td>
+		<td>VARCHAR</td>
+		<td>Carnitinstatus</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>status</td>
+		<td>VARCHAR</td>
+		<td>Korrektur bereits gemeldeter Ergebnisse</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>is_normal</td>
+		<td>INT</td>
+		<td>0</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>deviation</td>
+		<td>VARCHAR</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>comment</td>
+		<td>INT</td>
+		<td>0</td>
+		<td></td>
+	</tr>
+</table>
+
