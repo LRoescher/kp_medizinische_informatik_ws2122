@@ -14,6 +14,7 @@ class Loader:
     # other constants
     OMOP_TABLE_PERSON: str = "person"
     OMOP_TABLE_LOCATION: str = "location"
+    OMOP_TABLE_OBSERVATION_PERIOD: str = "observation_period"
 
     def __init__(self):
         """
@@ -84,4 +85,14 @@ class Loader:
         # SQL query to execute
         query = "INSERT INTO %s(%s) VALUES(%%s,%%s,%%s,%%s,%%s,%%s,%%s,%%s,%%s, %%s, %%s, %%s)" % (
             self.OMOP_TABLE_PERSON, cols)
+        self._fire_query(query, tuples)
+
+    def save_observation_period(self, df):
+        print("[INFO] Saving Table %s." % self.OMOP_TABLE_OBSERVATION_PERIOD)
+        # Create a list of tuples from the dataframe values
+        tuples = [tuple(x) for x in df.to_numpy()]
+        # Comma-separated dataframe columns
+        cols = ','.join(list(df.columns))
+        # SQL query to execute
+        query = "INSERT INTO %s(%s) VALUES(%%s,%%s,%%s,%%s,%%s)" % (self.OMOP_TABLE_OBSERVATION_PERIOD, cols)
         self._fire_query(query, tuples)

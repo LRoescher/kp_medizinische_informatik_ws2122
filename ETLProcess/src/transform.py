@@ -14,6 +14,29 @@ def generate_location_table(person_df: pd.DataFrame):
     return omop_location_df
 
 
+def generate_observation_period_table(case_df: pd.DataFrame):
+    """
+    Generates an omop compliant version of the observation_period table from a given case table.
+    :param case_df: the original version of the case table
+    :return: an omop compliant version of a observation_period table
+    """
+    # Copy Case-Id, Patient-Id, Start-Date and End-Date
+    omop_observation_period_df: pd.DataFrame = case_df[['CASE_ID', 'PATIENT_ID', 'START_DATE', 'END_DATE']].copy(
+        deep=True)
+    # Rename columns
+    omop_observation_period_df.columns = ['observation_period_id', 'person_id', 'observation_period_start_date',
+                                          'observation_period_end_date']
+    omop_observation_period_df['observation_period_start_date'] = pd.to_datetime(
+        omop_observation_period_df['observation_period_start_date'],
+        format='%Y-%m-%d')
+    omop_observation_period_df['observation_period_end_date'] = pd.to_datetime(
+        omop_observation_period_df['observation_period_end_date'],
+        format='%Y-%m-%d')
+    omop_observation_period_df['period_type_concept_id'] = 32817
+    print(omop_observation_period_df)
+    return omop_observation_period_df
+
+
 def generate_person_table(person_df: pd.DataFrame):
     """
     Generates an omop compliant version of the person table from a given unedited person table.

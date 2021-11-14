@@ -30,12 +30,14 @@ def run_etl_job():
     # Transform into omop tables
     omop_location_df: pd.DataFrame = transform.generate_location_table(person_df)
     omop_person_df: pd.DataFrame = transform.generate_person_table(person_df)
+    omop_observation_period_df: pd.DataFrame = transform.generate_observation_period_table(case_df)
     # TODO transform other tables
 
     # Load into postgres database
     loader = load.Loader()
     loader.save_location(omop_location_df)
     loader.save_person(omop_person_df)
+    loader.save_observation_period(omop_observation_period_df)
     # TODO load other dataframes into postgres
 
 
