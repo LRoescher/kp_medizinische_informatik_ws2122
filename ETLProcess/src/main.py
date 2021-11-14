@@ -34,7 +34,8 @@ def run_etl_job():
     # TODO transform other tables
 
     # Load into postgres database
-    loader = load.Loader()
+    loader = load.Loader(clear_tables=True)
+    # Remove all previously added omop-entries from the database
     loader.save_location(omop_location_df)
     loader.save_person(omop_person_df)
     loader.save_observation_period(omop_observation_period_df)

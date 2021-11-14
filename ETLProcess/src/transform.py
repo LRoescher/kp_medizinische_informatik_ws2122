@@ -33,7 +33,6 @@ def generate_observation_period_table(case_df: pd.DataFrame):
         omop_observation_period_df['observation_period_end_date'],
         format='%Y-%m-%d')
     omop_observation_period_df['period_type_concept_id'] = 32817
-    print(omop_observation_period_df)
     return omop_observation_period_df
 
 

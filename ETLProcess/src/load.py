@@ -11,16 +11,20 @@ class Loader:
     DB_NAME: str = "OHDSI"
     USERNAME: str = "postgres"
     PASSWORD: str = "pass"
+    DB_SCHEMA: str = "p21_cdm"
     # other constants
     OMOP_TABLE_PERSON: str = "person"
     OMOP_TABLE_LOCATION: str = "location"
     OMOP_TABLE_OBSERVATION_PERIOD: str = "observation_period"
 
-    def __init__(self):
+    def __init__(self, clear_tables=False):
         """
         Creates a new Loader. Establishes a database connection.
+        :param clear_tables: If set to True: clears all target omop-tables
         """
         self.conn = self._connect()
+        if clear_tables:
+            self.clear_omop_tables()
 
     def _connect(self):
         """
@@ -43,6 +47,28 @@ class Loader:
         finally:
             return conn
 
+    def clear_omop_tables(self) -> bool:
+        """
+        Removes all tables from the omop database, that have been added by this program.
+        :return: True if the operation was successful
+        """
+        cursor = self.conn.cursor()
+        query: str = "DELETE FROM %s"
+        try:
+            cursor.execute("SET search_path TO p21_cdm")
+            cursor.execute("DELETE FROM person")
+            # cursor.execute(query % self.OMOP_TABLE_PERSON)
+            cursor.execute(query % self.OMOP_TABLE_LOCATION)
+            cursor.execute(query % self.OMOP_TABLE_OBSERVATION_PERIOD)
+        except (Exception, psycopg2.DatabaseError) as error:
+            print("[ERROR] Failed to clear omop entries from the database \n Message:%s" % error)
+            self.conn.rollback()
+            cursor.close()
+            return False
+        print("[INFO] Successfully cleared omop database")
+        cursor.close()
+        return True
+
     def _fire_query(self, query, tuples):
         """
         Sends the query enriched with dataframe entries to the connected database server.
@@ -54,7 +80,7 @@ class Loader:
         cursor = self.conn.cursor()
         try:
             # Select p21_cdm schema and execute query on it
-            cursor.execute("SET search_path TO p21_cdm")
+            cursor.execute("SET search_path TO %s" % self.DB_SCHEMA)
             cursor.executemany(query, tuples)
             self.conn.commit()
         except (Exception, psycopg2.DatabaseError) as error:
