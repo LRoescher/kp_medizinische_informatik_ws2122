@@ -13,7 +13,6 @@ base = declarative_base()
 db = create_engine('postgresql+psycopg2://'+username+':'+password+'@'+url+':'+port+'/'+name)
 Session = sessionmaker(db)
 session = Session()
-base.metadata.create_all(db)
 
 
 def etl_process():
@@ -59,8 +58,8 @@ def update_person(data):
                                   year_of_birth=row['YEAR'],
                                   month_of_birth=row['MONTH'],
                                   day_of_birth=row['DAY'],
-                                  race_concept_id=1,
-                                  ethnicity_concept_id=1,
+                                  race_concept_id=4218674,
+                                  ethnicity_concept_id=0,
                                   location_id=row['LOCATION_ID'],
                                   provider_id=row['PROVIDER_ID'],
                                   gender_source_value=row['GENDER'],
