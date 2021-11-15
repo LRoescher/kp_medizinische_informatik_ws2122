@@ -42,7 +42,7 @@ def generate_person_table(person_df: pd.DataFrame):
     :param person_df: the original version of the person table
     :return: an omop compliant version of a person table
     """
-    omop_person_df: pd.DataFrame = person_df[['PROVIDER_ID', 'PATIENT_ID', 'GENDER', 'BIRTHDATE', ]].copy(deep=True)
+    omop_person_df: pd.DataFrame = person_df[['PROVIDER_ID', 'PATIENT_ID', 'GENDER', 'BIRTHDATE']].copy(deep=True)
     # Rename columns to source values
     omop_person_df.columns = ['provider_id', 'person_source_value', 'gender_source_value', 'birth_datetime']
     # Refactor birth_datetime
@@ -58,8 +58,8 @@ def generate_person_table(person_df: pd.DataFrame):
 
     # Fill non-null columns with dummy data
     # 4218674 Unknown racial group, 0 as ethnicity (no value for unknown)
-    omop_person_df['race_concept_id'] = ["4218674" for p in omop_person_df['person_source_value']]
-    omop_person_df['ethnicity_concept_id'] = ["0" for p in omop_person_df['person_source_value']]
+    omop_person_df['race_concept_id'] = 4218674
+    omop_person_df['ethnicity_concept_id'] = 0
 
     # Remove entries with missing values
     omop_person_df.dropna()

@@ -18,6 +18,7 @@ def run_etl_job():
     Runs the entire ETL-Job.
     First all csv files are transformed into pandas dataframes. Then they are transformed into omop compliant tables.
     Finally they are loaded into the postgres database.
+
     :return: void
     """
     # extract original csv files
