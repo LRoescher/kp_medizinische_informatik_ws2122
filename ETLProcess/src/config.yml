@@ -1,0 +1,9 @@
+db_config:
+  host: "localhost"
+  port: "5432"
+  db_name: "OHDSI"
+  username: "username"
+  password: "password"
+  db_schema: "p21_cdm"
+
+csv_dir: "../../data/1. Bereistellung Daten"

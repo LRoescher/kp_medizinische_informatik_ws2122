@@ -1,32 +1,45 @@
+import pandas as pd
 import psycopg2
+from enum import Enum
+from typing import Tuple, Optional, TypedDict, List
+
+
+class DB_CONFIG(TypedDict):
+    '''
+     only for static type checking
+    '''
+    host: str
+    port: str
+    db_name: str
+    username: str
+    password: str
+    db_schema: str
+
+
+class OMOP_TABLE(Enum):
+    PERSON = "person"
+    LOCATION = "location"
+    OBSERVATION_PERIOD = "observation_period"
 
 
 class Loader:
     """
     Class responsible for connecting to the omop-database and loading CDM-compliant tables into it.
     """
-    # TODO Use config file instead for connection parameters
-    HOST: str = "localhost"
-    PORT: str = "5432"
-    DB_NAME: str = "OHDSI"
-    USERNAME: str = "postgres"
-    PASSWORD: str = "pass"
-    DB_SCHEMA: str = "p21_cdm"
-    # other constants
-    OMOP_TABLE_PERSON: str = "person"
-    OMOP_TABLE_LOCATION: str = "location"
-    OMOP_TABLE_OBSERVATION_PERIOD: str = "observation_period"
 
-    def __init__(self, clear_tables=False):
+    def __init__(self, db_config: DB_CONFIG, clear_tables: bool = False):
         """
         Creates a new Loader. Establishes a database connection.
+
+        :param db_config:
         :param clear_tables: If set to True: clears all target omop-tables
         """
-        self.conn = self._connect()
+        self.DB_SCHEMA = db_config["db_schema"]
+        self.conn = self._connect(db_config)
         if clear_tables:
             self.clear_omop_tables()
 
-    def _connect(self):
+    def _connect(self, db_config: DB_CONFIG) -> Optional[psycopg2._psycopg.connection]:
         """
         Connect to the PostgreSQL database server.
         :return a connection to the database server
@@ -36,14 +49,14 @@ class Loader:
             # connect to the PostgreSQL server
             print('[INFO] Connecting to the PostgreSQL database...')
             conn = psycopg2.connect(
-                host=self.HOST,
-                port=self.PORT,
-                database=self.DB_NAME,
-                user=self.USERNAME,
-                password=self.PASSWORD)
+                host=db_config["host"],
+                port=db_config["port"],
+                database=db_config["db_name"],
+                user=db_config["username"],
+                password=db_config["password"])
             print('[INFO] Successfully connected to the PostgreSQL database.')
         except Exception as error:
-            print("[ERROR] Failed to establish connection: \n %s" % error)
+            print(f"[ERROR] Failed to establish connection: \n {error}")
         finally:
             return conn
 
@@ -53,15 +66,14 @@ class Loader:
         :return: True if the operation was successful
         """
         cursor = self.conn.cursor()
-        query: str = "DELETE FROM %s"
         try:
             cursor.execute("SET search_path TO p21_cdm")
-            cursor.execute("DELETE FROM person")
-            # cursor.execute(query % self.OMOP_TABLE_PERSON)
-            cursor.execute(query % self.OMOP_TABLE_LOCATION)
-            cursor.execute(query % self.OMOP_TABLE_OBSERVATION_PERIOD)
+
+            for table in OMOP_TABLE:
+                cursor.execute(f"DELETE FROM {table.value}")
+
         except (Exception, psycopg2.DatabaseError) as error:
-            print("[ERROR] Failed to clear omop entries from the database \n Message:%s" % error)
+            print(f"[ERROR] Failed to clear omop entries from the database \n Message: {error}")
             self.conn.rollback()
             cursor.close()
             return False
@@ -69,7 +81,7 @@ class Loader:
         cursor.close()
         return True
 
-    def _fire_query(self, query, tuples):
+    def _fire_query(self, query: str, tuples: List[Tuple]) -> bool:
         """
         Sends the query enriched with dataframe entries to the connected database server.
 
@@ -80,11 +92,11 @@ class Loader:
         cursor = self.conn.cursor()
         try:
             # Select p21_cdm schema and execute query on it
-            cursor.execute("SET search_path TO %s" % self.DB_SCHEMA)
+            cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")
             cursor.executemany(query, tuples)
             self.conn.commit()
         except (Exception, psycopg2.DatabaseError) as error:
-            print("[ERROR] Failed to perform query: \n Query: %s \n Message:%s" % error)
+            print(f"[ERROR] Failed to perform query: \n Query: {query} \n Message: {error}")
             self.conn.rollback()
             cursor.close()
             return False
@@ -92,33 +104,19 @@ class Loader:
         cursor.close()
         return True
 
-    def save_location(self, df):
-        print("[INFO] Saving Table %s." % self.OMOP_TABLE_LOCATION)
-        # Create a list of tuples from the dataframe values
-        tuples = [tuple(x) for x in df.to_numpy()]
-        # Comma-separated dataframe columns
-        cols = ','.join(list(df.columns))
-        # SQL query to execute
-        query = "INSERT INTO %s(%s) VALUES(%%s,%%s,%%s)" % (self.OMOP_TABLE_LOCATION, cols)
-        self._fire_query(query, tuples)
+    def save(self, table: OMOP_TABLE, df: pd.DataFrame):
+        '''
+        save the DataFrame in the given OMOP table
 
-    def save_person(self, df):
-        print("[INFO] Saving Table %s." % self.OMOP_TABLE_PERSON)
+        :param table: the df should be stored
+        :param df: with OMOP data
+        :return:
+        '''
+        print(f"[INFO] Saving Table {table.value}.")
         # Create a list of tuples from the dataframe values
         tuples = [tuple(x) for x in df.to_numpy()]
         # Comma-separated dataframe columns
         cols = ','.join(list(df.columns))
         # SQL query to execute
-        query = "INSERT INTO %s(%s) VALUES(%%s,%%s,%%s,%%s,%%s,%%s,%%s,%%s,%%s, %%s, %%s, %%s)" % (
-            self.OMOP_TABLE_PERSON, cols)
-        self._fire_query(query, tuples)
-
-    def save_observation_period(self, df):
-        print("[INFO] Saving Table %s." % self.OMOP_TABLE_OBSERVATION_PERIOD)
-        # Create a list of tuples from the dataframe values
-        tuples = [tuple(x) for x in df.to_numpy()]
-        # Comma-separated dataframe columns
-        cols = ','.join(list(df.columns))
-        # SQL query to execute
-        query = "INSERT INTO %s(%s) VALUES(%%s,%%s,%%s,%%s,%%s)" % (self.OMOP_TABLE_OBSERVATION_PERIOD, cols)
+        query = f"INSERT INTO {table.value}({cols}) VALUES({','.join(['%s']*len(df.columns))})"
         self._fire_query(query, tuples)
