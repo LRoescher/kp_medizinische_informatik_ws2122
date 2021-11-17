@@ -26,7 +26,6 @@ def generate_location_table(person_df: pd.DataFrame):
     omop_location_df: pd.DataFrame = person_df[['PATIENT_ID', 'CITY', 'ZIP']].copy(deep=True)
     # Rename person_id to location id, should be unique
     omop_location_df.columns = ['location_id', 'city', 'zip']
-    print(omop_location_df.head(5))
     return omop_location_df
 
 
