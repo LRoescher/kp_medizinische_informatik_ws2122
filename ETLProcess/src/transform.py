@@ -90,9 +90,6 @@ def generate_person_table(person_df: pd.DataFrame):
     # 4218674 Unknown racial group, 0 as ethnicity (no value for unknown)
     omop_person_df['race_concept_id'] = 4218674
     omop_person_df['ethnicity_concept_id'] = 0
-
-    # Remove entries with missing values
-    omop_person_df.dropna()
     return omop_person_df
 
 
@@ -116,3 +113,31 @@ def generate_visit_occurrence_table(case_df: pd.DataFrame):
     omop_visit_occurence_df['visit_concept_id'] = 32209
     omop_visit_occurence_df['visit_type_concept_id'] = 32817
     return omop_visit_occurence_df
+
+
+def generate_procedure_occurrence_table(procedure_df: pd.DataFrame):
+    """
+    Generates an omop compliant version of the procedure_occurrence table from a given procedure table.
+
+    :param procedure_df: the original version of the procedure table
+    :return: an omop compliant version of a procedure_occurrence table
+    """
+    # Change datatype of column ID to int
+    procedure_df = procedure_df.astype({'ID': int})
+    # Copy values from original dataframe to omop compliant version
+    omop_procedure_occurrence_df: pd.DataFrame = procedure_df[['ID', 'OPS_CODE', 'PATIENT_ID', 'EXECUTION_DATE']].copy(
+        deep=True)
+    # Rename columns to target values
+    omop_procedure_occurrence_df.columns = ['procedure_occurrence_id', 'procedure_concept_id', 'person_id',
+                                            'procedure_date']
+    omop_procedure_occurrence_df['procedure_source_value'] = omop_procedure_occurrence_df['procedure_concept_id']
+    omop_procedure_occurrence_df['procedure_datetime'] = omop_procedure_occurrence_df['procedure_date']
+    # Refactor procedure_date
+    omop_procedure_occurrence_df['procedure_date'] = pd.to_datetime(omop_procedure_occurrence_df['procedure_date'],
+                                                                    format='%Y-%m-%d').dt.date
+    # ToDO Translate OPS-Codes to SNOMED
+    omop_procedure_occurrence_df['procedure_concept_id'] = 1
+    # Add value for procedure_type_concept_id
+    # 32817 EHR
+    omop_procedure_occurrence_df['procedure_type_concept_id'] = 32817
+    return omop_procedure_occurrence_df

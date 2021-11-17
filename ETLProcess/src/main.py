@@ -103,6 +103,8 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     lab_df: pd.DataFrame = extract.extract_csv("LAB.csv")
     diagnosis_df: pd.DataFrame = extract.extract_csv("DIAGNOSIS.csv")
     procedure_df: pd.DataFrame = extract.extract_csv("PROCEDURE.csv")
+    # Remove all rows with missing data
+    procedure_df = procedure_df.dropna()
 
     os.chdir(cwd)
 
@@ -112,6 +114,7 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     omop_person_df: pd.DataFrame = transform.generate_person_table(person_df)
     omop_observation_period_df: pd.DataFrame = transform.generate_observation_period_table(case_df)
     omop_visit_occurrence_df: pd.DataFrame = transform.generate_visit_occurrence_table(case_df)
+    omop_procedure_occurrence_df: pd.DataFrame = transform.generate_procedure_occurrence_table(procedure_df)
     # TODO transform other tables
 
     # Load into postgres database
@@ -122,6 +125,7 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     loader.save(load.OMOP_TABLE.PERSON, omop_person_df)
     loader.save(load.OMOP_TABLE.OBSERVATION_PERIOD, omop_observation_period_df)
     loader.save(load.OMOP_TABLE.VISIT_OCCURRENCE, omop_visit_occurrence_df)
+    loader.save(load.OMOP_TABLE.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
     # TODO load other dataframes into postgres
 
 

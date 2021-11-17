@@ -22,6 +22,7 @@ class DB_CONFIG(TypedDict):
 class OMOP_TABLE(Enum):
     VISIT_OCCURRENCE = "visit_occurrence"
     OBSERVATION_PERIOD = "observation_period"
+    PROCEDURE_OCCURRENCE = "procedure_occurrence"
     PERSON = "person"
     LOCATION = "location"
     PROVIDER = "provider"
