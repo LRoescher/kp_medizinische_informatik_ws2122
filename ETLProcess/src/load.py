@@ -1,7 +1,10 @@
 import pandas as pd
 import psycopg2
+import numpy as np
 from enum import Enum
 from typing import Tuple, Optional, TypedDict, List
+from psycopg2.extensions import register_adapter, AsIs
+psycopg2.extensions.register_adapter(np.int64, AsIs)
 
 
 class DB_CONFIG(TypedDict):
@@ -20,6 +23,7 @@ class OMOP_TABLE(Enum):
     PERSON = "person"
     LOCATION = "location"
     OBSERVATION_PERIOD = "observation_period"
+    PROVIDER = "provider"
 
 
 class Loader:
@@ -67,7 +71,7 @@ class Loader:
         """
         cursor = self.conn.cursor()
         try:
-            cursor.execute("SET search_path TO p21_cdm")
+            cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")
 
             for table in OMOP_TABLE:
                 cursor.execute(f"DELETE FROM {table.value}")
@@ -91,7 +95,7 @@ class Loader:
         """
         cursor = self.conn.cursor()
         try:
-            # Select p21_cdm schema and execute query on it
+            # Select database schema and execute query on it
             cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")
             cursor.executemany(query, tuples)
             self.conn.commit()

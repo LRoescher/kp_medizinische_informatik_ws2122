@@ -1,6 +1,21 @@
 import pandas as pd
 
 
+def generate_provider_table(person_df: pd.DataFrame):
+    """
+    Generates an omop compliant version of the provider table from a given person table.
+    :param person_df: the original version of the person table
+    :return: an omop compliant version of a provider table
+    """
+    # Copy provider id
+    omop_provider_df: pd.DataFrame = person_df[['PROVIDER_ID']].copy(deep=True)
+    # Rename provider id
+    omop_provider_df.columns = ['provider_id']
+    # Delete duplicates
+    omop_provider_df = omop_provider_df.drop_duplicates()
+    return omop_provider_df
+
+
 def generate_location_table(person_df: pd.DataFrame):
     """
     Generates an omop compliant version of the location table from a given person table.
@@ -11,6 +26,7 @@ def generate_location_table(person_df: pd.DataFrame):
     omop_location_df: pd.DataFrame = person_df[['PATIENT_ID', 'CITY', 'ZIP']].copy(deep=True)
     # Rename person_id to location id, should be unique
     omop_location_df.columns = ['location_id', 'city', 'zip']
+    print(omop_location_df.head(5))
     return omop_location_df
 
 
