@@ -150,10 +150,19 @@ def generate_measurement_table(lab_df: pd.DataFrame):
     :param lab_df: the original version of the lab table
     :return: an omop compliant version of a measurement table
     """
+    # Remove all columns with no identifier
+    lab_df = lab_df.dropna(subset=['IDENTIFIER'])
+    # Change datatype of column ID to int
+    lab_df = lab_df.astype({'IDENTIFIER': int})
     # Copy values from original dataframe to omop compliant version
-    omop_measurement_df: pd.DataFrame = lab_df[['IDENTIFIER', 'PARAMETER_NAME', 'PARAMETER_LOINC', 'PATIENT_ID',
-                                                'TEST_DATE', 'NUMERIC_VALUE', 'UCUM_UNIT']].copy(
-        deep=True)
+    omop_measurement_df: pd.DataFrame = lab_df[['IDENTIFIER', 'PARAMETER_NAME', 'PARAMETER_LOINC',
+                                                'Patientidentifikator', 'TEST_DATE', 'NUMERIC_VALUE',
+                                                'UCUM_UNIT']].copy(deep=True)
+    # Get Patient-ID from Patientidentifikator
+    for index, row in omop_measurement_df.iterrows():
+        patientidentifikator: str = row['Patientidentifikator']
+        patientidentifikator = patientidentifikator[-4:]
+        omop_measurement_df.at[index, 'Patientidentifikator'] = int(patientidentifikator)
     # Rename columns to target values
     omop_measurement_df.columns = ['measurement_id', 'measurement_source_value', 'measurement_concept_id',
                                    'person_id', 'measurement_date', 'value_as_number', 'unit_source_value']
@@ -165,6 +174,43 @@ def generate_measurement_table(lab_df: pd.DataFrame):
     omop_measurement_df['measurement_concept_id'] = 1
     # Add value for measurement_concept_type_id
     # 32817 EHR
-    omop_measurement_df['measurement_concept_type_id'] = 32817
+    omop_measurement_df['measurement_type_concept_id'] = 32817
     return omop_measurement_df
+
+
+def generate_note_table(lab_df: pd.DataFrame):
+    """
+    Generates an omop compliant version of the note table from a given lab table.
+
+    :param lab_df: the original version of the lab table
+    :return: an omop compliant version of a note table
+    """
+    # Remove all columns with no identifier
+    lab_df = lab_df.dropna(subset=['IDENTIFIER'])
+    # Change datatype of column ID to int
+    lab_df = lab_df.astype({'IDENTIFIER': int})
+    # Copy values from original dataframe to omop compliant version
+    omop_note_df: pd.DataFrame = lab_df[['IDENTIFIER', 'Patientidentifikator', 'TEST_DATE', 'NORMAL_VALUES', 'IS_NORMAL',
+                                         'DEVIATION']].copy(deep=True)
+    # Get Patient-ID from Patientidentifikator
+    for index, row in omop_note_df.iterrows():
+        patientidentifikator: str = row['Patientidentifikator']
+        patientidentifikator = patientidentifikator[-4:]
+        omop_note_df.at[index, 'Patientidentifikator'] = int(patientidentifikator)
+    # Combine NORMAL_VALUES and DEVIATION in one column and delete old ones
+    omop_note_df['note_text'] = "Normal_values: " + omop_note_df['NORMAL_VALUES'].astype(str) + " Deviation: " + \
+                                omop_note_df['DEVIATION'].astype(str)
+    omop_note_df.drop(columns=['NORMAL_VALUES', 'DEVIATION'], axis=1, inplace=True)
+    # Rename columns to target values
+    omop_note_df.columns = ['note_id', 'person_id', 'note_date', 'note_title', 'note_text']
+    # Refactor note_date
+    omop_note_df['note_date'] = pd.to_datetime(omop_note_df['note_date'],
+                                               format='%Y-%m-%d').dt.date
+    # Add value for required values
+    # 4180186 english language, 32831 EHR note
+    omop_note_df['language_concept_id'] = 4180186
+    omop_note_df['encoding_concept_id'] = 1  # random value
+    omop_note_df['note_type_concept_id'] = 32831
+    omop_note_df['note_class_concept_id'] = 1  # random value
+    return omop_note_df
 

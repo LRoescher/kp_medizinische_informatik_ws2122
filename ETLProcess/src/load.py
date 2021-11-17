@@ -24,6 +24,7 @@ class OMOP_TABLE(Enum):
     OBSERVATION_PERIOD = "observation_period"
     PROCEDURE_OCCURRENCE = "procedure_occurrence"
     MEASUREMENT = "measurement"
+    NOTE = "note"
     PERSON = "person"
     LOCATION = "location"
     PROVIDER = "provider"
