@@ -1,3 +1,4 @@
+import numpy
 import pandas as pd
 
 
@@ -35,19 +36,27 @@ def generate_observation_period_table(case_df: pd.DataFrame):
     :param case_df: the original version of the case table
     :return: an omop compliant version of a observation_period table
     """
-    # Copy Case-Id, Patient-Id, Start-Date and End-Date
-    omop_observation_period_df: pd.DataFrame = case_df[['CASE_ID', 'PATIENT_ID', 'START_DATE', 'END_DATE']].copy(
-        deep=True)
-    # Rename columns
-    omop_observation_period_df.columns = ['observation_period_id', 'person_id', 'observation_period_start_date',
-                                          'observation_period_end_date']
-    omop_observation_period_df['observation_period_start_date'] = pd.to_datetime(
-        omop_observation_period_df['observation_period_start_date'],
-        format='%Y-%m-%d')
-    omop_observation_period_df['observation_period_end_date'] = pd.to_datetime(
-        omop_observation_period_df['observation_period_end_date'],
-        format='%Y-%m-%d')
-    omop_observation_period_df['period_type_concept_id'] = 32817
+    # Get unique patient ids
+    unique_patient_ids: numpy.ndarray = case_df['PATIENT_ID'].unique()
+    # Create a list of observation periods for every patient
+    observation_periods: list = []
+    # Generate observation period ids because case ids are duplicated
+    observation_period_id: int = 1
+    period_type_concept_id: int = 32817
+    for patient_id in unique_patient_ids:
+        subset: pd.DataFrame = case_df[case_df['PATIENT_ID'] == patient_id]
+        start_date: object = subset['START_DATE'].min()
+        end_date: object = subset['END_DATE'].max()
+        observation_periods.append([observation_period_id, patient_id, start_date, end_date, period_type_concept_id])
+        observation_period_id += 1
+    # Create omop compliant dataframe out of the list
+    omop_observation_period_df: pd.DataFrame = pd.DataFrame(observation_periods, columns=[
+        'observation_period_id',
+        'person_id',
+        'observation_period_start_date',
+        'observation_period_end_date',
+        'period_type_concept_id'])
+
     return omop_observation_period_df
 
 

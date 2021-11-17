@@ -20,9 +20,9 @@ class DB_CONFIG(TypedDict):
 
 
 class OMOP_TABLE(Enum):
+    OBSERVATION_PERIOD = "observation_period"
     PERSON = "person"
     LOCATION = "location"
-    OBSERVATION_PERIOD = "observation_period"
     PROVIDER = "provider"
 
 
