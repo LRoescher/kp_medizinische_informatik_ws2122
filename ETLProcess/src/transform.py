@@ -136,7 +136,7 @@ def generate_procedure_occurrence_table(procedure_df: pd.DataFrame):
     omop_procedure_occurrence_df['procedure_date'] = pd.to_datetime(omop_procedure_occurrence_df['procedure_date'],
                                                                     format='%Y-%m-%d').dt.date
     # TODO Translate OPS-Codes to SNOMED
-    omop_procedure_occurrence_df['procedure_concept_id'] = 1
+    omop_procedure_occurrence_df['procedure_concept_id'] = 1  # random value, needs to be changed to SNOMED-Code
     # Add value for procedure_type_concept_id
     # 32817 EHR
     omop_procedure_occurrence_df['procedure_type_concept_id'] = 32817
@@ -171,7 +171,7 @@ def generate_measurement_table(lab_df: pd.DataFrame):
     omop_measurement_df['measurement_date'] = pd.to_datetime(omop_measurement_df['measurement_date'],
                                                              format='%Y-%m-%d').dt.date
     # TODO Translate LOINC to SNOMED
-    omop_measurement_df['measurement_concept_id'] = 1
+    omop_measurement_df['measurement_concept_id'] = 1  # random value, needs to be changed to SNOMED-Code
     # Add value for measurement_concept_type_id
     # 32817 EHR
     omop_measurement_df['measurement_type_concept_id'] = 32817
@@ -190,8 +190,9 @@ def generate_note_table(lab_df: pd.DataFrame):
     # Change datatype of column ID to int
     lab_df = lab_df.astype({'IDENTIFIER': int})
     # Copy values from original dataframe to omop compliant version
-    omop_note_df: pd.DataFrame = lab_df[['IDENTIFIER', 'Patientidentifikator', 'TEST_DATE', 'NORMAL_VALUES', 'IS_NORMAL',
-                                         'DEVIATION']].copy(deep=True)
+    omop_note_df: pd.DataFrame = lab_df[
+        ['IDENTIFIER', 'Patientidentifikator', 'TEST_DATE', 'NORMAL_VALUES', 'IS_NORMAL',
+         'DEVIATION']].copy(deep=True)
     # Get Patient-ID from Patientidentifikator
     for index, row in omop_note_df.iterrows():
         patientidentifikator: str = row['Patientidentifikator']
@@ -206,7 +207,7 @@ def generate_note_table(lab_df: pd.DataFrame):
     # Refactor note_date
     omop_note_df['note_date'] = pd.to_datetime(omop_note_df['note_date'],
                                                format='%Y-%m-%d').dt.date
-    # Add value for required values
+    # Add values for required fields
     # 4180186 english language, 32831 EHR note
     omop_note_df['language_concept_id'] = 4180186
     omop_note_df['encoding_concept_id'] = 1  # random value
@@ -214,3 +215,31 @@ def generate_note_table(lab_df: pd.DataFrame):
     omop_note_df['note_class_concept_id'] = 1  # random value
     return omop_note_df
 
+
+def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame):
+    """
+    Generates an omop compliant version of the condition_occurrence table from a given diagnosis table.
+
+    :param diagnosis_df: the original version of the diagnosis table
+    :return: an omop compliant version of a condition_occurrence table
+    """
+    # Remove all columns with no admission date
+    diagnosis_df = diagnosis_df.dropna(subset=['ADMISSION_DATE'])
+    # Copy values from original dataframe to omop compliant version
+    omop_condition_occurence: pd.DataFrame = diagnosis_df[['PROVIDER_ID', 'PATIENT_ID', 'ADMISSION_DATE',
+                                                           'ICD_PRIMARY_CODE', 'ICD_SECONDARY_CODE']].copy(deep=True)
+    # TODO Translate ICD-Codes to SNOMED
+    omop_condition_occurence['condition_concept_id'] = 1  # random value, needs to be changed to SNOMED-Code
+    omop_condition_occurence.drop(columns=['ICD_PRIMARY_CODE', 'ICD_SECONDARY_CODE'], axis=1, inplace=True)
+    # Rename columns to target values
+    omop_condition_occurence.columns = ['provider_id', 'person_id', 'condition_start_date', 'condition_concept_id']
+    # Refactor condition_start_date
+    omop_condition_occurence['condition_start_date'] = pd.to_datetime(omop_condition_occurence['condition_start_date'],
+                                                                      format='%d.%m.%Y')
+    # Generate condition_occurrence_id
+    for index, row in omop_condition_occurence.iterrows():
+        omop_condition_occurence.at[index, 'condition_occurrence_id'] = index + 1
+    # Add value for condition_type_concept_id
+    # 32817 EHR
+    omop_condition_occurence['condition_type_concept_id'] = 32817
+    return omop_condition_occurence

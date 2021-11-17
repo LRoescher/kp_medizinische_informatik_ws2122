@@ -117,7 +117,7 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     omop_procedure_occurrence_df: pd.DataFrame = transform.generate_procedure_occurrence_table(procedure_df)
     omop_measurement_df: pd.DataFrame = transform.generate_measurement_table(lab_df)
     omop_note_df: pd.DataFrame = transform.generate_note_table(lab_df)
-    # TODO transform other tables
+    omop_condition_occurrence_df: pd.DataFrame = transform.generate_condition_occurrence_table(diagnosis_df)
 
     # Load into postgres database
     # 'clear_tables' remove all previously added omop-entries from the database
@@ -130,7 +130,7 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     loader.save(load.OMOP_TABLE.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
     loader.save(load.OMOP_TABLE.MEASUREMENT, omop_measurement_df)
     loader.save(load.OMOP_TABLE.NOTE, omop_note_df)
-    # TODO load other dataframes into postgres
+    loader.save(load.OMOP_TABLE.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
 
 
 if __name__ == "__main__":
