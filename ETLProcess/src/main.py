@@ -115,6 +115,8 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     omop_observation_period_df: pd.DataFrame = transform.generate_observation_period_table(case_df)
     omop_visit_occurrence_df: pd.DataFrame = transform.generate_visit_occurrence_table(case_df)
     omop_procedure_occurrence_df: pd.DataFrame = transform.generate_procedure_occurrence_table(procedure_df)
+    # not working currently due to failure in provided data (PATIENT_ID does not exist anymore)
+    #omop_measurement_df: pd.DataFrame = transform.generate_measurement_table(lab_df)
     # TODO transform other tables
 
     # Load into postgres database
@@ -126,6 +128,7 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     loader.save(load.OMOP_TABLE.OBSERVATION_PERIOD, omop_observation_period_df)
     loader.save(load.OMOP_TABLE.VISIT_OCCURRENCE, omop_visit_occurrence_df)
     loader.save(load.OMOP_TABLE.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
+    #loader.save(load.OMOP_TABLE.MEASUREMENT, omop_measurement_df)
     # TODO load other dataframes into postgres
 
 

@@ -135,9 +135,36 @@ def generate_procedure_occurrence_table(procedure_df: pd.DataFrame):
     # Refactor procedure_date
     omop_procedure_occurrence_df['procedure_date'] = pd.to_datetime(omop_procedure_occurrence_df['procedure_date'],
                                                                     format='%Y-%m-%d').dt.date
-    # ToDO Translate OPS-Codes to SNOMED
+    # TODO Translate OPS-Codes to SNOMED
     omop_procedure_occurrence_df['procedure_concept_id'] = 1
     # Add value for procedure_type_concept_id
     # 32817 EHR
     omop_procedure_occurrence_df['procedure_type_concept_id'] = 32817
     return omop_procedure_occurrence_df
+
+
+def generate_measurement_table(lab_df: pd.DataFrame):
+    """
+    Generates an omop compliant version of the measurement table from a given lab table.
+
+    :param lab_df: the original version of the lab table
+    :return: an omop compliant version of a measurement table
+    """
+    # Copy values from original dataframe to omop compliant version
+    omop_measurement_df: pd.DataFrame = lab_df[['IDENTIFIER', 'PARAMETER_NAME', 'PARAMETER_LOINC', 'PATIENT_ID',
+                                                'TEST_DATE', 'NUMERIC_VALUE', 'UCUM_UNIT']].copy(
+        deep=True)
+    # Rename columns to target values
+    omop_measurement_df.columns = ['measurement_id', 'measurement_source_value', 'measurement_concept_id',
+                                   'person_id', 'measurement_date', 'value_as_number', 'unit_source_value']
+    omop_measurement_df['measurement_datetime'] = omop_measurement_df['measurement_date']
+    # Refactor measurement_date
+    omop_measurement_df['measurement_date'] = pd.to_datetime(omop_measurement_df['measurement_date'],
+                                                             format='%Y-%m-%d').dt.date
+    # TODO Translate LOINC to SNOMED
+    omop_measurement_df['measurement_concept_id'] = 1
+    # Add value for measurement_concept_type_id
+    # 32817 EHR
+    omop_measurement_df['measurement_concept_type_id'] = 32817
+    return omop_measurement_df
+
