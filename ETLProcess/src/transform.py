@@ -2,14 +2,17 @@ import numpy
 import pandas as pd
 
 
-def generate_provider_table(person_df: pd.DataFrame):
+def generate_provider_table(person_df: pd.DataFrame, case_df: pd.DataFrame):
     """
-    Generates an omop compliant version of the provider table from a given person table.
+    Generates an omop compliant version of the provider table from a given person and case table.
+
     :param person_df: the original version of the person table
+    :param case_df: the original version of the case table
     :return: an omop compliant version of a provider table
     """
+    combined_df: pd.DataFrame = pd.concat([person_df, case_df])
     # Copy provider id
-    omop_provider_df: pd.DataFrame = person_df[['PROVIDER_ID']].copy(deep=True)
+    omop_provider_df: pd.DataFrame = combined_df[['PROVIDER_ID']].copy(deep=True)
     # Rename provider id
     omop_provider_df.columns = ['provider_id']
     # Delete duplicates
@@ -20,6 +23,7 @@ def generate_provider_table(person_df: pd.DataFrame):
 def generate_location_table(person_df: pd.DataFrame):
     """
     Generates an omop compliant version of the location table from a given person table.
+
     :param person_df: the original version of the person table
     :return: an omop compliant version of a location table
     """
@@ -33,6 +37,7 @@ def generate_location_table(person_df: pd.DataFrame):
 def generate_observation_period_table(case_df: pd.DataFrame):
     """
     Generates an omop compliant version of the observation_period table from a given case table.
+
     :param case_df: the original version of the case table
     :return: an omop compliant version of a observation_period table
     """
@@ -62,7 +67,8 @@ def generate_observation_period_table(case_df: pd.DataFrame):
 
 def generate_person_table(person_df: pd.DataFrame):
     """
-    Generates an omop compliant version of the person table from a given unedited person table.
+    Generates an omop compliant version of the person table from a given person table.
+
     :param person_df: the original version of the person table
     :return: an omop compliant version of a person table
     """
@@ -88,3 +94,25 @@ def generate_person_table(person_df: pd.DataFrame):
     # Remove entries with missing values
     omop_person_df.dropna()
     return omop_person_df
+
+
+def generate_visit_occurrence_table(case_df: pd.DataFrame):
+    """
+    Generates an omop compliant version of the visit_occurrence table from a given case table.
+
+    :param case_df: the original version of the case table
+    :return: an omop compliant version of a visit_occurrence table
+    """
+    omop_visit_occurence_df: pd.DataFrame = case_df.copy(deep=True)
+    # Rename columns to target values
+    omop_visit_occurence_df.columns = ['visit_occurrence_id', 'provider_id', 'person_id', 'visit_start_date',
+                                       'visit_end_date']
+    # Generate unique visit occurrence ids because case ids are duplicated
+    for index, row in omop_visit_occurence_df.iterrows():
+        omop_visit_occurence_df.at[index, 'visit_occurrence_id'] = index + 1
+
+    # Add values for visit_concept_id and visit_type_concept_id
+    # 32209 unknown value, 32817 EHR
+    omop_visit_occurence_df['visit_concept_id'] = 32209
+    omop_visit_occurence_df['visit_type_concept_id'] = 32817
+    return omop_visit_occurence_df

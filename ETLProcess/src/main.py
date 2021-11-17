@@ -107,10 +107,11 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     os.chdir(cwd)
 
     # Transform into omop tables
-    omop_provider_df: pd.DataFrame = transform.generate_provider_table(person_df)
+    omop_provider_df: pd.DataFrame = transform.generate_provider_table(person_df, case_df)
     omop_location_df: pd.DataFrame = transform.generate_location_table(person_df)
     omop_person_df: pd.DataFrame = transform.generate_person_table(person_df)
     omop_observation_period_df: pd.DataFrame = transform.generate_observation_period_table(case_df)
+    omop_visit_occurrence_df: pd.DataFrame = transform.generate_visit_occurrence_table(case_df)
     # TODO transform other tables
 
     # Load into postgres database
@@ -120,6 +121,7 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     loader.save(load.OMOP_TABLE.LOCATION, omop_location_df)
     loader.save(load.OMOP_TABLE.PERSON, omop_person_df)
     loader.save(load.OMOP_TABLE.OBSERVATION_PERIOD, omop_observation_period_df)
+    loader.save(load.OMOP_TABLE.VISIT_OCCURRENCE, omop_visit_occurrence_df)
     # TODO load other dataframes into postgres
 
 
