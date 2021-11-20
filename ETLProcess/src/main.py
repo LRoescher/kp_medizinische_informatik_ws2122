@@ -1,5 +1,4 @@
 import pandas as pd
-
 import extract
 import transform
 import load
@@ -7,6 +6,7 @@ import os
 import yaml
 import sys
 import getopt
+import logging
 # type hints
 from typing import Tuple, Optional
 
@@ -97,6 +97,10 @@ def run_etl_job(csv_dir: str, db_config: load.DbConfig):
     cwd = os.getcwd()
     os.chdir(csv_dir)
 
+    # Set logging level
+    logging.basicConfig(level=logging.INFO)
+
+    logging.info("Extracting data from the given csv files...")
     person_df: pd.DataFrame = extract.extract_csv("PERSON.csv")
     case_df: pd.DataFrame = extract.extract_csv("CASE.csv")
     lab_df: pd.DataFrame = extract.extract_csv("LAB.csv")
@@ -112,6 +116,7 @@ def run_etl_job(csv_dir: str, db_config: load.DbConfig):
     loader = load.Loader(db_config, clear_tables=True)
 
     # Transform into omop tables
+    logging.info("Transforming input files into omop tables...")
     omop_provider_df: pd.DataFrame = transform.generate_provider_table(person_df, case_df)
     omop_location_df: pd.DataFrame = transform.generate_location_table(person_df)
     omop_person_df: pd.DataFrame = transform.generate_person_table(person_df)
@@ -121,8 +126,10 @@ def run_etl_job(csv_dir: str, db_config: load.DbConfig):
     omop_measurement_df: pd.DataFrame = transform.generate_measurement_table(lab_df, loader)
     omop_note_df: pd.DataFrame = transform.generate_note_table(lab_df)
     omop_condition_occurrence_df: pd.DataFrame = transform.generate_condition_occurrence_table(diagnosis_df, loader)
+    logging.info("Transformations finished.")
 
     # Load into postgres database
+    logging.info("Loading omop tables into the database...")
     loader.save(load.OmopTableEnum.PROVIDER, omop_provider_df)
     loader.save(load.OmopTableEnum.LOCATION, omop_location_df)
     loader.save(load.OmopTableEnum.PERSON, omop_person_df)
@@ -132,6 +139,7 @@ def run_etl_job(csv_dir: str, db_config: load.DbConfig):
     loader.save(load.OmopTableEnum.MEASUREMENT, omop_measurement_df)
     loader.save(load.OmopTableEnum.NOTE, omop_note_df)
     loader.save(load.OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
+    logging.info("Done loading omop tables into the database.")
 
 
 if __name__ == "__main__":

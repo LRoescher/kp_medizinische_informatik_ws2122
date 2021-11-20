@@ -1,4 +1,7 @@
+import sys
+
 import pandas as pd
+import logging
 import psycopg2
 import numpy as np
 from enum import Enum
@@ -57,16 +60,16 @@ class Loader:
         conn = None
         try:
             # connect to the PostgreSQL server
-            print('[INFO] Connecting to the PostgreSQL database...')
+            logging.info("Trying to connect to the database...")
             conn = psycopg2.connect(
                 host=db_config["host"],
                 port=db_config["port"],
                 database=db_config["db_name"],
                 user=db_config["username"],
                 password=db_config["password"])
-            print('[INFO] Successfully connected to the PostgreSQL database.')
-        except Exception as error:
-            print(f"[ERROR] Failed to establish connection: \n {error}")
+        except (Exception, psycopg2.DatabaseError) as error:
+            logging.exception("Failed to establish connection with the given parameters.")
+            raise
         finally:
             return conn
 
@@ -80,15 +83,16 @@ class Loader:
             cursor.execute(f"SET search_path TO {self.DB_SCHEMA};")
 
             for table in OmopTableEnum:
-                result = cursor.execute(f"Truncate {table.value} CASCADE;")
+                cursor.execute(f"Truncate {table.value} CASCADE;")
                 self.conn.commit()
 
         except (Exception, psycopg2.DatabaseError) as error:
-            print(f"[ERROR] Failed to clear omop entries from the database \n Message: {error}")
+            logging.error("Failed to clear omop entries from the database.")
+            logging.error(error)
             self.conn.rollback()
             cursor.close()
             return False
-        print("[INFO] Successfully cleared omop database")
+        logging.info("Successfully cleared omop database")
         cursor.close()
         return True
 
@@ -107,11 +111,12 @@ class Loader:
             cursor.executemany(query, tuples)
             self.conn.commit()
         except (Exception, psycopg2.DatabaseError) as error:
-            print(f"[ERROR] Failed to perform query: \n Query: {query} \n Message: {error}")
+            logging.error(f"Failed to perform query: \n Query: {query}")
+            logging.error(error)
             self.conn.rollback()
             cursor.close()
             return False
-        print("[INFO] Successfully performed query.")
+        logging.info("Successfully performed query.")
         cursor.close()
         return True
 
@@ -123,7 +128,7 @@ class Loader:
         :param df: with OMOP data
         :return:
         """
-        print(f"[INFO] Saving Table {table.value}.")
+        logging.info(f"Saving Table {table.value}.")
         # Create a list of tuples from the dataframe values
         tuples = [tuple(x) for x in df.to_numpy()]
         # Comma-separated dataframe columns
@@ -156,7 +161,7 @@ class Loader:
         except TypeError:
             # Set to 0 if no mapping was found, means 'No matching concept' in omop vocabulary
             concept_id_snomed = 0
-            print(f"[TRACE] Could not find a mapping for {code} in {vocabulary_id}.")
+            logging.debug(f"Could not find a mapping for {code} in {vocabulary_id}.")
 
         cursor.close()
 
