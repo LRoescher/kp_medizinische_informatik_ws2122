@@ -118,7 +118,7 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     omop_observation_period_df: pd.DataFrame = transform.generate_observation_period_table(case_df)
     omop_visit_occurrence_df: pd.DataFrame = transform.generate_visit_occurrence_table(case_df)
     omop_procedure_occurrence_df: pd.DataFrame = transform.generate_procedure_occurrence_table(procedure_df, loader)
-    omop_measurement_df: pd.DataFrame = transform.generate_measurement_table(lab_df)
+    omop_measurement_df: pd.DataFrame = transform.generate_measurement_table(lab_df, loader)
     omop_note_df: pd.DataFrame = transform.generate_note_table(lab_df)
     omop_condition_occurrence_df: pd.DataFrame = transform.generate_condition_occurrence_table(diagnosis_df, loader)
 

@@ -102,19 +102,19 @@ def generate_visit_occurrence_table(case_df: pd.DataFrame):
     :param case_df: the original version of the case table
     :return: an omop compliant version of a visit_occurrence table
     """
-    omop_visit_occurence_df: pd.DataFrame = case_df.copy(deep=True)
+    omop_visit_occurrence_df: pd.DataFrame = case_df.copy(deep=True)
     # Rename columns to target values
-    omop_visit_occurence_df.columns = ['visit_occurrence_id', 'provider_id', 'person_id', 'visit_start_date',
-                                       'visit_end_date']
+    omop_visit_occurrence_df.columns = ['visit_occurrence_id', 'provider_id', 'person_id', 'visit_start_date',
+                                        'visit_end_date']
     # Generate unique visit occurrence ids because case ids are duplicated
-    for index, row in omop_visit_occurence_df.iterrows():
-        omop_visit_occurence_df.at[index, 'visit_occurrence_id'] = index + 1
+    for index, row in omop_visit_occurrence_df.iterrows():
+        omop_visit_occurrence_df.at[index, 'visit_occurrence_id'] = index + 1
 
     # Add values for visit_concept_id and visit_type_concept_id
     # 32209 unknown value, 32817 EHR
-    omop_visit_occurence_df['visit_concept_id'] = 32209
-    omop_visit_occurence_df['visit_type_concept_id'] = 32817
-    return omop_visit_occurence_df
+    omop_visit_occurrence_df['visit_concept_id'] = 32209
+    omop_visit_occurrence_df['visit_type_concept_id'] = 32817
+    return omop_visit_occurrence_df
 
 
 def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: Loader):
@@ -147,10 +147,11 @@ def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: Load
     return omop_procedure_occurrence_df
 
 
-def generate_measurement_table(lab_df: pd.DataFrame):
+def generate_measurement_table(lab_df: pd.DataFrame, loader: Loader):
     """
     Generates an omop compliant version of the measurement table from a given lab table.
 
+    :param loader:
     :param lab_df: the original version of the lab table
     :return: an omop compliant version of a measurement table
     """
@@ -174,8 +175,10 @@ def generate_measurement_table(lab_df: pd.DataFrame):
     # Refactor measurement_date
     omop_measurement_df['measurement_date'] = pd.to_datetime(omop_measurement_df['measurement_date'],
                                                              format='%Y-%m-%d').dt.date
-    # TODO Translate LOINC to SNOMED
-    omop_measurement_df['measurement_concept_id'] = 1  # random value, needs to be changed to SNOMED-Code
+    # Translate LOINC to SNOMED
+    omop_measurement_df['measurement_concept_id'] = [loader.get_snomed_id(code, 'LOINC') for code in
+                                                     lab_df['PARAMETER_LOINC']]
+
     # Add value for measurement_concept_type_id
     # 32817 EHR
     omop_measurement_df['measurement_type_concept_id'] = 32817
