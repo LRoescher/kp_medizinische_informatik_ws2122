@@ -108,6 +108,9 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
 
     os.chdir(cwd)
 
+    # Establish database connection
+    loader = load.Loader(db_config, clear_tables=True)
+
     # Transform into omop tables
     omop_provider_df: pd.DataFrame = transform.generate_provider_table(person_df, case_df)
     omop_location_df: pd.DataFrame = transform.generate_location_table(person_df)
@@ -117,11 +120,10 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     omop_procedure_occurrence_df: pd.DataFrame = transform.generate_procedure_occurrence_table(procedure_df)
     omop_measurement_df: pd.DataFrame = transform.generate_measurement_table(lab_df)
     omop_note_df: pd.DataFrame = transform.generate_note_table(lab_df)
-    omop_condition_occurrence_df: pd.DataFrame = transform.generate_condition_occurrence_table(diagnosis_df)
+    omop_condition_occurrence_df: pd.DataFrame = transform.generate_condition_occurrence_table(diagnosis_df, loader)
 
     # Load into postgres database
     # 'clear_tables' remove all previously added omop-entries from the database
-    loader = load.Loader(db_config, clear_tables=True)
     loader.save(load.OMOP_TABLE.PROVIDER, omop_provider_df)
     loader.save(load.OMOP_TABLE.LOCATION, omop_location_df)
     loader.save(load.OMOP_TABLE.PERSON, omop_person_df)

@@ -1,6 +1,8 @@
 import numpy
 import pandas as pd
 
+from src.load import Loader
+
 
 def generate_provider_table(person_df: pd.DataFrame, case_df: pd.DataFrame):
     """
@@ -216,30 +218,31 @@ def generate_note_table(lab_df: pd.DataFrame):
     return omop_note_df
 
 
-def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame):
+def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: Loader):
     """
     Generates an omop compliant version of the condition_occurrence table from a given diagnosis table.
 
     :param diagnosis_df: the original version of the diagnosis table
+    :param loader: a Loader used to query the existing database for snomed vocabulary
     :return: an omop compliant version of a condition_occurrence table
     """
     # Remove all columns with no admission date
     diagnosis_df = diagnosis_df.dropna(subset=['ADMISSION_DATE'])
     # Copy values from original dataframe to omop compliant version
-    omop_condition_occurence: pd.DataFrame = diagnosis_df[['PROVIDER_ID', 'PATIENT_ID', 'ADMISSION_DATE',
+    omop_condition_occurrence: pd.DataFrame = diagnosis_df[['PROVIDER_ID', 'PATIENT_ID', 'ADMISSION_DATE',
                                                            'ICD_PRIMARY_CODE', 'ICD_SECONDARY_CODE']].copy(deep=True)
-    # TODO Translate ICD-Codes to SNOMED
-    omop_condition_occurence['condition_concept_id'] = 1  # random value, needs to be changed to SNOMED-Code
-    omop_condition_occurence.drop(columns=['ICD_PRIMARY_CODE', 'ICD_SECONDARY_CODE'], axis=1, inplace=True)
+
+    omop_condition_occurrence['condition_concept_id'] = [loader.get_snomed_id(icd) for icd in diagnosis_df['ICD_PRIMARY_CODE']]
+    omop_condition_occurrence.drop(columns=['ICD_PRIMARY_CODE', 'ICD_SECONDARY_CODE'], axis=1, inplace=True)
     # Rename columns to target values
-    omop_condition_occurence.columns = ['provider_id', 'person_id', 'condition_start_date', 'condition_concept_id']
+    omop_condition_occurrence.columns = ['provider_id', 'person_id', 'condition_start_date', 'condition_concept_id']
     # Refactor condition_start_date
-    omop_condition_occurence['condition_start_date'] = pd.to_datetime(omop_condition_occurence['condition_start_date'],
+    omop_condition_occurrence['condition_start_date'] = pd.to_datetime(omop_condition_occurrence['condition_start_date'],
                                                                       format='%d.%m.%Y')
     # Generate condition_occurrence_id
-    for index, row in omop_condition_occurence.iterrows():
-        omop_condition_occurence.at[index, 'condition_occurrence_id'] = index + 1
+    for index, row in omop_condition_occurrence.iterrows():
+        omop_condition_occurrence.at[index, 'condition_occurrence_id'] = index + 1
     # Add value for condition_type_concept_id
     # 32817 EHR
-    omop_condition_occurence['condition_type_concept_id'] = 32817
-    return omop_condition_occurence
+    omop_condition_occurrence['condition_type_concept_id'] = 32817
+    return omop_condition_occurrence

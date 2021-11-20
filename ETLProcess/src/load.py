@@ -4,6 +4,7 @@ import numpy as np
 from enum import Enum
 from typing import Tuple, Optional, TypedDict, List
 from psycopg2.extensions import register_adapter, AsIs
+
 psycopg2.extensions.register_adapter(np.int64, AsIs)
 
 
@@ -127,5 +128,31 @@ class Loader:
         # Comma-separated dataframe columns
         cols = ','.join(list(df.columns))
         # SQL query to execute
-        query = f"INSERT INTO {table.value}({cols}) VALUES({','.join(['%s']*len(df.columns))})"
+        query = f"INSERT INTO {table.value}({cols}) VALUES({','.join(['%s'] * len(df.columns))})"
         self._fire_query(query, tuples)
+
+    def get_snomed_id(self, icd_code):
+        """
+        Gets the Id of a SNOMED-Concept which represents the same diagnosis as the given ICD-10-GM code.
+        :param icd_code: the given ICD-10-GM code
+        :return: the corresponding SNOMED-Id
+        """
+        cursor = self.conn.cursor()
+        cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")
+        try:
+            # Get Omop - Concept Id of ICD10GM code
+            cursor.execute(
+                f"SELECT concept_id FROM concept WHERE concept_code = '{icd_code}' AND vocabulary_id = 'ICD10GM';")
+            concept_id_icd = cursor.fetchone()[0]
+
+            # Get Concept Id of according Snomed Concept
+            cursor.execute(
+                f"SELECT concept_id_2 FROM concept_relationship WHERE relationship_id = 'Maps to' AND concept_id_1 = '{concept_id_icd}';")
+            concept_id_snomed = cursor.fetchone()[0]
+
+        except TypeError:
+            concept_id_snomed = 0
+
+        cursor.close()
+
+        return concept_id_snomed
