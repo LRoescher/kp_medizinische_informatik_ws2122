@@ -115,13 +115,13 @@ class Loader:
         return True
 
     def save(self, table: OMOP_TABLE, df: pd.DataFrame):
-        '''
+        """
         save the DataFrame in the given OMOP table
 
         :param table: the df should be stored
         :param df: with OMOP data
         :return:
-        '''
+        """
         print(f"[INFO] Saving Table {table.value}.")
         # Create a list of tuples from the dataframe values
         tuples = [tuple(x) for x in df.to_numpy()]
@@ -131,27 +131,31 @@ class Loader:
         query = f"INSERT INTO {table.value}({cols}) VALUES({','.join(['%s'] * len(df.columns))})"
         self._fire_query(query, tuples)
 
-    def get_snomed_id(self, icd_code):
+    def get_snomed_id(self, code, vocabulary_id: str):
         """
-        Gets the Id of a SNOMED-Concept which represents the same diagnosis as the given ICD-10-GM code.
-        :param icd_code: the given ICD-10-GM code
-        :return: the corresponding SNOMED-Id
+        Gets the Id of a SNOMED-Concept which represents the given non-standard code. The code can be for example an
+        ICD-10GM or OPS code.
+        :param vocabulary_id: Unique name of the vocabulary, e.g. 'ICD10GM' or 'OPS'
+        :param code: the given non-standard code
+        :return: the corresponding SNOMED-Id or 0 if there is no mapping for the given code
         """
         cursor = self.conn.cursor()
         cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")
         try:
-            # Get Omop - Concept Id of ICD10GM code
+            # Get Omop - Concept Id of the given code
             cursor.execute(
-                f"SELECT concept_id FROM concept WHERE concept_code = '{icd_code}' AND vocabulary_id = 'ICD10GM';")
-            concept_id_icd = cursor.fetchone()[0]
+                f"SELECT concept_id FROM concept WHERE concept_code = '{code}' AND vocabulary_id = '{vocabulary_id}';")
+            concept_id_original = cursor.fetchone()[0]
 
             # Get Concept Id of according Snomed Concept
             cursor.execute(
-                f"SELECT concept_id_2 FROM concept_relationship WHERE relationship_id = 'Maps to' AND concept_id_1 = '{concept_id_icd}';")
-            concept_id_snomed = cursor.fetchone()[0]
+                f"SELECT concept_id_2 FROM concept_relationship WHERE relationship_id = 'Maps to' AND concept_id_1 = '{concept_id_original}';")
+            concept_id_snomed = int(cursor.fetchone()[0])
 
         except TypeError:
+            # Set to 0 if no mapping was found, means 'No matching concept' in omop vocabulary
             concept_id_snomed = 0
+            print(f"[TRACE] Could not find a mapping for {code} in {vocabulary_id}.")
 
         cursor.close()
 
