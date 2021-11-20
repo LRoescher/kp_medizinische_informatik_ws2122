@@ -7,17 +7,16 @@ import os
 import yaml
 import sys
 import getopt
-
 # type hints
 from typing import Tuple, Optional
 
 
-def generate_config() -> Tuple[str, load.DB_CONFIG]:
-    '''
+def generate_config() -> Tuple[str, load.DbConfig]:
+    """
     combine config-file and cmd arguments
 
     :return: dir with csv files, config options for the db
-    '''
+    """
     # path to default config file
     config_path = "config.yml"
 
@@ -84,7 +83,7 @@ def generate_config() -> Tuple[str, load.DB_CONFIG]:
     return data["csv_dir"], data["db_config"]
 
 
-def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
+def run_etl_job(csv_dir: str, db_config: load.DbConfig):
     """
     Runs the entire ETL-Job.
     First all csv files are transformed into pandas dataframes. Then they are transformed into omop compliant tables.
@@ -109,6 +108,7 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     os.chdir(cwd)
 
     # Establish database connection
+    # 'clear_tables' remove all previously added omop-entries from the database
     loader = load.Loader(db_config, clear_tables=True)
 
     # Transform into omop tables
@@ -123,16 +123,15 @@ def run_etl_job(csv_dir: str, db_config: load.DB_CONFIG):
     omop_condition_occurrence_df: pd.DataFrame = transform.generate_condition_occurrence_table(diagnosis_df, loader)
 
     # Load into postgres database
-    # 'clear_tables' remove all previously added omop-entries from the database
-    loader.save(load.OMOP_TABLE.PROVIDER, omop_provider_df)
-    loader.save(load.OMOP_TABLE.LOCATION, omop_location_df)
-    loader.save(load.OMOP_TABLE.PERSON, omop_person_df)
-    loader.save(load.OMOP_TABLE.OBSERVATION_PERIOD, omop_observation_period_df)
-    loader.save(load.OMOP_TABLE.VISIT_OCCURRENCE, omop_visit_occurrence_df)
-    loader.save(load.OMOP_TABLE.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
-    loader.save(load.OMOP_TABLE.MEASUREMENT, omop_measurement_df)
-    loader.save(load.OMOP_TABLE.NOTE, omop_note_df)
-    loader.save(load.OMOP_TABLE.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
+    loader.save(load.OmopTableEnum.PROVIDER, omop_provider_df)
+    loader.save(load.OmopTableEnum.LOCATION, omop_location_df)
+    loader.save(load.OmopTableEnum.PERSON, omop_person_df)
+    loader.save(load.OmopTableEnum.OBSERVATION_PERIOD, omop_observation_period_df)
+    loader.save(load.OmopTableEnum.VISIT_OCCURRENCE, omop_visit_occurrence_df)
+    loader.save(load.OmopTableEnum.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
+    loader.save(load.OmopTableEnum.MEASUREMENT, omop_measurement_df)
+    loader.save(load.OmopTableEnum.NOTE, omop_note_df)
+    loader.save(load.OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
 
 
 if __name__ == "__main__":

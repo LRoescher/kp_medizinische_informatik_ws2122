@@ -8,10 +8,10 @@ from psycopg2.extensions import register_adapter, AsIs
 psycopg2.extensions.register_adapter(np.int64, AsIs)
 
 
-class DB_CONFIG(TypedDict):
-    '''
-     only for static type checking
-    '''
+class DbConfig(TypedDict):
+    """
+    Only for static type checking.
+    """
     host: str
     port: str
     db_name: str
@@ -20,7 +20,7 @@ class DB_CONFIG(TypedDict):
     db_schema: str
 
 
-class OMOP_TABLE(Enum):
+class OmopTableEnum(Enum):
     VISIT_OCCURRENCE = "visit_occurrence"
     OBSERVATION_PERIOD = "observation_period"
     PROCEDURE_OCCURRENCE = "procedure_occurrence"
@@ -37,7 +37,7 @@ class Loader:
     Class responsible for connecting to the omop-database and loading CDM-compliant tables into it.
     """
 
-    def __init__(self, db_config: DB_CONFIG, clear_tables: bool = False):
+    def __init__(self, db_config: DbConfig, clear_tables: bool = False):
         """
         Creates a new Loader. Establishes a database connection.
 
@@ -49,7 +49,7 @@ class Loader:
         if clear_tables:
             self.clear_omop_tables()
 
-    def _connect(self, db_config: DB_CONFIG) -> Optional[psycopg2._psycopg.connection]:
+    def _connect(self, db_config: DbConfig) -> Optional[psycopg2._psycopg.connection]:
         """
         Connect to the PostgreSQL database server.
         :return a connection to the database server
@@ -77,10 +77,11 @@ class Loader:
         """
         cursor = self.conn.cursor()
         try:
-            cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")
+            cursor.execute(f"SET search_path TO {self.DB_SCHEMA};")
 
-            for table in OMOP_TABLE:
-                cursor.execute(f"DELETE FROM {table.value}")
+            for table in OmopTableEnum:
+                result = cursor.execute(f"Truncate {table.value} CASCADE;")
+                self.conn.commit()
 
         except (Exception, psycopg2.DatabaseError) as error:
             print(f"[ERROR] Failed to clear omop entries from the database \n Message: {error}")
@@ -114,7 +115,7 @@ class Loader:
         cursor.close()
         return True
 
-    def save(self, table: OMOP_TABLE, df: pd.DataFrame):
+    def save(self, table: OmopTableEnum, df: pd.DataFrame):
         """
         save the DataFrame in the given OMOP table
 

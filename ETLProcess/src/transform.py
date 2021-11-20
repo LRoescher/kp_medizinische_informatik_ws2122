@@ -121,6 +121,7 @@ def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: Load
     """
     Generates an omop compliant version of the procedure_occurrence table from a given procedure table.
 
+    :param loader: Loader used to query database for snomed codes
     :param procedure_df: the original version of the procedure table
     :return: an omop compliant version of a procedure_occurrence table
     """
@@ -151,7 +152,7 @@ def generate_measurement_table(lab_df: pd.DataFrame, loader: Loader):
     """
     Generates an omop compliant version of the measurement table from a given lab table.
 
-    :param loader:
+    :param loader: Loader used to query database for snomed codes
     :param lab_df: the original version of the lab table
     :return: an omop compliant version of a measurement table
     """
@@ -228,7 +229,7 @@ def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: Load
     Generates an omop compliant version of the condition_occurrence table from a given diagnosis table.
 
     :param diagnosis_df: the original version of the diagnosis table
-    :param loader: a Loader used to query the existing database for snomed vocabulary
+    :param loader: Loader used to query database for snomed codes
     :return: an omop compliant version of a condition_occurrence table
     """
     # Remove all columns with no admission date
