@@ -128,19 +128,19 @@ def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: Load
     # Change datatype of column ID to int
     procedure_df = procedure_df.astype({'ID': int})
     # Copy values from original dataframe to omop compliant version
-    omop_procedure_occurrence_df: pd.DataFrame = procedure_df[['ID', 'OPS_CODE', 'PATIENT_ID', 'EXECUTION_DATE']].copy(
-        deep=True)
+    omop_procedure_occurrence_df: pd.DataFrame = procedure_df[['ID', 'OPS_CODE', 'PATIENT_ID', 'EXECUTION_DATE']]\
+        .copy(deep=True)
     # Rename columns to target values
-    omop_procedure_occurrence_df.columns = ['procedure_occurrence_id', 'procedure_concept_id', 'person_id',
-                                            'procedure_date']
-    omop_procedure_occurrence_df['procedure_source_value'] = omop_procedure_occurrence_df['procedure_concept_id']
-    omop_procedure_occurrence_df['procedure_datetime'] = omop_procedure_occurrence_df['procedure_date']
+    omop_procedure_occurrence_df.columns = ['procedure_occurrence_id',
+                                            'procedure_source_value',
+                                            'person_id',
+                                            'procedure_datetime']
     # Refactor procedure_date
-    omop_procedure_occurrence_df['procedure_date'] = pd.to_datetime(omop_procedure_occurrence_df['procedure_date'],
+    omop_procedure_occurrence_df['procedure_date'] = pd.to_datetime(omop_procedure_occurrence_df['procedure_datetime'],
                                                                     format='%Y-%m-%d').dt.date
 
     omop_procedure_occurrence_df['procedure_concept_id'] = [loader.get_snomed_id(code, 'OPS') for code in
-                                                            procedure_df['OPS_CODE']]
+                                                            omop_procedure_occurrence_df['procedure_source_value']]
     # Add value for procedure_type_concept_id
     # 32817 EHR
     omop_procedure_occurrence_df['procedure_type_concept_id'] = 32817
@@ -253,5 +253,6 @@ def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: Load
     # Add value for condition_type_concept_id
     # 32817 EHR
     omop_condition_occurrence['condition_type_concept_id'] = 32817
+    omop_condition_occurrence['condition_source_value'] = diagnosis_df['ICD_PRIMARY_CODE']
     omop_condition_occurrence.dropna()
     return omop_condition_occurrence

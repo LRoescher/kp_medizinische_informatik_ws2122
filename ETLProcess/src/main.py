@@ -13,7 +13,8 @@ from typing import Tuple, Optional
 
 def generate_config() -> Tuple[str, load.DbConfig]:
     """
-    combine config-file and cmd arguments
+    Combines the config-file and command line arguments to one configuration, including database credentials and the
+    path to the input directory.
 
     :return: dir with csv files, config options for the db
     """
