@@ -123,7 +123,7 @@ def generate_config() -> Tuple[str, DbConfig]:
 
     if len(expected_config_format) != 0:
         check_ok = False
-        logging.error(f"The following arguments are missing for a correct configuration: {expected_config_format.keys()}")
+        logging.error(f"The following arguments are missing for a correct configuration: {list(expected_config_format.keys())}")
 
     csv_files = ["PERSON.csv", "CASE.csv", "LAB.csv", "DIAGNOSIS.csv", "PROCEDURE.csv"]
     if not (os.path.isdir(data["csv_dir"]) and
