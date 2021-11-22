@@ -25,22 +25,23 @@ def generate_config() -> Tuple[str, DbConfig]:
     argv = sys.argv[1:]
 
     # parse cmd options
-    opts, args = getopt.getopt(argv, "H:P:N:u:p:S:D:C:h", ["host =",
-                                                           "port =",
-                                                           "db_name =",
-                                                           "username =",
-                                                           "password =",
-                                                           "db_schema =",
-                                                           "csv_dir =",
-                                                           "config_file =",
-                                                           "help"])
+    opts, args = getopt.getopt(argv, "H:P:N:u:p:S:D:C:l:h", ["host =",
+                                                              "port =",
+                                                              "db_name =",
+                                                              "username =",
+                                                              "password =",
+                                                              "db_schema =",
+                                                              "csv_dir =",
+                                                              "config_file =",
+                                                              "log_level =" 
+                                                              "help"])
     tmp_dict: dict = {}
     tmp_csv_dir: Optional[str] = None
+    tmp_log_level: Optional[int] = None
     for opt, arg in opts:
         opt = opt.strip()
         arg = arg.strip()
         if opt in ("-H", "--host"):
-            print("host", opt, arg)
             tmp_dict["host"] = arg
         elif opt in ("-P", "--port"):
             tmp_dict["port"] = arg
@@ -56,6 +57,8 @@ def generate_config() -> Tuple[str, DbConfig]:
             tmp_csv_dir = arg
         elif opt in ("-C", "--config_file"):
             config_path = arg
+        elif opt in ("-l", "--log_level"):
+            tmp_log_level = int(arg)
         elif opt in ("-h", "--help"):
             print('''CMD Options:
             -H, --host      \t host of the postgres-DB
@@ -70,6 +73,14 @@ def generate_config() -> Tuple[str, DbConfig]:
                                     - DIAGNOSIS.csv
                                     - PROCEDURE.csv 
             -C, --config_file \t path to the config file
+            -l, --log_level  \t log level: (int)
+                                    - CRITICAL = 50
+                                    - ERROR = 40
+                                    - WARNING = 30 (default)
+                                    - INFO = 20
+                                    - DEBUG = 10
+                                    - NOTSET = 0
+            -h, --help      \t opens this menu
             ''')
             sys.exit(0)
 
@@ -78,9 +89,20 @@ def generate_config() -> Tuple[str, DbConfig]:
         data = yaml.load(file, Loader=yaml.SafeLoader)
 
     # override config with cmd arguments
-    if all(key in data for key in ["db_config", "csv_dir"]):
+    if all(key in data for key in ["db_config", "csv_dir", "log_level"]):
         data["db_config"].update(tmp_dict)
         data["csv_dir"] = tmp_csv_dir if tmp_csv_dir is not None else data["csv_dir"]
+
+        # set log_level
+        tmp_log_level = tmp_log_level if tmp_log_level is not None else data["log_level"]
+        log_levels = [0, 10, 20, 30, 40, 50]
+        if tmp_log_level not in log_levels:
+            logging.error(f"The log level has to be: {log_levels}, but continue with: 30 (WARNING)")
+            logging.basicConfig(level=30)
+        else:
+            logging.basicConfig(level=tmp_log_level)
+            logging.info(f"log_level set to: {tmp_log_level}")
+        del data["log_level"]
     else:
         logging.error("The default config.yaml is invalid.")
         sys.exit(0)
@@ -173,9 +195,6 @@ def run_etl_job(csv_dir: str, db_config: DbConfig):
 
 
 if __name__ == "__main__":
-    # Set basic logging level
-    logging.basicConfig(level=logging.INFO)
-
     csv_dir, db_config = generate_config()
     run_etl_job(csv_dir, db_config)
 
