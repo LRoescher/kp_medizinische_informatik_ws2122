@@ -33,7 +33,7 @@ class OmopTableEnum(Enum):
     PROVIDER = "provider"
 
 
-class Loader:
+class DBManager:
     """
     Class responsible for connecting to the omop-database and loading CDM-compliant tables into it.
     """

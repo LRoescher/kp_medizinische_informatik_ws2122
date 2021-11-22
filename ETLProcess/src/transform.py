@@ -1,7 +1,7 @@
 import numpy
 import pandas as pd
 
-from load import Loader
+from load import DBManager
 
 
 def generate_provider_table(person_df: pd.DataFrame, case_df: pd.DataFrame) -> pd.DataFrame:
@@ -117,7 +117,7 @@ def generate_visit_occurrence_table(case_df: pd.DataFrame) -> pd.DataFrame:
     return omop_visit_occurrence_df
 
 
-def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: Loader) -> pd.DataFrame:
+def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: DBManager) -> pd.DataFrame:
     """
     Generates an omop compliant version of the procedure_occurrence table from a given procedure table.
 
@@ -148,7 +148,7 @@ def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: Load
     return omop_procedure_occurrence_df
 
 
-def generate_measurement_table(lab_df: pd.DataFrame, loader: Loader) -> pd.DataFrame:
+def generate_measurement_table(lab_df: pd.DataFrame, loader: DBManager) -> pd.DataFrame:
     """
     Generates an omop compliant version of the measurement table from a given lab table.
 
@@ -224,7 +224,7 @@ def generate_note_table(lab_df: pd.DataFrame) -> pd.DataFrame:
     return omop_note_df
 
 
-def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: Loader) -> pd.DataFrame:
+def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: DBManager) -> pd.DataFrame:
     """
     Generates an omop compliant version of the condition_occurrence table from a given diagnosis table.
 

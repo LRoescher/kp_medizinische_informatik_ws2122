@@ -6,7 +6,7 @@ import yaml
 import sys
 import getopt
 import logging
-from load import Loader, OmopTableEnum, DbConfig
+from load import DBManager, OmopTableEnum, DbConfig
 # type hints
 from typing import Tuple, Optional, Dict
 
@@ -143,7 +143,7 @@ def run_etl_job(csv_dir: str, db_config: DbConfig):
 
     # Establish database connection
     # 'clear_tables' remove all previously added omop-entries from the database
-    loader = Loader(db_config, clear_tables=True)
+    loader = DBManager(db_config, clear_tables=True)
 
     # Transform into omop tables
     logging.info("Transforming input files into omop tables...")
