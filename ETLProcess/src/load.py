@@ -118,7 +118,7 @@ class Loader:
         cursor.close()
         return True
 
-    def save(self, table: OmopTableEnum, df: pd.DataFrame):
+    def save(self, table: OmopTableEnum, df: pd.DataFrame) -> None:
         """
         save the DataFrame in the given OMOP table
 
@@ -135,7 +135,7 @@ class Loader:
         query = f"INSERT INTO {table.value}({cols}) VALUES({','.join(['%s'] * len(df.columns))})"
         self._fire_query(query, tuples)
 
-    def get_snomed_id(self, code, vocabulary_id: str):
+    def get_snomed_id(self, code, vocabulary_id: str) -> int:
         """
         Gets the Id of a SNOMED-Concept which represents the given non-standard code. The code can be for example an
         ICD-10GM or OPS code.

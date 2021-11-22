@@ -1,17 +1,17 @@
 import pandas as pd
 import extract
 import transform
-import load
 import os
 import yaml
 import sys
 import getopt
 import logging
+from load import Loader, OmopTableEnum, DbConfig
 # type hints
 from typing import Tuple, Optional
 
 
-def generate_config() -> Tuple[str, load.DbConfig]:
+def generate_config() -> Tuple[str, DbConfig]:
     """
     Combines the config-file and command line arguments to one configuration, including database credentials and the
     path to the input directory.
@@ -84,7 +84,7 @@ def generate_config() -> Tuple[str, load.DbConfig]:
     return data["csv_dir"], data["db_config"]
 
 
-def run_etl_job(csv_dir: str, db_config: load.DbConfig):
+def run_etl_job(csv_dir: str, db_config: DbConfig):
     """
     Runs the entire ETL-Job.
     First all csv files are transformed into pandas dataframes. Then they are transformed into omop compliant tables.
@@ -114,7 +114,7 @@ def run_etl_job(csv_dir: str, db_config: load.DbConfig):
 
     # Establish database connection
     # 'clear_tables' remove all previously added omop-entries from the database
-    loader = load.Loader(db_config, clear_tables=True)
+    loader = Loader(db_config, clear_tables=True)
 
     # Transform into omop tables
     logging.info("Transforming input files into omop tables...")
@@ -131,15 +131,15 @@ def run_etl_job(csv_dir: str, db_config: load.DbConfig):
 
     # Load into postgres database
     logging.info("Loading omop tables into the database...")
-    loader.save(load.OmopTableEnum.PROVIDER, omop_provider_df)
-    loader.save(load.OmopTableEnum.LOCATION, omop_location_df)
-    loader.save(load.OmopTableEnum.PERSON, omop_person_df)
-    loader.save(load.OmopTableEnum.OBSERVATION_PERIOD, omop_observation_period_df)
-    loader.save(load.OmopTableEnum.VISIT_OCCURRENCE, omop_visit_occurrence_df)
-    loader.save(load.OmopTableEnum.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
-    loader.save(load.OmopTableEnum.MEASUREMENT, omop_measurement_df)
-    loader.save(load.OmopTableEnum.NOTE, omop_note_df)
-    loader.save(load.OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
+    loader.save(OmopTableEnum.PROVIDER, omop_provider_df)
+    loader.save(OmopTableEnum.LOCATION, omop_location_df)
+    loader.save(OmopTableEnum.PERSON, omop_person_df)
+    loader.save(OmopTableEnum.OBSERVATION_PERIOD, omop_observation_period_df)
+    loader.save(OmopTableEnum.VISIT_OCCURRENCE, omop_visit_occurrence_df)
+    loader.save(OmopTableEnum.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
+    loader.save(OmopTableEnum.MEASUREMENT, omop_measurement_df)
+    loader.save(OmopTableEnum.NOTE, omop_note_df)
+    loader.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
     logging.info("Done loading omop tables into the database.")
 
 

@@ -1,10 +1,10 @@
 import numpy
 import pandas as pd
 
-from src.load import Loader
+from load import Loader
 
 
-def generate_provider_table(person_df: pd.DataFrame, case_df: pd.DataFrame):
+def generate_provider_table(person_df: pd.DataFrame, case_df: pd.DataFrame) -> pd.DataFrame:
     """
     Generates an omop compliant version of the provider table from a given person and case table.
 
@@ -22,7 +22,7 @@ def generate_provider_table(person_df: pd.DataFrame, case_df: pd.DataFrame):
     return omop_provider_df
 
 
-def generate_location_table(person_df: pd.DataFrame):
+def generate_location_table(person_df: pd.DataFrame) -> pd.DataFrame:
     """
     Generates an omop compliant version of the location table from a given person table.
 
@@ -36,7 +36,7 @@ def generate_location_table(person_df: pd.DataFrame):
     return omop_location_df
 
 
-def generate_observation_period_table(case_df: pd.DataFrame):
+def generate_observation_period_table(case_df: pd.DataFrame) -> pd.DataFrame:
     """
     Generates an omop compliant version of the observation_period table from a given case table.
 
@@ -67,7 +67,7 @@ def generate_observation_period_table(case_df: pd.DataFrame):
     return omop_observation_period_df
 
 
-def generate_person_table(person_df: pd.DataFrame):
+def generate_person_table(person_df: pd.DataFrame) -> pd.DataFrame:
     """
     Generates an omop compliant version of the person table from a given person table.
 
@@ -95,7 +95,7 @@ def generate_person_table(person_df: pd.DataFrame):
     return omop_person_df
 
 
-def generate_visit_occurrence_table(case_df: pd.DataFrame):
+def generate_visit_occurrence_table(case_df: pd.DataFrame) -> pd.DataFrame:
     """
     Generates an omop compliant version of the visit_occurrence table from a given case table.
 
@@ -117,7 +117,7 @@ def generate_visit_occurrence_table(case_df: pd.DataFrame):
     return omop_visit_occurrence_df
 
 
-def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: Loader):
+def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: Loader) -> pd.DataFrame:
     """
     Generates an omop compliant version of the procedure_occurrence table from a given procedure table.
 
@@ -148,7 +148,7 @@ def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: Load
     return omop_procedure_occurrence_df
 
 
-def generate_measurement_table(lab_df: pd.DataFrame, loader: Loader):
+def generate_measurement_table(lab_df: pd.DataFrame, loader: Loader) -> pd.DataFrame:
     """
     Generates an omop compliant version of the measurement table from a given lab table.
 
@@ -186,7 +186,7 @@ def generate_measurement_table(lab_df: pd.DataFrame, loader: Loader):
     return omop_measurement_df
 
 
-def generate_note_table(lab_df: pd.DataFrame):
+def generate_note_table(lab_df: pd.DataFrame) -> pd.DataFrame:
     """
     Generates an omop compliant version of the note table from a given lab table.
 
@@ -224,7 +224,7 @@ def generate_note_table(lab_df: pd.DataFrame):
     return omop_note_df
 
 
-def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: Loader):
+def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: Loader) -> pd.DataFrame:
     """
     Generates an omop compliant version of the condition_occurrence table from a given diagnosis table.
 
