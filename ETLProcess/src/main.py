@@ -8,7 +8,7 @@ import getopt
 import logging
 from load import Loader, OmopTableEnum, DbConfig
 # type hints
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict
 
 
 def generate_config() -> Tuple[str, DbConfig]:
@@ -78,8 +78,40 @@ def generate_config() -> Tuple[str, DbConfig]:
         data = yaml.load(file, Loader=yaml.SafeLoader)
 
     # override config with cmd arguments
-    data["db_config"].update(tmp_dict)
-    data["csv_dir"] = tmp_csv_dir if tmp_csv_dir is not None else data["csv_dir"]
+    if all(key in data for key in ["db_config", "csv_dir"]):
+        data["db_config"].update(tmp_dict)
+        data["csv_dir"] = tmp_csv_dir if tmp_csv_dir is not None else data["csv_dir"]
+    else:
+        logging.error("The default config.yaml is invalid.")
+        sys.exit(0)
+
+    # check config / type checking
+    expected_config_format: Dict[str, type] = DbConfig.__annotations__
+    check_ok: bool = True
+    for k, v in data["db_config"].items():
+        if k not in expected_config_format:
+            check_ok = False
+            logging.error(f"There is no configuration Argument with the name: {k}")
+        else:
+            if not isinstance(v, expected_config_format[k]):
+                check_ok = False
+                logging.error(f"The Argument: {k} should have the type {expected_config_format[k]} not {type(v)}")
+
+            del expected_config_format[k]
+
+    if len(expected_config_format) != 0:
+        check_ok = False
+        logging.error(f"The following arguments are missing for a correct configuration: {expected_config_format.keys()}")
+
+    csv_files = ["PERSON.csv", "CASE.csv", "LAB.csv", "DIAGNOSIS.csv", "PROCEDURE.csv"]
+    if not (os.path.isdir(data["csv_dir"]) and
+            all(csv_table in os.listdir(data["csv_dir"]) for csv_table in csv_files)):
+        check_ok = False
+        logging.error(f"The csv_dir should contain the following files: {csv_files}. Wrong path: {data['csv_dir']}")
+
+    if not check_ok:
+        logging.error("Shutting down ETL-process due to wrong configuration.")
+        sys.exit(0)
 
     return data["csv_dir"], data["db_config"]
 
@@ -97,9 +129,6 @@ def run_etl_job(csv_dir: str, db_config: DbConfig):
     # extract original csv files
     cwd = os.getcwd()
     os.chdir(csv_dir)
-
-    # Set logging level
-    logging.basicConfig(level=logging.INFO)
 
     logging.info("Extracting data from the given csv files...")
     person_df: pd.DataFrame = extract.extract_csv("PERSON.csv")
@@ -144,5 +173,10 @@ def run_etl_job(csv_dir: str, db_config: DbConfig):
 
 
 if __name__ == "__main__":
+    # Set basic logging level
+    logging.basicConfig(level=logging.INFO)
+
     csv_dir, db_config = generate_config()
     run_etl_job(csv_dir, db_config)
+
+
