@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import pandas as pd
 
 from load import DBManager
@@ -44,7 +44,7 @@ def generate_observation_period_table(case_df: pd.DataFrame) -> pd.DataFrame:
     :return: an omop compliant version of a observation_period table
     """
     # Get unique patient ids
-    unique_patient_ids: numpy.ndarray = case_df['PATIENT_ID'].unique()
+    unique_patient_ids: np.ndarray = case_df['PATIENT_ID'].unique()
     # Create a list of observation periods for every patient
     observation_periods: list = []
     # Generate observation period ids because case ids are duplicated
@@ -128,7 +128,7 @@ def generate_procedure_occurrence_table(procedure_df: pd.DataFrame, loader: DBMa
     # Change datatype of column ID to int
     procedure_df = procedure_df.astype({'ID': int})
     # Copy values from original dataframe to omop compliant version
-    omop_procedure_occurrence_df: pd.DataFrame = procedure_df[['ID', 'OPS_CODE', 'PATIENT_ID', 'EXECUTION_DATE']]\
+    omop_procedure_occurrence_df: pd.DataFrame = procedure_df[['ID', 'OPS_CODE', 'PATIENT_ID', 'EXECUTION_DATE']] \
         .copy(deep=True)
     # Rename columns to target values
     omop_procedure_occurrence_df.columns = ['procedure_occurrence_id',
@@ -163,15 +163,23 @@ def generate_measurement_table(lab_df: pd.DataFrame, loader: DBManager) -> pd.Da
     # Copy values from original dataframe to omop compliant version
     omop_measurement_df: pd.DataFrame = lab_df[['IDENTIFIER', 'PARAMETER_NAME', 'PARAMETER_LOINC',
                                                 'Patientidentifikator', 'TEST_DATE', 'NUMERIC_VALUE',
-                                                'UCUM_UNIT']].copy(deep=True)
+                                                'UCUM_UNIT', 'IS_NORMAL', 'DEVIATION']].copy(deep=True)
     # Get Patient-ID from Patientidentifikator
     for index, row in omop_measurement_df.iterrows():
         patientidentifikator: str = row['Patientidentifikator']
         patientidentifikator = patientidentifikator[-4:]
         omop_measurement_df.at[index, 'Patientidentifikator'] = int(patientidentifikator)
+
+    # Translate IS_NORMAL and DEVIATION values to value_as_concept_id and delete old columns
+    # 4124457 = normal range, 4328749 = high, 4267416 = low
+    omop_measurement_df['value_as_concept_id'] = np.where(omop_measurement_df['IS_NORMAL'] == 1, 4124457,
+                                                          np.where(omop_measurement_df['DEVIATION'] == "+", 4328749,
+                                                                   4267416))
+    omop_measurement_df.drop(columns=['IS_NORMAL', 'DEVIATION'], axis=1, inplace=True)
     # Rename columns to target values
     omop_measurement_df.columns = ['measurement_id', 'measurement_source_value', 'measurement_concept_id',
-                                   'person_id', 'measurement_date', 'value_as_number', 'unit_source_value']
+                                   'person_id', 'measurement_date', 'value_as_number', 'unit_source_value',
+                                   'value_as_concept_id']
     omop_measurement_df['measurement_datetime'] = omop_measurement_df['measurement_date']
     # Refactor measurement_date
     omop_measurement_df['measurement_date'] = pd.to_datetime(omop_measurement_df['measurement_date'],
@@ -184,44 +192,6 @@ def generate_measurement_table(lab_df: pd.DataFrame, loader: DBManager) -> pd.Da
     # 32817 EHR
     omop_measurement_df['measurement_type_concept_id'] = 32817
     return omop_measurement_df
-
-
-def generate_note_table(lab_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Generates an omop compliant version of the note table from a given lab table.
-
-    :param lab_df: the original version of the lab table
-    :return: an omop compliant version of a note table
-    """
-    # Remove all columns with no identifier
-    lab_df = lab_df.dropna(subset=['IDENTIFIER'])
-    # Change datatype of column ID to int
-    lab_df = lab_df.astype({'IDENTIFIER': int})
-    # Copy values from original dataframe to omop compliant version
-    omop_note_df: pd.DataFrame = lab_df[
-        ['IDENTIFIER', 'Patientidentifikator', 'TEST_DATE', 'NORMAL_VALUES', 'IS_NORMAL',
-         'DEVIATION']].copy(deep=True)
-    # Get Patient-ID from Patientidentifikator
-    for index, row in omop_note_df.iterrows():
-        patientidentifikator: str = row['Patientidentifikator']
-        patientidentifikator = patientidentifikator[-4:]
-        omop_note_df.at[index, 'Patientidentifikator'] = int(patientidentifikator)
-    # Combine NORMAL_VALUES and DEVIATION in one column and delete old ones
-    omop_note_df['note_text'] = "Normal_values: " + omop_note_df['NORMAL_VALUES'].astype(str) + " Deviation: " + \
-                                omop_note_df['DEVIATION'].astype(str)
-    omop_note_df.drop(columns=['NORMAL_VALUES', 'DEVIATION'], axis=1, inplace=True)
-    # Rename columns to target values
-    omop_note_df.columns = ['note_id', 'person_id', 'note_date', 'note_title', 'note_text']
-    # Refactor note_date
-    omop_note_df['note_date'] = pd.to_datetime(omop_note_df['note_date'],
-                                               format='%Y-%m-%d').dt.date
-    # Add values for required fields
-    # 4180186 english language, 32831 EHR note
-    omop_note_df['language_concept_id'] = 4180186
-    omop_note_df['encoding_concept_id'] = 1  # random value
-    omop_note_df['note_type_concept_id'] = 32831
-    omop_note_df['note_class_concept_id'] = 1  # random value
-    return omop_note_df
 
 
 def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: DBManager) -> pd.DataFrame:

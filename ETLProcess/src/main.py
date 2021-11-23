@@ -176,7 +176,6 @@ def run_etl_job(csv_dir: str, db_config: DbConfig):
     omop_visit_occurrence_df: pd.DataFrame = transform.generate_visit_occurrence_table(case_df)
     omop_procedure_occurrence_df: pd.DataFrame = transform.generate_procedure_occurrence_table(procedure_df, loader)
     omop_measurement_df: pd.DataFrame = transform.generate_measurement_table(lab_df, loader)
-    omop_note_df: pd.DataFrame = transform.generate_note_table(lab_df)
     omop_condition_occurrence_df: pd.DataFrame = transform.generate_condition_occurrence_table(diagnosis_df, loader)
     logging.info("Transformations finished.")
 
@@ -189,7 +188,6 @@ def run_etl_job(csv_dir: str, db_config: DbConfig):
     loader.save(OmopTableEnum.VISIT_OCCURRENCE, omop_visit_occurrence_df)
     loader.save(OmopTableEnum.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
     loader.save(OmopTableEnum.MEASUREMENT, omop_measurement_df)
-    loader.save(OmopTableEnum.NOTE, omop_note_df)
     loader.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
     logging.info("Done loading omop tables into the database.")
 
