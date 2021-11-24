@@ -134,7 +134,7 @@ class DBManager:
         query = f"INSERT INTO {table.value}({cols}) VALUES({','.join(['%s'] * len(df.columns))})"
         self._fire_query(query, tuples)
 
-    def get_snomed_id(self, code, vocabulary_id: str) -> int:
+    def get_snomed_id(self, code: str, vocabulary_id: str) -> int:
         """
         Gets the Id of a SNOMED-Concept which represents the given non-standard code. The code can be for example an
         ICD-10GM or OPS code.
@@ -142,6 +142,9 @@ class DBManager:
         :param code: the given non-standard code
         :return: the corresponding SNOMED-Id or 0 if there is no mapping for the given code
         """
+        # Remove trailing !/+ characters, because they are not included in OMOP concepts
+        code = code.rstrip("!+")
+
         cursor = self.conn.cursor()
         cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")
         try:

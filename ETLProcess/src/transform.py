@@ -111,9 +111,10 @@ def generate_visit_occurrence_table(case_df: pd.DataFrame) -> pd.DataFrame:
         omop_visit_occurrence_df.at[index, 'visit_occurrence_id'] = index + 1
 
     # Add values for visit_concept_id and visit_type_concept_id
-    # 32209 unknown value, 32817 EHR
-    omop_visit_occurrence_df['visit_concept_id'] = 32209
-    omop_visit_occurrence_df['visit_type_concept_id'] = 32817
+    # Concept 38004515 Hospital
+    # Concept 44818518 Visit derived from EHR record
+    omop_visit_occurrence_df['visit_concept_id'] = 38004515
+    omop_visit_occurrence_df['visit_type_concept_id'] = 44818518
     return omop_visit_occurrence_df
 
 
@@ -189,8 +190,8 @@ def generate_measurement_table(lab_df: pd.DataFrame, loader: DBManager) -> pd.Da
                                                      lab_df['PARAMETER_LOINC']]
 
     # Add value for measurement_concept_type_id
-    # 32817 EHR
-    omop_measurement_df['measurement_type_concept_id'] = 32817
+    # 32856 Lab
+    omop_measurement_df['measurement_type_concept_id'] = 32856
     return omop_measurement_df
 
 
@@ -203,26 +204,43 @@ def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: DBMa
     :return: an omop compliant version of a condition_occurrence table
     """
     # Remove all columns with no admission date
-    diagnosis_df = diagnosis_df.dropna(subset=['ADMISSION_DATE'])
-    # Copy values from original dataframe to omop compliant version
-    omop_condition_occurrence: pd.DataFrame = diagnosis_df[['PROVIDER_ID', 'PATIENT_ID', 'ADMISSION_DATE',
-                                                            'ICD_PRIMARY_CODE', 'ICD_SECONDARY_CODE']].copy(deep=True)
+    diagnosis_df.dropna(subset=['ADMISSION_DATE'], inplace=True)
 
+    # Create table containing primary ICD Codes
+    primary_condition_df = diagnosis_df[
+        ['PROVIDER_ID', 'PATIENT_ID', 'ADMISSION_DATE', 'ICD_PRIMARY_CODE']].copy(deep=True)
+    # Rename columns
+    primary_condition_df.columns = ['provider_id', 'person_id', 'condition_start_date', 'condition_source_value']
+    # Set Type-Concept-Id to 44786627 Concept code for 'Primary Condition'
+    primary_condition_df['condition_type_concept_id'] = 44786627
+
+    # Create table containing secondary ICD Codes
+    secondary_condition_df = diagnosis_df[
+        ['PROVIDER_ID', 'PATIENT_ID', 'ADMISSION_DATE', 'ICD_SECONDARY_CODE']].copy(deep=True)
+    # Drop rows where the secondary code ist either null or '-'
+    secondary_condition_df.dropna(subset=['ICD_SECONDARY_CODE'], inplace=True)
+    secondary_condition_df = secondary_condition_df[secondary_condition_df['ICD_SECONDARY_CODE'] != "-"]
+    # Rename columns
+    secondary_condition_df.columns = ['provider_id', 'person_id', 'condition_start_date', 'condition_source_value']
+    # Set Type-Concept-Id to 44786629 Concept code for 'Secondary Condition'
+    secondary_condition_df['condition_type_concept_id'] = 44786629
+
+    # Append primary and secondary ICD code tables
+    omop_condition_occurrence: pd.DataFrame = pd.concat([primary_condition_df, secondary_condition_df],
+                                                        ignore_index=True)
+
+    # Get Snomed Ids for ICD 10 GM codes
     omop_condition_occurrence['condition_concept_id'] = [loader.get_snomed_id(icd, 'ICD10GM') for icd in
-                                                         diagnosis_df['ICD_PRIMARY_CODE']]
-    omop_condition_occurrence.drop(columns=['ICD_PRIMARY_CODE', 'ICD_SECONDARY_CODE'], axis=1, inplace=True)
-    # Rename columns to target values
-    omop_condition_occurrence.columns = ['provider_id', 'person_id', 'condition_start_date', 'condition_concept_id']
+                                                         omop_condition_occurrence['condition_source_value']]
+
     # Refactor condition_start_date
     omop_condition_occurrence['condition_start_date'] = pd.to_datetime(
         omop_condition_occurrence['condition_start_date'],
         format='%d.%m.%Y')
+
     # Generate condition_occurrence_id
     for index, row in omop_condition_occurrence.iterrows():
         omop_condition_occurrence.at[index, 'condition_occurrence_id'] = index + 1
-    # Add value for condition_type_concept_id
-    # 32817 EHR
-    omop_condition_occurrence['condition_type_concept_id'] = 32817
-    omop_condition_occurrence['condition_source_value'] = diagnosis_df['ICD_PRIMARY_CODE']
-    omop_condition_occurrence.dropna()
+
+    omop_condition_occurrence.dropna(inplace=True)
     return omop_condition_occurrence
