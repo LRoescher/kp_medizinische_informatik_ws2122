@@ -1,0 +1,118 @@
+<h2>Table name: condition_occurrence</h2>
+
+<h3>Reading from diagnosis.csv</h3>
+
+<img src="html_files/image6.png" alt="Field mapping">
+
+<table>
+	<tr>
+		<th>Destination Field</th>
+		<th>Source field</th>
+		<th>Logic</th>
+		<th>Comment field</th>
+	</tr>
+	<tr>
+		<td>person_id</td>
+		<td>patient_id</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>provider_id</td>
+		<td>provider_id</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>condition_source_value</td>
+		<td>icd_primary_code<br>icd_secondary_code</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>condition_concept_id</td>
+		<td>icd_primary_code<br>icd_secondary_code</td>
+		<td></td>
+		<td>Get from condition concept_id as concept_id_1
+WHERE concept_code = icd-primary_code
+AND
+WHERE VocabularyId = "ICD10GM"
+
+concept_relationship = „Maps to“
+condition_concept_id (SNOMED) = concept_id2<br><br></td>
+	</tr>
+	<tr>
+		<td>condition_type_concept_id</td>
+		<td>diagnosis_type</td>
+		<td></td>
+		<td>HD -> 44786627 Primary condition
+ND -> 44786629 Secondary condition</td>
+	</tr>
+	<tr>
+		<td>condition_start_date</td>
+		<td>admission_date</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>condition_start_datetime</td>
+		<td>admission_date</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>condition_occurrence_id</td>
+		<td></td>
+		<td></td>
+		<td>Auto generate UNIQUE</td>
+	</tr>
+	<tr>
+		<td>condition_status_concept_id</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>condition_source_concept_id</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>condition_end_date</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>condition_end_datetime</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>stop_reason</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>visit_occurrence_id</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>visit_detail_id</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>condition_status_source_value</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+</table>
+
