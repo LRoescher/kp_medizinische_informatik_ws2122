@@ -1,0 +1,36 @@
+@use '../Function/str'
+@use "sass:map"
+
+@mixin grid_table($num_columns, $table_border: ("color": black, "style": none, "width": 0))
+
+    .grid_table
+        display: grid
+        grid-template-columns: #{str.multiply("auto ", $num_columns, true)}
+        grid-auto-rows: max-content
+
+    .grid_table_head_entry
+        text-align: center
+        font-size: 1.5em
+
+        border-bottom-style: map.get($table_border, "style")
+        border-bottom-color: map.get($table_border, "color")
+        border-bottom-width: map.get($table_border, "width")
+
+        border-right-style: map.get($table_border, "style")
+        border-right-color: map.get($table_border, "color")
+        border-right-width: map.get($table_border, "width")
+
+    .grid_table_head_entry:nth-child(#{$num_columns}n)
+        border-right-style: none
+
+    .grid_table_entry
+        padding-top: 2%
+        padding-left: 2%
+        padding-right: 2%
+
+        border-right-style: map.get($table_border, "style")
+        border-right-color: map.get($table_border, "color")
+        border-right-width: map.get($table_border, "width")
+
+    .grid_table_entry:nth-child(#{$num_columns}n)
+        border-right-style: none

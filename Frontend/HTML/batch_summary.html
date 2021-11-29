@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../CSS/batch_summary.css">
+</head>
+<body>
+
+    <div id="two_elements_menu" class="menu">
+        <div class="menu_hm">
+            <button class="menu_btn" onclick="window.location.href='main.html';">Zum Hauptmenü</button>
+        </div>
+        <div class="menu_hl">Entscheidungsunterstützung</div>
+        <div class="menu_res">
+<!--            <button class="menu_btn" onclick="window.location.href='batch_summary.html';">Zur Auswertung</button>-->
+        </div>
+    </div>
+
+    <div id="two_elements_content">
+        <div class="disclaimer">DISCLAIMER</div>
+        <div class="description">DESCRIPTION</div>
+
+        <div class="grid_table">
+            <div class="grid_table_head_entry">Patientenname</div>
+            <div class="grid_table_head_entry">Kawasaki</div>
+            <div class="grid_table_head_entry">PIMS</div>
+
+            <div class="grid_table_entry" onclick="window.location.href='ALICE/person_data.html';">ALICE</div>
+            <div class="grid_table_entry danger_is_low" onclick="window.location.href='ALICE/result_k.html';">gering</div>
+            <div class="grid_table_entry danger_is_low" onclick="window.location.href='ALICE/result_p.html';">gering</div>
+
+            <div class="grid_table_entry" onclick="window.location.href='BOB/person_data.html';">BOB</div>
+            <div class="grid_table_entry danger_is_low" onclick="window.location.href='BOB/result_k.html';">gering</div>
+            <div class="grid_table_entry danger_is_low" onclick="window.location.href='BOB/result_p.html';">gering</div>
+
+            <div class="grid_table_entry" onclick="window.location.href='EVE/person_data.html';">EVE</div>
+            <div class="grid_table_entry danger_is_low" onclick="window.location.href='EVE/result_k.html';">gering</div>
+            <div class="grid_table_entry danger_is_high" onclick="window.location.href='EVE/result_p.html';">hoch</div>
+
+            <div class="grid_table_entry" onclick="window.location.href='MALLOC/person_data.html';">MALLOC</div>
+            <div class="grid_table_entry danger_is_middle" onclick="window.location.href='MALLOC/result_k.html';">mittel</div>
+            <div class="grid_table_entry danger_is_middle" onclick="window.location.href='MALLOC/result_p.html';">mittel</div>
+
+        </div>
+    </div>
+</body>
+</html>
