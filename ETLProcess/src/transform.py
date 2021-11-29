@@ -206,29 +206,34 @@ def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: DBMa
     # Remove all columns with no admission date
     diagnosis_df.dropna(subset=['ADMISSION_DATE'], inplace=True)
 
+    # Set Type-Concept-Id to 44786627 Concept code for 'Primary Condition' or 44786629 for 'Secondary Condition'
+    conditions = [
+        (diagnosis_df['DIAGNOSIS_TYPE'] == 'HD'),
+        (diagnosis_df['DIAGNOSIS_TYPE'] == 'ND')]
+    choices = [44786627, 44786629]
+    diagnosis_df['temp'] = np.select(conditions, choices, default=0)
+
     # Create table containing primary ICD Codes
     primary_condition_df = diagnosis_df[
-        ['PROVIDER_ID', 'PATIENT_ID', 'ADMISSION_DATE', 'ICD_PRIMARY_CODE']].copy(deep=True)
+        ['PROVIDER_ID', 'PATIENT_ID', 'ADMISSION_DATE', 'ICD_PRIMARY_CODE', 'temp']].copy(deep=True)
     # Rename columns
-    primary_condition_df.columns = ['provider_id', 'person_id', 'condition_start_date', 'condition_source_value']
-    # Set Type-Concept-Id to 44786627 Concept code for 'Primary Condition'
-    primary_condition_df['condition_type_concept_id'] = 44786627
+    primary_condition_df.columns = ['provider_id', 'person_id', 'condition_start_date', 'condition_source_value',
+                                    'condition_type_concept_id']
 
     # Create table containing secondary ICD Codes
     secondary_condition_df = diagnosis_df[
-        ['PROVIDER_ID', 'PATIENT_ID', 'ADMISSION_DATE', 'ICD_SECONDARY_CODE']].copy(deep=True)
+        ['PROVIDER_ID', 'PATIENT_ID', 'ADMISSION_DATE', 'ICD_SECONDARY_CODE', 'temp']].copy(deep=True)
     # Drop rows where the secondary code ist either null or '-'
     secondary_condition_df.dropna(subset=['ICD_SECONDARY_CODE'], inplace=True)
     secondary_condition_df = secondary_condition_df[secondary_condition_df['ICD_SECONDARY_CODE'] != "-"]
     # Rename columns
-    secondary_condition_df.columns = ['provider_id', 'person_id', 'condition_start_date', 'condition_source_value']
-    # Set Type-Concept-Id to 44786629 Concept code for 'Secondary Condition'
-    secondary_condition_df['condition_type_concept_id'] = 44786629
+    secondary_condition_df.columns = ['provider_id', 'person_id', 'condition_start_date', 'condition_source_value',
+                                      'condition_type_concept_id']
 
     # Append primary and secondary ICD code tables
     omop_condition_occurrence: pd.DataFrame = pd.concat([primary_condition_df, secondary_condition_df],
                                                         ignore_index=True)
-
+    
     # Get Snomed Ids for ICD 10 GM codes
     omop_condition_occurrence['condition_concept_id'] = [loader.get_snomed_id(icd, 'ICD10GM') for icd in
                                                          omop_condition_occurrence['condition_source_value']]
