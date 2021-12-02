@@ -11,26 +11,35 @@
         <div class="menu_hm">
             <button class="menu_btn" onclick="window.location.href='../main.html';">Zum Hauptmenü</button>
         </div>
-        <div class="menu_hl">Entscheidungsunterstützung</div>
+                <div>
+            <div class="menu_hl1">Entscheidungsunterstützung</div>
+            <div class="menu_hl2">Patientendaten - MALLOC</div>
+        </div>
         <div class="menu_res">
-            <button class="menu_btn" onclick="window.location.href='../batch_summary.html';">Zur Auswertung</button>
+            <button class="menu_btn" onclick="window.location.href='../batch_summary.html';">Zur Analyse</button>
         </div>
     </div>
 
     <div id="two_elements_content">
 
-        <div class="description">DESCRIPTION</div>
-
         <div class="grid_table">
             <div class="grid_table_entry">Name:</div>
-            <div class="grid_table_entry">MALLOC</div>
+            <div class="grid_table_entry"><input type="text" disabled value="MALLOC"></div>
 
             <div class="grid_table_entry">Alter:</div>
-            <div class="grid_table_entry">13</div>
+            <div class="grid_table_entry"><input type="number" disabled value="13"></div>
 
             <div class="grid_table_entry">Körpertempertur:</div>
             <div class="grid_table_entry"><input type="number" value="42">°C</div>
+
+            <div class="grid_table_entry">Bindehautentzündung:</div>
+            <div class="grid_table_entry"><input type="checkbox" checked></div>
+
+            <div class="grid_table_entry">COVID-19:</div>
+            <div class="grid_table_entry"><input type="checkbox"></div>
+
         </div>
+        <div id="save"><button>Speichern</button></div>
     </div>
 </body>
 </html>
