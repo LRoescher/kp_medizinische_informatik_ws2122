@@ -1,0 +1,10 @@
+@use "sass:string"
+
+@function multiply($str, $num, $unquote: false)
+    $result: ""
+    @for $_ from 0 to $num
+        $result: $result + $str
+
+    @if $unquote
+        @return string.unquote($result)
+    @return $result

@@ -1,0 +1,11 @@
+@use 'Layout/two_elements/_top_bar'
+@use 'Widgets/_menu'
+@use 'Widgets/_grid_table' as grid_table
+@use 'Widgets/_text_box'
+
+@include grid_table.grid_table(1)
+
+.grid_table_entry button
+    width: 100%
+    height: 4em
+    font-size: 2em

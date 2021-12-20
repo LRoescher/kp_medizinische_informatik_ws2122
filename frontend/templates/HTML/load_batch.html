@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../CSS/load_batch.css">
+</head>
+<body>
+
+    <div id="two_elements_menu" class="menu">
+        <div class="menu_hm">
+            <button class="menu_btn" onclick="window.location.href='main.html';">Zum Hauptmenü</button>
+        </div>
+        <div>
+            <div class="menu_hl1">Entscheidungsunterstützung</div>
+            <div class="menu_hl2">Batch-Auswertung</div>
+        </div>
+        <div class="menu_res">
+            <button class="menu_btn" onclick="window.location.href='batch_summary.html';">Zur Analyse</button>
+        </div>
+    </div>
+
+    <div id="two_elements_content" class="grid_table">
+
+        <div class="grid_table_entry">./data/1.Bereitstellung Daten.zip</div>
+        <div class="grid_table_entry">SUCCESS</div>
+
+        <div class="grid_table_entry">./data/2.Bereitstellung Korrektur.tar</div>
+        <div class="grid_table_entry"><progress value="59" max="100"></progress></div>
+
+        <div class="grid_table_entry"></div>
+        <div class="grid_table_entry"><button>Upload</button></div>
+    </div>
+</body>
+</html>
