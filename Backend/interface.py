@@ -14,25 +14,28 @@ class Disease(Enum):
 
 class AnalysisData(TypedDict):
     """ Expected format for analysis data """
-    forename: str
-    surname: str
-    probability_pims: int
-    probability_kawasaki: int
+    name: str
+    probability_pims: float
+    probability_kawasaki: float
 
 
 class PatientData(TypedDict):
     """ Expected format for patient data """
-    forename: str
-    surname: str
-    # ToDo: Covid, Fieber, ..
+    id: int
+    age: int
+    name: str
+    hasCovid: bool
+    hasFever: bool
+    # ToDo: Covid, Fieber, restliche Symptome
 
 
 class DecisionReasons(TypedDict):
     """ Description of why this disease may have broken out """
     disease: Disease
-    probability: int
+    probability: float
     pro: List[str]  # strs have to be equal to PatientData
     con: List[str]  # strs have to be equal to PatientData
+
 
 
 class Interface(ABC):
