@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="../../CSS/person_data.css">
+    <link rel="stylesheet" href="../../static/CSS/person_data.css">
 </head>
 <body>
 
@@ -13,7 +13,7 @@
         </div>
         <div>
             <div class="menu_hl1">Entscheidungsunterstützung</div>
-            <div class="menu_hl2">Patientendaten - EVE</div>
+            <div class="menu_hl2">Patientendaten - ALICE</div>
         </div>
         <div class="menu_res">
             <button class="menu_btn" onclick="window.location.href='../batch_summary.html';">Zur Analyse</button>
@@ -24,21 +24,21 @@
 
         <div class="grid_table">
             <div class="grid_table_entry">Name:</div>
-            <div class="grid_table_entry"><input type="text" disabled value="EVE"></div>
+            <div class="grid_table_entry"><input type="text" disabled value="ALICE"></div>
 
             <div class="grid_table_entry">Alter:</div>
-            <div class="grid_table_entry"><input type="number" disabled value="6"></div>
+            <div class="grid_table_entry"><input type="number" disabled value="4"></div>
 
             <div class="grid_table_entry">Körpertempertur:</div>
-            <div class="grid_table_entry"><input type="number" value="42">°C</div>
+            <div class="grid_table_entry"><input type="number" value="37">°C</div>
 
             <div class="grid_table_entry">Bindehautentzündung:</div>
-            <div class="grid_table_entry"><input type="checkbox" checked></div>
+            <div class="grid_table_entry"><input type="checkbox"></div>
 
             <div class="grid_table_entry">COVID-19:</div>
-            <div class="grid_table_entry"><input type="checkbox" checked></div>
-
+            <div class="grid_table_entry"><input type="checkbox"></div>
         </div>
+        <div id="save"><button>Speichern</button></div>
     </div>
 </body>
 </html>
