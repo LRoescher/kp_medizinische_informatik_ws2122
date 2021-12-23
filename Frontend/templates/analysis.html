@@ -9,8 +9,23 @@
     Analyse
 {% endblock %}
 
+
+{% macro grid_table_entry(probability) %}
+
+    {% if probability <= 0.3 %}
+        {% set danger = 'danger_is_low' %}
+    {% elif probability <= 0.6 %}
+        {% set danger = 'danger_is_middle' %}
+    {% else %}
+        {% set danger = 'danger_is_high' %}
+    {% endif %}
+
+    <div class="grid_table_entry {{danger}}">{{(probability * 100) | round(2)}}%</div>
+
+{% endmacro %}
+
 {% block content %}
-    <div class="disclaimer">Hier könnten Sie über Ihren Haftungsauschluss informieren.</div>
+    <div class="disclaimer">Hier könnten Sie über Ihren Haftungsauschluss informieren. </div>
 
     <div class="grid_table">
 
@@ -19,29 +34,16 @@
         <div class="grid_table_head_entry">PIMS</div>
 
         {% for patient_id, patient_analysis in analysis_data.items() %}
-            <a href="{{url_for('get_patient_data', patient_id=patient_id)}}">
-                <div class="grid_table_entry" onclick="window.location.href='ALICE/person_data.html';">ALICE</div>
+            <a href="{{url_for('get_person_data', patient_id=patient_id)}}">
+                <div class="grid_table_entry">{{patient_analysis.name}}</div>
             </a>
-            <a><div class="grid_table_entry danger_is_low" onclick="window.location.href='ALICE/result_k.html';">gering</div></a>
-            <a><div class="grid_table_entry danger_is_low" onclick="window.location.href='ALICE/result_p.html';">gering</div></a>
+            <a href="{{url_for('result_kawasaki', patient_id=patient_id)}}">
+                {{ grid_table_entry(patient_analysis.probability_kawasaki) }}
+            </a>
+            <a href="{{url_for('result_pims', patient_id=patient_id)}}">
+                {{ grid_table_entry(patient_analysis.probability_pims) }}
+            </a>
         {% endfor %}
-
-
-        <a><div class="grid_table_entry" onclick="window.location.href='ALICE/person_data.html';">ALICE</div></a>
-        <a><div class="grid_table_entry danger_is_low" onclick="window.location.href='ALICE/result_k.html';">gering</div></a>
-        <a><div class="grid_table_entry danger_is_low" onclick="window.location.href='ALICE/result_p.html';">gering</div></a>
-
-        <a><div class="grid_table_entry" onclick="window.location.href='BOB/person_data.html';">BOB</div></a>
-        <a><div class="grid_table_entry danger_is_low" onclick="window.location.href='BOB/result_k.html';">gering</div></a>
-        <a><div class="grid_table_entry danger_is_low" onclick="window.location.href='BOB/result_p.html';">gering</div></a>
-
-        <a><div class="grid_table_entry" onclick="window.location.href='EVE/person_data.html';">EVE</div></a>
-        <a><div class="grid_table_entry danger_is_low" onclick="window.location.href='EVE/result_k.html';">gering</div></a>
-        <a><div class="grid_table_entry danger_is_high" onclick="window.location.href='EVE/result_p.html';">hoch</div></a>
-
-        <a><div class="grid_table_entry" onclick="window.location.href='MALLOC/person_data.html';">MALLOC</div></a>
-        <a><div class="grid_table_entry danger_is_middle" onclick="window.location.href='MALLOC/result_k.html';">mittel</div></a>
-        <a><div class="grid_table_entry danger_is_middle" onclick="window.location.href='MALLOC/result_p.html';">mittel</div></a>
 
     </div>
 {% endblock %}
