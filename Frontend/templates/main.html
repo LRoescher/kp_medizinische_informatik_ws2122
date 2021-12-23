@@ -1,0 +1,34 @@
+{% extends "Layout/two_elements.html" %}
+
+{% block stylesheets %}
+    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/main.css') }}">
+{% endblock %}
+
+
+{% block title %}
+    Startseite
+{% endblock %}
+
+{% block content %}
+    <div class="grid_table_entry disclaimer">Dies ist nur in Mock-up. Alle Seiten sind statisch, das heißt jegliche
+        Eingaben haben keinerlei Auswirkungen. Die hier gezeigten Funktionalitäten sind teilweise kontextabhängig,
+        ein Fakt der im Rahmen dieses Mock-up nicht beachtet wird. Beispielsweise wird es nur <strong>einmalig</strong>
+        möglich sein eine Batch-Datensatz hochzuladen. Im Anschluss ist es dann nur noch möglich einzelne Patienten
+        Hinzuzufügen.
+    </div>
+    <div class="grid_table_entry">
+        <button onclick="window.location.href='/person_data.html';">
+            Einzelner Patient
+        </button>
+    </div>
+    <div class="grid_table_entry">
+        <button onclick="window.location.href='/load_batch.html';">
+            Batch-Auswertung
+        </button>
+    </div>
+    <div class="grid_table_entry">
+        <button>
+            Datenbank zurücksetzen
+        </button>
+    </div>
+{% endblock %}
