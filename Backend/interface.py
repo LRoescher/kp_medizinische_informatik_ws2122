@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Iterator, TypedDict, List, TypeAlias, Dict
+from typing import Iterator, TypedDict, List, Dict, NewType
 from enum import Enum
 import os
 
-PatientId: TypeAlias = int
+PatientId = NewType("PatientId", int)
 
 
 class Disease(Enum):
@@ -91,8 +91,8 @@ class Interface(ABC):
         """
         pass
 
-    @abstractmethod
     @property
+    @abstractmethod
     def analysis_data(self) -> Dict[PatientId, AnalysisData]:
         """
         Patient analysis for kawasaki and pims
