@@ -1,7 +1,7 @@
-{% extends "Layout/two_elements_and_menu.html" %}
+{% extends "Layout/layout.html" %}
 
 {% block stylesheets %}
-    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/batch_summary.css') }}">
+    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/analysis.css') }}">
 {% endblock %}
 
 
@@ -34,13 +34,13 @@
         <div class="grid_table_head_entry">PIMS</div>
 
         {% for patient_id, patient_analysis in analysis_data.items() %}
-            <a href="{{url_for('get_person_data', patient_id=patient_id)}}">
+            <a href="{{url_for('person_data.get_patient_data', patient_id=patient_id)}}">
                 <div class="grid_table_entry">{{patient_analysis.name}}</div>
             </a>
-            <a href="{{url_for('result_kawasaki', patient_id=patient_id)}}">
+            <a href="{{url_for('.result_kawasaki', patient_id=patient_id)}}">
                 {{ grid_table_entry(patient_analysis.probability_kawasaki) }}
             </a>
-            <a href="{{url_for('result_pims', patient_id=patient_id)}}">
+            <a href="{{url_for('.result_pims', patient_id=patient_id)}}">
                 {{ grid_table_entry(patient_analysis.probability_pims) }}
             </a>
         {% endfor %}

@@ -1,4 +1,4 @@
-{% extends "Layout/two_elements_and_menu.html" %}
+{% extends "Layout/layout.html" %}
 
 {% block stylesheets %}
     <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/main.css') }}">
@@ -16,19 +16,18 @@
         möglich sein eine Batch-Datensatz hochzuladen. Im Anschluss ist es dann nur noch möglich einzelne Patienten
         Hinzuzufügen.
     </div>
-    <div class="grid_table_entry">
-        <button onclick="window.location.href='/person_data.html';">
+
+
+    <a href="{{ url_for('person_data.get_empty_patient_data') }}" class="btn grid_table_entry">
             Einzelner Patient
-        </button>
-    </div>
-    <div class="grid_table_entry">
-        <button onclick="window.location.href='/load_batch.html';">
+    </a>
+
+    <a {% if db_empty %} href="{{ url_for('main') }}" {% endif %} class="btn grid_table_entry {% if not db_empty %} disabled {% endif %}">
             Batch-Auswertung
-        </button>
-    </div>
-    <div class="grid_table_entry">
-        <button>
+    </a>
+    
+    <a {% if not db_empty %} href="{{ url_for('reset_db') }}" {% endif %} class="btn grid_table_entry {% if db_empty %} disabled {% endif %}">
             Datenbank zurücksetzen
-        </button>
-    </div>
+    </a>
+
 {% endblock %}

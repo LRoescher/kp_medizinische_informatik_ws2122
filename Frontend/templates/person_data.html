@@ -1,45 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="../static/CSS/person_data.css">
-</head>
-<body>
+{% extends "Layout/layout.html" %}
 
-    <div id="two_elements_menu" class="menu">
-        <div class="menu_hm">
-            <button class="menu_btn" onclick="window.location.href='/main.html';">Zum Hauptmenü</button>
-        </div>
-        <div>
-            <div class="menu_hl1">Entscheidungsunterstützung</div>
-            <div class="menu_hl2">Neuer Patient</div>
-        </div>
-        <div class="menu_res">
-            <button class="menu_btn" onclick="window.location.href='/batch_summary.html';">Zur Analyse</button>
-        </div>
-    </div>
+{% block stylesheets %}
+    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/person_data.css') }}">
+{% endblock %}
 
-    <div id="two_elements_content">
 
+{% block title %}
+    Patientendaten
+{% endblock %}
+
+{% block content %}
+    <form action="{% if patient_id is defined %} {{ url_for('.update_patient_data', patient_id=patient_id) }} {% else %} {{ url_for('.add_patient_data') }} {% endif %}"
+        method="post" autocomplete="on" 
+    >
         <div class="grid_table">
-            <div class="grid_table_entry">Name:</div>
-            <div class="grid_table_entry"><input type="text"></div>
+            {% for name, value in patient_data.items() %}
+                <div class="grid_table_entry"><label for="{{ name }}">{{ name }}:</label></div>
 
-            <div class="grid_table_entry">Alter:</div>
-            <div class="grid_table_entry"><input type="number" value="0"> Jahre</div>
+                {% if annotations[name] == str %}
+                    <div class="grid_table_entry"><input type="text" name="{{ name }}" value="{{ value }}"></div>
+                {% elif annotations[name] == bool %}
+                    <div class="grid_table_entry"><input type="checkbox" name="{{ name }}" {% if value %} checked {% endif %}></div>
+                {% elif annotations[name] == int %}
+                    <div class="grid_table_entry"><input type="number" name="{{ name }}" value="{{ value }}" step="1"></div>
+                {% elif annotations[name] == float %}
+                    <div class="grid_table_entry"><input type="number" name="{{ name }}" value="{{ value }}" step="0.1"></div>
+                {% endif %}
+            {% endfor %}
 
-            <div class="grid_table_entry">Körpertempertur:</div>
-            <div class="grid_table_entry"><input type="number" value="36">°C</div>
-
-            <div class="grid_table_entry">Bindehautentzündung:</div>
-            <div class="grid_table_entry"><input type="checkbox"></div>
-
-            <div class="grid_table_entry">COVID-19:</div>
-            <div class="grid_table_entry"><input type="checkbox"></div>
+            <div class="grid_table_entry"></div><div class="grid_table_entry"><input type="submit" value="Speichern"/></div>
         </div>
+    </form>
 
-        <div id="save"><button>Speichern</button></div>
-    </div>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,11 @@
+<div id="flash_messages">
+
+    {% for category, msg in get_flashed_messages(with_categories=True) %}
+
+        <div class="message_field {{ category }}">
+            {{ msg }}
+        </div>
+
+    {% endfor %}
+
+</div>

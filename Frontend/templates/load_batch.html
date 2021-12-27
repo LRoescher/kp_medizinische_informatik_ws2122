@@ -1,26 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="../static/CSS/load_batch.css">
-</head>
-<body>
+{% extends "Layout/layout.html" %}
 
-    <div id="two_elements_menu" class="menu">
-        <div class="menu_hm">
-            <button class="menu_btn" onclick="window.location.href='/main.html';">Zum Hauptmenü</button>
-        </div>
-        <div>
-            <div class="menu_hl1">Entscheidungsunterstützung</div>
-            <div class="menu_hl2">Batch-Auswertung</div>
-        </div>
-        <div class="menu_res">
-            <button class="menu_btn" onclick="window.location.href='/batch_summary.html';">Zur Analyse</button>
-        </div>
-    </div>
+{% block stylesheets %}
+    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/load_batch.css') }}">
+{% endblock %}
 
-    <div id="two_elements_content" class="grid_table">
+
+{% block title %}
+    Upload
+{% endblock %}
+
+{% block content %}
+    
+    <div class="grid_table">
 
         <div class="grid_table_entry">./data/1.Bereitstellung Daten.zip</div>
         <div class="grid_table_entry">SUCCESS</div>
@@ -31,5 +22,5 @@
         <div class="grid_table_entry"></div>
         <div class="grid_table_entry"><button>Upload</button></div>
     </div>
-</body>
-</html>
+
+{% endblock %}
