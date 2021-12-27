@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Iterator, TypedDict, List, Dict, NewType
+from typing import Iterator, TypedDict, List, Dict, NewType, Optional
 from enum import Enum
+from Backend.Singleton import Singleton
 import os
 
 PatientId = NewType("PatientId", int)
@@ -21,7 +22,6 @@ class AnalysisData(TypedDict):
 
 class PatientData(TypedDict):
     """ Expected format for patient data """
-    id: int
     age: int
     name: str
     hasCovid: bool
@@ -37,8 +37,7 @@ class DecisionReasons(TypedDict):
     con: List[str]  # strs have to be equal to PatientData
 
 
-
-class Interface(ABC):
+class Interface(Singleton, ABC):
 
     @abstractmethod
     def is_db_empty(self) -> bool:
@@ -59,7 +58,7 @@ class Interface(ABC):
         pass
 
     @abstractmethod
-    def add_patient(self, patient_data: PatientData) -> bool:
+    def add_patient(self, patient_data: PatientData) -> Optional[PatientId]:
         """
         Add a new patient to the db
 
