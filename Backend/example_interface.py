@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Iterator
+from typing import Dict, Iterator, Optional
 
 from Backend.interface import PatientId, Disease, DecisionReasons, PatientData, AnalysisData, Interface
 from time import sleep
@@ -12,8 +12,8 @@ class Example(Interface):
     def reset_db(self) -> bool:
         return True
 
-    def add_patient(self, patient_data: PatientData) -> bool:
-        return True
+    def add_patient(self, patient_data: PatientData) -> Optional[PatientId]:
+        return PatientId(1)
 
     def update_patient(self, patient_id: PatientId, patient_data: PatientData) -> bool:
         return True
