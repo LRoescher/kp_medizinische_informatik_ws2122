@@ -3,6 +3,20 @@ import datetime
 
 class Patient:
 
+    younger_than_eight: str: "0-7 Jahre alt"
+    younger_than_twenty: str: "0-7 Jahre alt"
+    fever: str = "Fieber"
+    exanthem: str = "Exanthem"
+    enanthem: str = "Entzündung von Mund oder Zunge"
+    swollen_extremities: str = "Geschwollene Extremitäten"
+    conjuncitivitis: str = "Konjunktivitis"
+    lymphadenopathy: str = "Lymphadenopathie"
+    cardial_component: str = "Kardiale Erkrankung"
+    gastro_intestinal_component: str = "Übelkeit, Erbrechen, Bauchschmerzen und/oder Durchfall"
+    inflammation_lab: str = "Entzündungsparameter im Blut"
+    oedema: str = "Aszites, Pleuraergüsse oder Perikardergüsse"
+    covid: str = "Covid-19"
+
     def __init__(self, id, day, month, year):
         self.id = id
         self.day = day
@@ -11,6 +25,8 @@ class Patient:
         self.conditions = list()
         self.measurements = list()
         self.procedures = list()
+        self.reasons_for_kawasaki = list()
+        self.reasons_for_pims = list()
 
     def add_condition(self, condition):
         self.conditions.append(condition)
@@ -81,8 +97,11 @@ class Patient:
         return any(x in snomed_cor_ids for x in self.conditions)
 
     def has_gastro_intestinal_component(self):
-        # Todo Test auf Erbrechen, Übelkeit, Bauchschmerzen, Diarrhoe
-        return False
+        # Nausea and vomiting (ICD10GM R11 --> SNOMED-ID 27674)
+        # (lower) Abdominal Pain (ICD10GM R10.3, R10.4, R10 --> SNOMED-ID 4182562, 200219, 4116811)
+        # (Severe) Diarrhea (and vomiting) (SNOMED-ID 196523, 4091519, 4249551, 196151)
+        snomed_gastro_ids = [27674, 4182562, 200219, 4116811, 196523, 4091519, 4249551, 196151]
+        return any(x in snomed_gastro_ids for x in self.conditions)
 
     def has_inflammation_lab(self):
         # Todo Measurement-Auswertung nach zB CRP, BSG, etc
@@ -117,6 +136,7 @@ class Patient:
 
         if self.has_fever():
             score += 3
+            self.reasons_for_kawasaki.append(self.fever)
         if self.has_swollen_extremities():
             score += 1
         if self.has_conjunctivitis():
