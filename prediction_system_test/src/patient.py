@@ -29,7 +29,7 @@ class Patient:
     REASON_EFFUSION: str = "Flüssigkeitsansammlungen"
     REASON_COVID: str = "Covid-19 Erkrankung"
 
-    def __init__(self, patient_id, day, month, year):
+    def __init__(self, patient_id, day, month, year, name):
         """
         Creates a new patient.
 
@@ -37,14 +37,18 @@ class Patient:
         :param day: day of birth
         :param month: month of birth
         :param year: year of birth
+        :param name: name of the patient (firstname + lastname)
         """
         self.id = patient_id
         self.day = day
         self.month = month
         self.year = year
+        self.name = name
         self.conditions = list()
         self.high_measurements = list()
         self.procedures = list()
+        self.kawasaki_score = 0.0
+        self.pims_score = 0.0
         self.reasons_for_kawasaki = set()
         self.reasons_for_pims = set()
 
@@ -247,12 +251,11 @@ class Patient:
 
         # Return 0.0 if not in age range
         if self.calculate_age() > 8:
-            return 0.0
-
-        self.reasons_for_kawasaki.add(self.REASON_YOUNGER_THAN_EIGHT)
-        # Otherwise return calculated score
-        score, max_score = self.calculate_shared_score()
-        return score / max_score, self.reasons_for_kawasaki
+            self.kawasaki_score = 0.0
+        else:
+            self.reasons_for_kawasaki.add(self.REASON_YOUNGER_THAN_EIGHT)
+            score, max_score = self.calculate_shared_score()
+            self.kawasaki_score = score / max_score, self.reasons_for_kawasaki
 
     def calculate_shared_score(self) -> (float, float):
         """
@@ -310,12 +313,12 @@ class Patient:
         self.reasons_for_pims.clear()
 
         if not self.has_covid():
-            return 0.0
+            self.pims_score = 0.0
 
         self.reasons_for_pims.add(self.REASON_COVID)
 
         if not self.calculate_age() < 20:
-            return 0.0
+            self.pims_score = 0.0
 
         self.reasons_for_pims.add(self.REASON_YOUNGER_THAN_TWENTY)
 
@@ -330,4 +333,13 @@ class Patient:
             score += 0.5
             self.reasons_for_pims.add(self.REASON_EFFUSION)
 
-        return score / max_score, self.reasons_for_pims
+        self.pims_score = score / max_score
+
+    def get_patient_as_tuple(self):
+        """
+        Returns a tuple that represents the most important information about the patient. Contains the id, the name,
+        the kawasaki-score, reasons for that score, the pims-score and reasons for that score
+
+        :return: Tuple
+        """
+        return self.id, self.name, self.kawasaki_score, self.reasons_for_kawasaki, self.pims_score, self.reasons_for_pims

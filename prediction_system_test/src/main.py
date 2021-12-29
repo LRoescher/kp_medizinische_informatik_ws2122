@@ -143,7 +143,8 @@ def evaluate_patient(dbManager, patient_id):
     day = df.iloc[0]['day_of_birth']
     month = df.iloc[0]['month_of_birth']
     year = df.iloc[0]['year_of_birth']
-    patient = Patient(id, day, month, year)
+    name = df.iloc[0]['person_source_value']
+    patient = Patient(id, day, month, year, name)
 
     # Get all conditions for every patient
     query = f"SELECT * FROM cds_cdm.condition_occurrence WHERE person_id = {patient_id}"
@@ -161,10 +162,10 @@ def evaluate_patient(dbManager, patient_id):
     # For Kawasaki and PIMS only high lab results seem to be relevant for other diseases the concepts for
     # normal = 4124457 and low = 4267416 should be checked
 
-    evaluation_kawasaki = patient.calculate_kawasaki_score()
-    evaluation_pims = patient.calculate_pims_score()
+    patient.calculate_kawasaki_score()
+    patient.calculate_pims_score()
 
-    return evaluation_kawasaki, evaluation_pims
+    return patient.get_patient_as_tuple()
 
 
 def evaluate_patients(dbManager, patient_ids: list):
@@ -179,7 +180,7 @@ def evaluate_patients(dbManager, patient_ids: list):
     evaluations = list()
     for patient_id in patient_ids:
         result = evaluate_patient(dbManager, patient_id)
-        evaluations.append((patient_id, result))
+        evaluations.append(result)
     logging.info(f"Finished evaluating {len(patient_ids)} patients.")
     return evaluations
 
