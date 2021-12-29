@@ -64,6 +64,7 @@ class DBManager:
                 database=db_config["db_name"],
                 user=db_config["username"],
                 password=db_config["password"])
+            logging.info("Successfully connected to the database.")
         except (Exception, psycopg2.DatabaseError) as error:
             logging.exception("Failed to establish connection with the given parameters.")
             raise
