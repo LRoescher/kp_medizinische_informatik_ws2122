@@ -2,9 +2,9 @@ db_config:
   host: "localhost"
   port: "5310"
   db_name: "ohdsi"
-  username: "ohdsi_admin_user"
-  password: "admin1"
+  username: "postgres"
+  password: "postgres"
   db_schema: "cds_cdm"
 
 csv_dir: "../../data/2. Bereistellung Korrektur"
-log_level: 30 # WARNING
+log_level: 20 # WARNING
