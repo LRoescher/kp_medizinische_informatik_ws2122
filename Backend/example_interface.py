@@ -4,8 +4,23 @@ from typing import Dict, Iterator, Optional
 from Backend.interface import PatientId, Disease, DecisionReasons, PatientData, AnalysisData, Interface
 from time import sleep
 
+import random, string
+
 
 class Example(Interface):
+    def __init__(self):
+        self.__analyse_data = {}
+        self.__patient_data = {}
+        for i in range(0, 40):
+            name = ''.join(random.choice(string.ascii_letters) for x in range(random.randint(3, 10)))
+            self.__analyse_data[PatientId(i)] = AnalysisData(name=name,
+                                                             probability_pims=random.random(),
+                                                             probability_kawasaki=random.random())
+            self.__patient_data[PatientId(i)] = PatientData(age=random.randint(0, 110),
+                                                            name=name,
+                                                            hasFever=bool(random.randint(0, 1)),
+                                                            hasCovid=bool(random.randint(0, 1)))
+
     def is_db_empty(self) -> bool:
         return True
 
@@ -13,9 +28,14 @@ class Example(Interface):
         return True
 
     def add_patient(self, patient_data: PatientData) -> Optional[PatientId]:
-        return PatientId(1)
+        i = PatientId(len(self.__patient_data))
+        self.__patient_data[i] = patient_data
+        self.__analyse_data[i]["name"] = patient_data["name"]
+        return
 
     def update_patient(self, patient_id: PatientId, patient_data: PatientData) -> bool:
+        self.__patient_data[patient_id] = patient_data
+        self.__analyse_data[patient_id]["name"] = patient_data["name"]
         return True
 
     def upload_csv(self, csv_file: os.path) -> Iterator[int]:
@@ -42,20 +62,10 @@ class Example(Interface):
 
     @property
     def analysis_data(self) -> Dict[PatientId, AnalysisData]:
-        return {
-            PatientId(0): AnalysisData(name="ALICE", probability_pims=0.0, probability_kawasaki=0.0),
-            PatientId(1): AnalysisData(name="BOB", probability_pims=0.7, probability_kawasaki=0.4),
-            PatientId(2): AnalysisData(name="EVE", probability_pims=0.1, probability_kawasaki=0.27774563),
-            PatientId(3): AnalysisData(name="MALLOC", probability_pims=0.3, probability_kawasaki=0.9)
-        }
+        return self.__analyse_data
 
     def get_patient_data(self, patient_id: PatientId) -> PatientData:
-        return {
-            PatientId(0): PatientData(id=0, age=5, name="ALICE", hasCovid=False, hasFever=False),
-            PatientId(1): PatientData(id=1, age=5, name="BOB", hasCovid=False, hasFever=False),
-            PatientId(2): PatientData(id=2, age=5, name="EVE", hasCovid=False, hasFever=False),
-            PatientId(3): PatientData(id=3, age=5, name="MALLOC", hasCovid=False, hasFever=False)
-        }[patient_id]
+        return self.__patient_data[patient_id]
 
     def get_decision_reason(self, patient_id: PatientId, disease: Disease) -> DecisionReasons:
         # ToDo: extend
