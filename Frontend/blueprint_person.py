@@ -82,5 +82,5 @@ def update_patient_data(patient_id: PatientId):
         return redirect(url_for('.get_patient_data', patient_id=patient_id))
     else:
         flash(f"Updating Patient (id: {patient_id}) {patient_data['name']} failed.", FlashMessageTypes.FAILURE.value)
-        return  redirect(url_for(".get_patient_data", patient_id=patient_id))
+        return redirect(url_for(".get_patient_data", patient_id=patient_id))
 

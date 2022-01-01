@@ -13,6 +13,7 @@ def check_login():
         return None
 
     if "logged_in" not in session or not session["logged_in"]:
+        flash("Please login first.", FlashMessageTypes.FAILURE.value)
         return redirect(url_for("access_control.login"))
     else:
         session.modified = True

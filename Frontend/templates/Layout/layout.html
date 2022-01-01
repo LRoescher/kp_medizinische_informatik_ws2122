@@ -7,11 +7,6 @@
 
     <script src="{{ url_for('static', filename='JavaScript/JQuery.js') }}"></script>
     {% block java_script %}{% endblock %}
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $(".message_field").delay(400).slideDown("slow", "swing").delay(3000).fadeOut(1000, "swing");
-        });
-    </script>
     
     <title>{% block title required %}{% endblock %}</title>
     {% endblock %}

@@ -1,5 +1,11 @@
 <div id="flash_messages">
 
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(".message_field").delay(400).slideDown("slow", "swing").delay(3000).fadeOut(1000, "swing");
+        });
+    </script>
+
     {% for category, msg in get_flashed_messages(with_categories=True) %}
 
         <div class="message_field {{ category }}">

@@ -13,6 +13,8 @@ from Backend.example_interface import Example
 controller: Interface = Example()
 
 app = Flask(__name__, template_folder='./templates/')
+app.jinja_options["lstrip_blocks"] = True
+app.jinja_options["trim_blocks"] = True
 app.permanent_session_lifetime = timedelta(minutes=5)   # 5 min auto logout
 
 # blueprints
