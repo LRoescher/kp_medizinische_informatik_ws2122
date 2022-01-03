@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+    <meta charset="UTF-8">
+    {% block stylesheets %}{% endblock %}
+
+    <script src="{{ url_for('static', filename='JavaScript/JQuery.js') }}"></script>
+    {% block java_script %}{% endblock %}
+    
+    <title>{% block title required %}{% endblock %}</title>
+    {% endblock %}
+</head>
+<body>
+    <div id="two_elements_menu">
+        {% include 'Widgets/_menu.html' %}
+    </div>
+
+    <div id="two_elements_content">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% include 'Widgets/_flash_messages.html' %}
+
+
+</body>
+</html>

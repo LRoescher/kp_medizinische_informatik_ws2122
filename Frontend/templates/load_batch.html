@@ -1,0 +1,26 @@
+{% extends "Layout/layout.html" %}
+
+{% block stylesheets %}
+    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/load_batch.css') }}">
+{% endblock %}
+
+
+{% block title %}
+    Upload
+{% endblock %}
+
+{% block content %}
+    
+    <div class="grid_table">
+
+        <div class="grid_table_entry">./data/1.Bereitstellung Daten.zip</div>
+        <div class="grid_table_entry">SUCCESS</div>
+
+        <div class="grid_table_entry">./data/2.Bereitstellung Korrektur.tar</div>
+        <div class="grid_table_entry"><progress value="59" max="100"></progress></div>
+
+        <div class="grid_table_entry"></div>
+        <div class="grid_table_entry"><button>Upload</button></div>
+    </div>
+
+{% endblock %}

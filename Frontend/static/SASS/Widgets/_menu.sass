@@ -1,0 +1,49 @@
+@use './_button'
+
+%menu_entry
+    vertical-align: baseline
+    margin: 1%
+
+#menu
+    display: grid
+    grid-template-columns: 20% 60% 20%
+    background-color: lightblue
+
+.menu_hm
+    @extend %menu_entry
+    text-align: left
+    padding-left: 2%
+    background-color: lightblue
+
+.menu_hm:hover
+    background-color: blue
+    color: white
+    font-size: 1em
+
+.menu_hl1
+    font-size: 2.7em
+    text-align: center
+    padding-left: 5%
+    padding-right: 5%
+
+.menu_hl2
+    font-size: 1em
+    text-align: center
+    padding-left: 5%
+    padding-right: 5%
+
+
+.menu_res
+    @extend %menu_entry
+    text-align: right
+    padding-right: 2%
+    background-color: lightblue
+
+.menu_res:hover
+    background-color: blue
+    color: white
+    font-size: 1em
+
+.disabled
+    cursor: not-allowed
+    opacity: 0.5

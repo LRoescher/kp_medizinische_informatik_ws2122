@@ -1,0 +1,233 @@
+{% extends "Layout/layout.html" %}
+
+{% block stylesheets %}
+    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/analysis.css') }}">
+{% endblock %}
+
+{% macro grid_table_entry(probability) %}
+    {% if probability <= 0.3 %}
+        {% set danger = 'danger_is_low' %}
+    {% elif probability <= 0.6 %}
+        {% set danger = 'danger_is_middle' %}
+    {% else %}
+        {% set danger = 'danger_is_high' %}
+    {% endif %}
+    <div class="grid_table_entry {{danger}}">{{(probability * 100) | round(2)}}%</div>
+{% endmacro %}
+
+{% block java_script %}
+    <script type="text/javascript">
+
+        let master_table = [
+            {% for patient_id, patient_analysis in analysis_data.items() %}
+                {
+                    "name": "{{ patient_analysis.name }}",
+                    "prob_kawasaki": {{ patient_analysis.probability_kawasaki }},
+                    "prob_pims": {{ patient_analysis.probability_pims }},
+                    "html":
+                        `<a class="grid_table_link" href="{{url_for('person_data.get_patient_data', patient_id=patient_id)}}"><div class="grid_table_entry">HIGHLIGHTED_NAME</div></a>
+                        <a class="grid_table_link" href="{{url_for('.result_kawasaki', patient_id=patient_id)}}">{{grid_table_entry(patient_analysis.probability_kawasaki)}}</a>
+                        <a class="grid_table_link" href="{{url_for('.result_pims', patient_id=patient_id)}}">{{grid_table_entry(patient_analysis.probability_pims)}}</a>`
+                },
+            {% endfor %}
+        ]
+        var high_to_low = {
+            "name": false,
+            "kawasaki": true,
+            "pims": true
+        };
+        var search_text = ""
+
+        var order = "NKP"
+
+        $(document).ready(function(){
+
+            search_text = $("#searchbar")[0].value;
+            $("#searchbar").keyup(function(event){
+                search_text = event.target.value;
+                apply_changes(master_table, search_text, high_to_low, order);
+            });
+
+            order = $("#sort_order")[0].value;
+            $("#sort_order").click(function(event){
+                order = event.target.value;
+                apply_changes(master_table, search_text, high_to_low, order);
+            });
+
+
+            $(".grid_table_head_entry").click(function(event){
+                var triangle = event.target.firstChild;
+
+                switch(triangle.innerText.charCodeAt(0)){
+                    case 8710:
+                        // triangle up &#8710;
+                        triangle.innerHTML = "&#8711;";
+                        high_to_low[triangle.id] = true;
+                        break;
+                    case 8711:
+                        // triangle down &#8711;
+                        triangle.innerHTML = "&#8710;";
+                        high_to_low[triangle.id] = false;
+                        break;
+                }
+                apply_changes(master_table, search_text, high_to_low, order);
+            });
+            apply_changes(master_table, search_text, high_to_low, order);
+
+
+        });
+
+        /**
+        * called when sorting or searching
+        * @function apply_changes
+        * @param {Object[]} master_table - array containing a object which represents a column in the table 
+        * @param {String} search_text - the searched string
+        * @param {Object} high_to_low - order rows asc or desc
+        * @param {String} order - the rows will be sorted
+        */
+        function apply_changes(master_table, search_text, high_to_low, order){
+            let table = $.extend(true, [],master_table);
+            create_table(sort(search_and_highlight(table, search_text), high_to_low, order));
+        }
+
+        /**
+        * find the given search string in the names and highlight the found part
+        * @function search_and_highlight
+        * @param {Object[]} table - deep copy of the master-table
+        * @param {String} search_text - the user inserted
+        * @returns {Object[]} the highlighted and reduced table
+        */
+        function search_and_highlight(table, search_text){
+            if(search_text == ""){
+                for(element of table){
+                    element.html = element.html.replace("HIGHLIGHTED_NAME", element.name);
+                }
+            } else {
+
+                $.each(table, function(i, element){
+
+
+                    var name = element.name;
+                    var regex = new RegExp(`${search_text}`, "ig");
+                    matchs = new Set(name.match(regex));
+
+                    if(matchs.size > 0){
+                        name = name.replace(regex, `<span class="search_highlight">$&</span>`);
+                        table[i].html = element.html.replace("HIGHLIGHTED_NAME", name);
+                    } else {
+                        delete table[i];
+                    }
+
+                });
+                // remove deleted elements from array
+                table = $.grep(table,function(n){ return n == 0 || n });
+            }
+            return table
+        }
+
+        /**
+        * sort the table row by row
+        * @function sort
+        * @param {Object[]} table - deep copy of the master-table
+        * @param {Object} high_to_low - order rows asc or desc
+        * @param {String} order - the rows will be sorted
+        * @returns {Object[]} the sorted table
+        */
+        function sort(table, high_to_low, order){
+            for(element of order.split('').reverse()){
+                switch(element){
+                    case "N":
+                        // name
+                        element = "name";
+                        table.sort(name_filter);
+                        break;
+                    case "K":
+                        // kawasaki
+                        element = "kawasaki"
+                        table.sort(kawasaki_filter);
+                        break;
+                    case "P":
+                        // pims
+                        element = "pims"
+                        table.sort(pims_filter);
+                        break;
+                }
+                if(high_to_low[element]){
+                    table = table.reverse();    
+                }
+            }
+            return table
+        }
+
+        /**
+        * remove the old table entrys and add the new ones
+        * @function create_table
+        * @param {Object[]} table - deep copy of the master-table sorted and searched
+        */
+        function create_table(table){
+            $(".grid_table_link").remove();
+            for(element of table){
+                $(".grid_table").append(element.html);
+            }
+            
+        }
+
+        /**
+        * filter sorting the name row asc
+        * @function name_filter
+        */
+        function name_filter(el1, el2){
+            return el1.name.toString().localeCompare(el2.name.toString());
+        }
+
+        /**
+        * filter sorting the kawasaki row asc
+        * @function kawasaki_filter
+        */
+        function kawasaki_filter(el1, el2){
+            return el1.prob_kawasaki - el2.prob_kawasaki;
+        }
+
+        /**
+        * filter sorting the pims row asc
+        * @function pims_filter
+        */
+        function pims_filter(el1, el2){
+            return el1.prob_pims - el2.prob_pims;
+
+        }
+    </script>
+{% endblock %}
+
+
+{% block title %}
+    Analyse
+{% endblock %}
+
+
+
+
+{% block content %}
+    <div class="disclaimer">Hier könnten Sie über Ihren Haftungsauschluss informieren. </div>
+
+    <div id="filter">
+        <input id="searchbar" type="text" placeholder="suchen .. "/>
+        <select id="sort_order">
+            <option value="NKP">Patientenname - Kawasaki - Pims</option>
+            <option value="NPK">Patientenname - Pims - Kawasaki</option>
+            <option value="PKN">Pims - Kawasaki - Patientenname</option>
+            <option value="PNK">Pims - Patientenname - Kawasaki</option>
+            <option value="KNP">Kawasaki - Patientenname - Pims</option>
+            <option value="KPN">Kawasaki - Pims - Patientenname</option>
+        </select>
+    </div>
+
+    <div class="grid_table">
+
+        <div class="grid_table_head_entry"><span id="name" class="triangle">&#8710;</span> Patientenname</div>
+        <div class="grid_table_head_entry"><span id="kawasaki" class="triangle">&#8711;</span> Kawasaki</div>
+        <div class="grid_table_head_entry"><span id="pims" class="triangle">&#8711;</span> PIMS</div>
+
+    </div>
+{% endblock %}
+

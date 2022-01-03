@@ -1,0 +1,42 @@
+{% extends "Layout/layout.html" %}
+
+{% block stylesheets %}
+    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/result.css') }}">
+{% endblock %}
+
+
+{% block title %}
+    result
+{% endblock %}
+
+{% block content %}
+    <div class="disclaimer">Hier könnten Sie über Ihren Haftungsauschluss informieren.</div>
+    <div class="description">
+        <h1>Begründung der Entscheidung zu Kawasaki</h1>
+        Im folgenden finden Sie eine Aufschlüsselung der Parametern auf welchen dieses System seine Entscheidung
+        getroffen hat. Im weiteren könnte Sie dieser Text darüber informieren was
+        <a href="https://www.letmegooglethat.com/?q=Kawasaki+Krankheit">Kawasaki</a> ist.
+    </div>
+
+    <div id="result" class="danger_is_low">
+        Die Wahrscheinlichkeit das der Patient(<strong>ALICE</strong>) an Kawasaki leidet ist <strong>gering</strong>.
+    </div>
+
+    <div class="grid_table">
+        <div class="grid_table_head_entry">Spricht für eine Erkrankung</div>
+        <div class="grid_table_head_entry">nicht nachgewiesene Symptome</div>
+        <div class="grid_table_head_entry">Spricht gegen eine Erkrankung</div>
+
+        <div class="grid_table_entry">Körpertemperatur</div>
+        <div class="grid_table_entry"></div>
+        <div class="grid_table_entry"></div>
+
+    </div>
+
+<div class="description">
+    <h3>Standardbehandlung</h3>
+    Im Allgemeinen erfolgt die Behandlung mit der intravenösen Gabe von Immunglobulinen.
+
+</div>
+
+{% endblock %}

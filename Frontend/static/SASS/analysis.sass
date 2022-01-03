@@ -1,0 +1,30 @@
+@use 'Layout/layout'
+@use 'Widgets/_grid_table' as grid_table
+
+@include grid_table.grid_table(3, ("style": solid, "color": lightgrey, "width": 1px))
+
+.grid_table_head_entry:hover
+    background: lightgrey
+    border: solid 2px wite
+
+.triangle
+    pointer-events: none
+    text-align: center
+    vertical-align: middle
+    font-size: 50%
+
+.grid_table_entry:hover
+    border: solid 2px lightgrey
+
+.grid_table_entry:nth-child(3n+2)
+    text-align: center
+
+.grid_table_entry:nth-child(3n)
+    text-align: center
+
+.search_highlight
+    background: lightgrey
+
+a
+    text-decoration: none
+    color: black

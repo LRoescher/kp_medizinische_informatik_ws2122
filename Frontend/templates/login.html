@@ -1,0 +1,27 @@
+{% extends "Layout/layout.html" %}
+
+{% block stylesheets %}
+    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/login.css') }}">
+{% endblock %}
+
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block content %}
+  <form action="/login" method="post">
+    <div class="grid_table">
+      
+      <div class="grid_table_entry"><label for="username">Benutzername:</label></div>
+      <div class="grid_table_entry"><input type="username" name="username" placeholder="Benutzername"></div>
+
+      <div class="grid_table_entry"><label for="password">Passwort:</label></div>
+      <div class="grid_table_entry"><input type="password" name="password" placeholder="Passwort"></div>
+
+      <div class="grid_table_entry"></div><div class="grid_table_entry"><input type="submit" value="Login"></div>
+    </div>
+  </form>
+
+{% endblock %}
+
