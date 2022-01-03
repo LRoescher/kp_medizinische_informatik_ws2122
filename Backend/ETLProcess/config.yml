@@ -7,4 +7,4 @@ db_config:
   db_schema: "cds_cdm"
 
 csv_dir: "../../data/2. Bereistellung Korrektur"
-log_level: 20 # WARNING
+log_level: 20 # INFO

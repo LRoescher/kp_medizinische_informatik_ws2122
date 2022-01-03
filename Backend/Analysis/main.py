@@ -6,7 +6,7 @@ from database import DBManager, DbConfig
 # type hints
 from typing import Tuple, Optional, Dict
 
-from src.patient import Patient
+from patient import Patient
 
 
 def generate_config() -> Tuple[DbConfig]:
