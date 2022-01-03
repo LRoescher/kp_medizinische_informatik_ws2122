@@ -76,11 +76,11 @@ def generate_person_table(person_df: pd.DataFrame) -> pd.DataFrame:
     """
     omop_person_df: pd.DataFrame = person_df[['PROVIDER_ID', 'PATIENT_ID', 'GENDER', 'BIRTHDATE']].copy(deep=True)
     # Rename columns to source values
-    omop_person_df.columns = ['provider_id', 'person_source_value', 'gender_source_value', 'birth_datetime']
+    omop_person_df.columns = ['provider_id', 'person_id', 'gender_source_value', 'birth_datetime']
     # Refactor birth_datetime
     # Add column for person_id, year/month/day_of_birth, gender_concept id
-    omop_person_df['person_id'] = omop_person_df['person_source_value']
-    omop_person_df['location_id'] = omop_person_df['person_source_value']
+    omop_person_df['person_source_value'] = person_df["FORNAME"] + " " + person_df["NAME"]
+    omop_person_df['location_id'] = omop_person_df['person_id']
     omop_person_df['gender_concept_id'] = [8532 if g == 'w' else 8507 if g == 'm' else 0 for g in
                                            omop_person_df['gender_source_value']]
     omop_person_df['birth_datetime'] = pd.to_datetime(omop_person_df['birth_datetime'], format='%Y-%m-%d')
