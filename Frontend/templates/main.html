@@ -22,7 +22,7 @@
             Einzelner Patient
     </a>
 
-    <a {% if db_empty %} href="{{ url_for('main') }}" {% endif %} class="btn grid_table_entry {% if not db_empty %} disabled {% endif %}">
+    <a {% if db_empty %} href="{{ url_for('upload_data.upload_page') }}" {% endif %} class="btn grid_table_entry {% if not db_empty %} disabled {% endif %}">
             Batch-Auswertung
     </a>
     

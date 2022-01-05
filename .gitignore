@@ -1,5 +1,6 @@
 # config file for ETL job
 ETLProcess/src/my_config.yml
+upload/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
