@@ -3,22 +3,11 @@ import logging
 import psycopg2
 import numpy as np
 from enum import Enum
-from typing import Tuple, Optional, TypedDict, List
+from typing import Tuple, Optional, List
 from psycopg2.extensions import register_adapter, AsIs
+from Backend.common.config import generate_config, DbConfig
 
 psycopg2.extensions.register_adapter(np.int64, AsIs)
-
-
-class DbConfig(TypedDict):
-    """
-    Only for static type checking.
-    """
-    host: str
-    port: str
-    db_name: str
-    username: str
-    password: str
-    db_schema: str
 
 
 class OmopTableEnum(Enum):
@@ -64,11 +53,35 @@ class DBManager:
                 database=db_config["db_name"],
                 user=db_config["username"],
                 password=db_config["password"])
+            logging.info("Successfully connected to the database.")
         except (Exception, psycopg2.DatabaseError) as error:
             logging.exception("Failed to establish connection with the given parameters.")
             raise
         finally:
             return conn
+
+    def check_if_database_is_empty(self):
+        """
+        Checks if the database is empty.
+        :return: True if the database is empty, else false
+        """
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute(f"SET search_path TO {self.DB_SCHEMA};")
+
+            table_name = OmopTableEnum.CONDITION_OCCURRENCE.value
+            cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
+            result = cursor.fetchone()[0]
+            self.conn.commit()
+            cursor.close()
+            return 0 == result
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            logging.warning("Failed to check database. Returning 0.")
+            logging.warning(error)
+            self.conn.rollback()
+            cursor.close()
+            return False
 
     def clear_omop_tables(self) -> bool:
         """
@@ -89,7 +102,7 @@ class DBManager:
             self.conn.rollback()
             cursor.close()
             return False
-        logging.info("Successfully cleared omop database")
+        logging.info("Successfully cleared omop database.")
         cursor.close()
         return True
 
@@ -166,3 +179,23 @@ class DBManager:
         cursor.close()
 
         return concept_id_snomed
+
+    def send_query(self, query: str):
+        cursor = self.conn.cursor()
+        cursor.execute(query)
+        result = None
+        try:
+            result = pd.read_sql_query(query, self.conn)
+
+        except TypeError:
+            logging.debug(f"Error executing query: {query}")
+
+        cursor.close()
+        return result
+
+
+if __name__ == "__main__":
+    db_config = generate_config()
+    db_manager = DBManager(db_config=db_config, clear_tables=False)
+    print(db_manager.get_snomed_id('M30.3', 'ICD10GM'))
+    print(db_manager.check_if_database_is_empty())

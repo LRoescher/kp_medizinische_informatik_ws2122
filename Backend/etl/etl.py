@@ -1,19 +1,20 @@
 import pandas as pd
-import extract
-import transform
 import os
 import yaml
 import sys
 import getopt
 import logging
-from load import DBManager, OmopTableEnum, DbConfig
 # type hints
 from typing import Tuple, Optional, Dict
+
+from Backend.common.config import DbConfig
+from Backend.common.database import DBManager, OmopTableEnum
+from Backend.etl import extract, transform
 
 
 def generate_config() -> Tuple[str, DbConfig]:
     """
-    Combines the config-file and command line arguments to one configuration, including database credentials and the
+    Combines the config-file and command line arguments to one configuration, including common credentials and the
     path to the input directory.
 
     :return: dir with csv files, config options for the db
@@ -142,7 +143,7 @@ def run_etl_job(csv_dir: str, db_config: DbConfig):
     """
     Runs the entire ETL-Job.
     First all csv files are transformed into pandas dataframes. Then they are transformed into omop compliant tables.
-    Finally they are loaded into the postgres database.
+    Finally they are loaded into the postgres common.
 
     :param csv_dir: Directory containing PERSON.csv, ..
     :param db_config: dict with keys: [host, port, db_name, username, password, db_schema]
@@ -163,8 +164,8 @@ def run_etl_job(csv_dir: str, db_config: DbConfig):
 
     os.chdir(cwd)
 
-    # Establish database connection
-    # 'clear_tables' remove all previously added omop-entries from the database
+    # Establish common connection
+    # 'clear_tables' remove all previously added omop-entries from the common
     loader = DBManager(db_config, clear_tables=True)
 
     # Transform into omop tables
@@ -179,8 +180,8 @@ def run_etl_job(csv_dir: str, db_config: DbConfig):
     omop_condition_occurrence_df: pd.DataFrame = transform.generate_condition_occurrence_table(diagnosis_df, loader)
     logging.info("Transformations finished.")
 
-    # Load into postgres database
-    logging.info("Loading omop tables into the database...")
+    # Load into postgres common
+    logging.info("Loading omop tables into the common...")
     loader.save(OmopTableEnum.PROVIDER, omop_provider_df)
     loader.save(OmopTableEnum.LOCATION, omop_location_df)
     loader.save(OmopTableEnum.PERSON, omop_person_df)
@@ -189,7 +190,7 @@ def run_etl_job(csv_dir: str, db_config: DbConfig):
     loader.save(OmopTableEnum.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
     loader.save(OmopTableEnum.MEASUREMENT, omop_measurement_df)
     loader.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
-    logging.info("Done loading omop tables into the database.")
+    logging.info("Done loading omop tables into the common.")
 
 
 if __name__ == "__main__":
