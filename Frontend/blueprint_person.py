@@ -2,10 +2,10 @@ from flask import Blueprint, render_template, redirect, request, url_for, flash
 from Backend.interface import PatientId, Interface, PatientData
 from typing import Optional
 
-from Backend.patient_interface import Results
+from Backend.backend_interface import BackendManager
 from FlashMessageTypes import FlashMessageTypes
 
-controller: Interface = Results()
+controller: Interface = BackendManager()
 
 person_data = Blueprint("person_data", __name__)
 

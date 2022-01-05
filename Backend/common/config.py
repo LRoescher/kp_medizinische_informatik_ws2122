@@ -5,6 +5,7 @@ import getopt
 import logging
 # type hints
 from typing import Tuple, Optional, Dict, TypedDict
+from config.definitions import ROOT_DIR
 
 
 class DbConfig(TypedDict):
@@ -19,7 +20,7 @@ class DbConfig(TypedDict):
     db_schema: str
 
 
-def generate_config() -> Tuple[DbConfig]:
+def generate_config() -> Tuple[str, DbConfig]:
     """
     Combines the config-file and command line arguments to one configuration, including common credentials and the
     path to the input directory.
@@ -28,7 +29,7 @@ def generate_config() -> Tuple[DbConfig]:
     """
     # path to default config file
     dirname = os.path.dirname(__file__)
-    config_path = os.path.join(dirname, "config.yml")
+    config_path = os.path.join(ROOT_DIR, "config", "config.yml")
     print(f"Reading config file from {config_path}.")
 
     # cmd arguments
@@ -99,8 +100,12 @@ def generate_config() -> Tuple[DbConfig]:
         data = yaml.load(file, Loader=yaml.SafeLoader)
 
     # override config with cmd arguments
-    if all(key in data for key in ["db_config", "log_level"]):
+    if all(key in data for key in ["db_config", "csv_dir", "log_level"]):
         data["db_config"].update(tmp_dict)
+        data["csv_dir"] = tmp_csv_dir if tmp_csv_dir is not None else data["csv_dir"]
+        absolute_csv_path = os.path.join(ROOT_DIR, data["csv_dir"])
+        print(f"Setting csv directory as {absolute_csv_path}.")
+        data["csv_dir"] = absolute_csv_path
 
         # set log_level
         tmp_log_level = tmp_log_level if tmp_log_level is not None else data["log_level"]
@@ -135,4 +140,14 @@ def generate_config() -> Tuple[DbConfig]:
         logging.error(
             f"The following arguments are missing for a correct configuration: {list(expected_config_format.keys())}")
 
-    return data["db_config"]
+    csv_files = ["PERSON.csv", "CASE.csv", "LAB.csv", "DIAGNOSIS.csv", "PROCEDURE.csv"]
+    if not (os.path.isdir(data["csv_dir"]) and
+            all(csv_table in os.listdir(data["csv_dir"]) for csv_table in csv_files)):
+        check_ok = False
+        logging.error(f"The csv_dir should contain the following files: {csv_files}. Wrong path: {data['csv_dir']}")
+
+    if not check_ok:
+        logging.error("Shutting down ETL-process due to wrong configuration.")
+        sys.exit(0)
+
+    return data["csv_dir"], data["db_config"]

@@ -1,7 +1,7 @@
 from flask import Flask, flash, redirect, render_template, url_for, send_from_directory
 from datetime import timedelta
 from Backend.interface import Interface
-from Backend.patient_interface import Results
+from Backend.backend_interface import BackendManager
 from Frontend.FlashMessageTypes import FlashMessageTypes
 from blueprint_person import person_data
 from blueprint_login import access_control
@@ -9,7 +9,7 @@ from blueprint_results import results
 import os
 
 
-controller: Interface = Results()
+controller: Interface = BackendManager()
 
 app = Flask(__name__, template_folder='./templates/')
 app.jinja_options["lstrip_blocks"] = True

@@ -8,10 +8,10 @@ from Backend.etl.etl import run_etl_job
 from Backend.interface import PatientId, Disease, DecisionReasons, PatientData, AnalysisData, Interface
 
 
-class Results(Interface):
+class BackendManager(Interface):
 
     def __init__(self):
-        self.db_config = generate_config()
+        self.db_config = generate_config()[1]
         self.dbManager = DBManager(self.db_config, clear_tables=False)
 
     def is_db_empty(self) -> bool:
@@ -70,6 +70,6 @@ class Results(Interface):
 
 
 if __name__ == "__main__":
-    r = Results()
+    r = BackendManager()
     print(r.analysis_data)
     print(r.get_decision_reason(PatientId(2426), Disease.KAWASAKI))

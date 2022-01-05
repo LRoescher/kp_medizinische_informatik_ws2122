@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template
 from Backend.interface import PatientId, Interface
-from Backend.patient_interface import Results
+from Backend.backend_interface import BackendManager
 
-controller: Interface = Results()
+controller: Interface = BackendManager()
 
 results = Blueprint("results", __name__)
 
