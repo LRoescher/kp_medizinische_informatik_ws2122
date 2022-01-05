@@ -10,8 +10,11 @@ def upload_page():
 
 @upload_data.route('/uploader', methods = ['GET', 'POST'])
 def upload_file():
-   if request.method == 'POST':
-      f = request.files['file']
-      #Todo: use it
-      f.save(os.path.join(upload_folder, f.filename))
-      return render_template("load_batch.html", sucsess=True)
+    if not os.path.isdir(upload_folder):
+        print("lol")
+        os.mkdir(path=upload_folder)
+    if request.method == 'POST':
+        f = request.files['file']
+        #Todo: use it
+        f.save(os.path.join(upload_folder, f.filename))
+        return render_template("load_batch.html", sucsess=True)
