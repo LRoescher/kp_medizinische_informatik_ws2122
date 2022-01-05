@@ -1,21 +1,21 @@
 import logging
+from typing import List
 
 from Backend.analysis.patient import Patient
 from Backend.common.config import generate_config
 from Backend.common.database import DBManager
 
 
-def evaluate_patient(db_manager, patient_id):
+def evaluate_patient(db_manager: DBManager, patient_id) -> Patient:
     """
     Evaluates the pims and kawasaki-scores for a single patient.
 
-    :param db_manager: Database-Manager with a running connection to the common
+    :param db_manager: Database-Manager with a running connection to the database
     :param patient_id: id of the patient
-    :return: A Tuple containing another tuple with the score for kawasaki and reasons if not 0.0 and the score for pims
-    with the reasons for pims if not 0.0
+    :return: A patient with scores calculated for each disease
     """
 
-    # Create patient object from common query
+    # Create patient object from the database query
     query = f"SELECT * FROM cds_cdm.person WHERE person_id = {patient_id}"
     df = db_manager.send_query(query)
     patient_id = df.iloc[0]['person_id']
@@ -44,41 +44,41 @@ def evaluate_patient(db_manager, patient_id):
     patient.calculate_kawasaki_score()
     patient.calculate_pims_score()
 
-    return patient.get_patient_as_tuple()
+    return patient
 
 
-def evaluate_patients(db_manager, patient_ids: list):
+def evaluate_patients(db_manager:DBManager, patient_ids: list) -> List[Patient]:
     """
     Evaluates all given patients for having kawasaki or pims.
 
-    :param db_manager: Database-Manager with a running connection to the common
+    :param db_manager: Database-Manager with a running connection to the database
     :param patient_ids: list of patient ids
-    :return: List of Tuples containing scores and reasons for kawasaki and pims for every patient
+    :return: List of patients
     """
     logging.info(f"Evaluating {len(patient_ids)} patients.")
-    evaluations = list()
+    patients = list()
     for patient_id in patient_ids:
-        result = evaluate_patient(db_manager, patient_id)
-        evaluations.append(result)
+        patient = evaluate_patient(db_manager, patient_id)
+        patients.append(patient)
     logging.info(f"Finished evaluating {len(patient_ids)} patients.")
-    return evaluations
+    return patients
 
 
-def evaluate_all_in_database(db_manager):
+def evaluate_all_in_database(db_manager: DBManager) -> List[Patient]:
     """
-    Evaluates all patients currently stored in the common.
+    Evaluates all patients currently stored in the database.
 
-    :param db_manager: DatabaseManager with an active connection to the common
-    :return: List of Tuples containing scores and reasons for kawasaki and pims for every patient
+    :param db_manager: DatabaseManager with an active connection to the database
+    :return: List of patients
     """
     # load all patient_ids from db as patient_ids
     logging.info("Evaluating all patients currently in the given OMOP-Database.")
     query = f"SELECT person_id FROM cds_cdm.person"
     df = db_manager.send_query(query)
     patient_ids = df['person_id'].values.tolist()
-    result = evaluate_patients(db_manager, patient_ids)
-    logging.info(f"Finished evaluating all patients currently in the common.")
-    return result
+    patients = evaluate_patients(db_manager, patient_ids)
+    logging.info(f"Finished evaluating all patients currently in the database.")
+    return patients
 
 
 if __name__ == "__main__":

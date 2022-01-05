@@ -334,12 +334,3 @@ class Patient:
             self.reasons_for_pims.append(self.REASON_EFFUSION)
 
         self.pims_score = score / max_score
-
-    def get_patient_as_tuple(self):
-        """
-        Returns a tuple that represents the most important information about the patient. Contains the id, the name,
-        the kawasaki-score, reasons for that score, the pims-score and reasons for that score
-
-        :return: Tuple
-        """
-        return self.id, self.name, self.kawasaki_score, self.reasons_for_kawasaki, self.pims_score, self.reasons_for_pims
