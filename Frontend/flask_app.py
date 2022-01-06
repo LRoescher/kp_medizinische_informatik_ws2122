@@ -2,10 +2,10 @@ from flask import Flask, flash, redirect, render_template, url_for, send_from_di
 from datetime import timedelta
 from Backend.interface import Interface
 from Frontend.FlashMessageTypes import FlashMessageTypes
-from blueprint_person import person_data
-from blueprint_login import access_control
-from blueprint_results import results
-from blueprint_upload_data import upload_data
+from Frontend.blueprint_person import person_data
+from Frontend.blueprint_login import access_control
+from Frontend.blueprint_results import results
+from Frontend.blueprint_upload_data import upload_data
 import os
 
 # ToDo: remove later

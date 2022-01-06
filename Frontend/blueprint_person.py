@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, request, url_for, flash
 from Backend.interface import PatientId, Interface, PatientData
 from Backend.example_interface import Example
 from typing import Optional
-from FlashMessageTypes import FlashMessageTypes
+from Frontend.FlashMessageTypes import FlashMessageTypes
 
 controller: Interface = Example()
 
