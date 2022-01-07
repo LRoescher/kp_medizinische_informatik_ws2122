@@ -12,14 +12,14 @@
 {% block content %}
     <div class="disclaimer">Hier könnten Sie über Ihren Haftungsauschluss informieren.</div>
     <div class="description">
-        <h1>Begründung der Entscheidung zu Kawasaki</h1>
+        <h1>Begründung der Entscheidung zu {{ decision_reason_data.disease }}</h1>
         Im folgenden finden Sie eine Aufschlüsselung der Parametern auf welchen dieses System seine Entscheidung
         getroffen hat. Im weiteren könnte Sie dieser Text darüber informieren was
         <a href="https://www.letmegooglethat.com/?q=Kawasaki+Krankheit">Kawasaki</a> ist.
     </div>
 
     <div id="result" class="danger_is_low">
-        Die Wahrscheinlichkeit das der Patient(<strong>ALICE</strong>) an Kawasaki leidet ist <strong>gering</strong>.
+        Die Wahrscheinlichkeit das der Patient(<strong>{{ patient_data.name }}</strong>) an {{ decision_reason_data.disease }} leidet ist <strong>{{ decision_reason_data.probability }}</strong>.
     </div>
 
     <div class="grid_table">
@@ -27,9 +27,19 @@
         <div class="grid_table_head_entry">nicht nachgewiesene Symptome</div>
         <div class="grid_table_head_entry">Spricht gegen eine Erkrankung</div>
 
-        <div class="grid_table_entry">Körpertemperatur</div>
+        <div class="grid_table_entry">
+            {% for proreason in decision_reason_data.pro %}
+                <div>{{ proreason }}</div>
+            {% endfor %}
+        </div>
         <div class="grid_table_entry"></div>
-        <div class="grid_table_entry"></div>
+        <div class="grid_table_entry">
+            <div class="grid_table_entry">
+            {% for contrareason in decision_reason_data.con %}
+                <div>{{ contrareason }}</div>
+            {% endfor %}
+        </div>
+        </div>
 
     </div>
 

@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, redirect, request, url_for, flash
 from Backend.interface import PatientId, Interface, PatientData
 from typing import Optional
-
 from Backend.backend_interface import BackendManager
-from FlashMessageTypes import FlashMessageTypes
+from Frontend.FlashMessageTypes import FlashMessageTypes
+
 
 controller: Interface = BackendManager()
 
@@ -84,4 +84,3 @@ def update_patient_data(patient_id: PatientId):
     else:
         flash(f"Updating Patient (id: {patient_id}) {patient_data['name']} failed.", FlashMessageTypes.FAILURE.value)
         return redirect(url_for(".get_patient_data", patient_id=patient_id))
-

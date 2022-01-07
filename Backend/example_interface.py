@@ -69,4 +69,7 @@ class Example(Interface):
 
     def get_decision_reason(self, patient_id: PatientId, disease: Disease) -> DecisionReasons:
         # ToDo: extend
-        return DecisionReasons(disease=Disease.KAWASAKI, probability=0.5, pro=["hasCovid"], con=["hasFever"])
+        if disease == Disease.KAWASAKI:
+            return DecisionReasons(disease=Disease.KAWASAKI, probability=0.5, pro=["hasCovid"], con=["hasFever"])
+        if disease == Disease.PIMS:
+            return DecisionReasons(disease=Disease.PIMS, probability=0.5, pro=["hasCovid"], con=["hasFun"])

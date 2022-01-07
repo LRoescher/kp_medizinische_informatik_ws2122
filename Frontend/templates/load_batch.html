@@ -13,14 +13,14 @@
     
     <div class="grid_table">
 
-        <div class="grid_table_entry">./data/1.Bereitstellung Daten.zip</div>
-        <div class="grid_table_entry">SUCCESS</div>
+      <form action = "{{ url_for('upload_data.upload_file') }}" method = "POST" enctype = "multipart/form-data">
+          <div class="grid_table_entry"><input type = "file" name = "file" /></div>
+          {% if sucsess %}
+            <div class="grid_table_entry">SUCCESS</div>
+          {% endif %}
+          <div class="grid_table_entry"><input class="grid_table_entry" type = "submit"/></div>
 
-        <div class="grid_table_entry">./data/2.Bereitstellung Korrektur.tar</div>
-        <div class="grid_table_entry"><progress value="59" max="100"></progress></div>
-
-        <div class="grid_table_entry"></div>
-        <div class="grid_table_entry"><button>Upload</button></div>
+      </form>
     </div>
 
 {% endblock %}

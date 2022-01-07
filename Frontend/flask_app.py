@@ -3,9 +3,10 @@ from datetime import timedelta
 from Backend.interface import Interface
 from Backend.backend_interface import BackendManager
 from Frontend.FlashMessageTypes import FlashMessageTypes
-from blueprint_person import person_data
-from blueprint_login import access_control
-from blueprint_results import results
+from Frontend.blueprint_person import person_data
+from Frontend.blueprint_login import access_control
+from Frontend.blueprint_results import results
+from Frontend.blueprint_upload_data import upload_data
 import os
 
 
@@ -20,6 +21,7 @@ app.permanent_session_lifetime = timedelta(minutes=5)   # 5 min auto logout
 app.register_blueprint(access_control)
 app.register_blueprint(person_data, url_prefix="/person_data")
 app.register_blueprint(results, url_prefix="/results")
+app.register_blueprint(upload_data, url_prefix="/upload_data")
 
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
