@@ -2,6 +2,8 @@ import datetime
 
 from typing import Set
 
+import pandas as pd
+
 
 class Patient:
     """

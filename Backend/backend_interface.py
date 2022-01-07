@@ -1,11 +1,12 @@
 import os
 from typing import Dict, Iterator, Optional, List
+from random import randrange
 
 from Backend.analysis.analysis import evaluate_patient, evaluate_all_in_database
 from Backend.analysis.patient import Patient
 from Backend.common.config import generate_config
 from Backend.common.database import DBManager
-from Backend.etl.etl import run_etl_job
+from Backend.etl.etl import run_etl_job_for_csvs, run_etl_job_for_patient
 from Backend.interface import PatientId, Disease, DecisionReasons, PatientData, AnalysisData, Interface
 
 
@@ -16,11 +17,11 @@ class BackendManager(Interface):
         self.dbManager = DBManager(self.db_config, clear_tables=False)
         self.patients: List[Patient] = list()
 
-    def _update_patients(self):
+    def _synchronize(self):
         self.patients = evaluate_all_in_database(self.dbManager)
 
     def analyze_all_in_database(self):
-        self._update_patients()
+        self._synchronize()
 
     def is_db_empty(self) -> bool:
         return self.dbManager.check_if_database_is_empty()
@@ -31,21 +32,51 @@ class BackendManager(Interface):
         # Falls die Ergebnisse der Analyse auch in der DB gespeichert werden, sollten auch diese zurückgesetzt werden
 
     def add_patient(self, patient_data: PatientData) -> Optional[PatientId]:
-        # Todo create new patient, save in db, start analysis, add to patients list
-        pass
+        # Generate Random id that is not already in the database
+        patient_id = randrange(10000, 9999999)
+        while self.patient_id_taken(patient_id):
+            patient_id = randrange(5000, 9999999)
+
+        # Todo remove dummy data (birthdate, etc.), get from front end instead
+        # Get birthday data
+        day = 1
+        month = 1
+        year = 2022
+
+        patient: Patient = Patient(patient_id=patient_id, name=patient_data['name'], day=day, month=month, year=year)
+
+        # Calculate diagnosis (ICD10GM codes) from patient_data
+        diagnosis: List[str] = list()
+        if patient_data['hasCovid']:
+            diagnosis.append('U07.1')
+        elif patient_data['hasFever']:
+            diagnosis.append('R50.9')
+        # Todo Add missing hasX -> Conditions
+
+        run_etl_job_for_patient(patient=patient, diagnosis=diagnosis, db_manager=self.dbManager)
+
+        # Todo start analysis, add result to patients list
+        evaluated_patient = evaluate_patient(self.dbManager, patient_id)
+        self.patients.append(evaluated_patient)
+
+        return PatientId(patient_id)
+
+    def patient_id_taken(self, patient_id) -> bool:
+        # todo implement
+        return False
 
     def update_patient(self, patient_id: PatientId, patient_data: PatientData) -> bool:
         # Todo get patient with id, update fields insert into database, start analysis, add to patients list
         pass
 
     def upload_csv(self, csv_file: os.path) -> Iterator[int]:
-        run_etl_job(csv_file, self.db_config)
+        run_etl_job_for_csvs(csv_file, self.db_config)
         # Todo get path to target directory, start etl job here? or with a dedicated method call
 
     @property
     def analysis_data(self) -> Dict[PatientId, AnalysisData]:
         if not self.patients:
-            self._update_patients()
+            self._synchronize()
         data_dict = dict()
         for patient in self.patients:
             analysis_data: AnalysisData = {
