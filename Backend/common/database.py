@@ -1,3 +1,5 @@
+from random import randrange
+
 import pandas as pd
 import logging
 import psycopg2
@@ -60,7 +62,7 @@ class DBManager:
         finally:
             return conn
 
-    def check_if_database_is_empty(self):
+    def check_if_table_is_empty(self, table_name: str):
         """
         Checks if the database is empty.
         :return: True if the database is empty, else false
@@ -69,7 +71,6 @@ class DBManager:
         try:
             cursor.execute(f"SET search_path TO {self.DB_SCHEMA};")
 
-            table_name = OmopTableEnum.CONDITION_OCCURRENCE.value
             cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
             result = cursor.fetchone()[0]
             self.conn.commit()
@@ -180,7 +181,7 @@ class DBManager:
 
         return concept_id_snomed
 
-    def send_query(self, query: str):
+    def send_query(self, query: str) -> pd.DataFrame:
         cursor = self.conn.cursor()
         cursor.execute(query)
         result = None
@@ -193,9 +194,35 @@ class DBManager:
         cursor.close()
         return result
 
+    def generate_condition_occurrence_id(self) -> int:
+        """
+        Generates a unique identifier that is not already taken by an entry in the condition_occurrence table.
+        """
+        new_id = randrange(10000, 9999999)
+        while self._id_is_taken(OmopTableEnum.CONDITION_OCCURRENCE.value, "condition_occurrence_id", new_id):
+            new_id = randrange(10000, 9999999)
+        return new_id
+
+    def generate_patient_id(self) -> int:
+        """
+        Generates a unique identifier that is not already taken by an entry in the person/patient table.
+        """
+        new_id = randrange(10000, 9999999)
+        while self._id_is_taken(OmopTableEnum.PERSON.value, "person_id", new_id):
+            new_id = randrange(10000, 9999999)
+        return new_id
+
+    def _id_is_taken(self, table: str, field: str, new_id: int):
+        """
+        Checks if the given id is taken by an entry for the given field of the given table.
+        """
+        query: str = f"SELECT * FROM {self.DB_SCHEMA}.{table} WHERE {field} = {new_id}"
+        result_df: pd.DataFrame = self.send_query(query)
+        return not result_df.empty
+
 
 if __name__ == "__main__":
     db_config = generate_config()
     db_manager = DBManager(db_config=db_config, clear_tables=False)
     print(db_manager.get_snomed_id('M30.3', 'ICD10GM'))
-    print(db_manager.check_if_database_is_empty())
+    print(db_manager.check_if_table_is_empty())

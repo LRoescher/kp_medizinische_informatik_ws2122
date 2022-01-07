@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 import pandas as pd
@@ -39,55 +40,6 @@ def run_etl_job_for_csvs(csv_dir: str, db_config: DbConfig):
     # 'clear_tables' remove all previously added omop-entries from the database
     db_manager = DBManager(db_config, clear_tables=True)
 
-    _transform_and_load(person_df=person_df, case_df=case_df, procedure_df=procedure_df, lab_df=lab_df,
-                        diagnosis_df=diagnosis_df, db_manager=db_manager)
-
-
-def run_etl_job_for_patient(patient: Patient, db_config: DbConfig):
-    # Establish database connection
-    # 'clear_tables' remove all previously added omop-entries from the database
-    db_manager = DBManager(db_config, clear_tables=False)
-    run_etl_job_for_patient(patient, db_manager)
-
-
-def run_etl_job_for_patient(patient: Patient, diagnosis: List[str], db_manager: DBManager):
-    logging.info("Extracting data from the given patient...")
-
-    # Todo Implement for provider-id, gender as soon as present in Patient Class
-    birthdate: str = f"{patient.year}-{patient.month}-{patient.day}"
-    data_person = {'PATIENT_ID': [patient.id], 'PROVIDER_ID': [0], 'BIRTHDATE': [birthdate], 'GENDER': ['w'],
-                   'FORNAME': [patient.name], 'NAME': [''], 'CITY': ['Unbekannt'], 'ZIP': ['Unbekannt']}
-    person_df: pd.DataFrame = pd.DataFrame(data_person)
-
-    # 'ICD_PRIMARY_CODE', 'ICD_SECONDARY_CODE'
-
-    # Todo use date -> now
-    admission_date: str = "2020-12-12"
-
-    entries = len(diagnosis)
-
-    data_conditions = {'PROVIDER_ID': [0] * entries, 'PATIENT_ID': [patient.id] * entries,
-                       'DIAGNOSIS_TYPE': ['HD'] * entries, 'ADMISSION_DATE': [admission_date] * entries,
-                       'ICD_PRIMARY_CODE': diagnosis, 'ICD_SECONDARY_CODE': ['-'] * entries}
-    diagnosis_df: pd.DataFrame = pd.DataFrame(data_conditions)
-
-    # Todo other dfs
-    case_df: pd.DataFrame = pd.DataFrame(columns=['PROVIDER_ID'])
-    lab_df: pd.DataFrame = pd.DataFrame(columns=['IDENTIFIER', 'PARAMETER_NAME', 'PARAMETER_LOINC',
-                                                 'Patientidentifikator', 'TEST_DATE', 'NUMERIC_VALUE', 'UCUM_UNIT',
-                                                 'IS_NORMAL', 'DEVIATION'])
-    procedure_df: pd.DataFrame = pd.DataFrame(columns=['ID', 'OPS_CODE', 'PATIENT_ID', 'EXECUTION_DATE'])
-
-    _transform_and_load(person_df=person_df, case_df=case_df, procedure_df=procedure_df, lab_df=lab_df,
-                        diagnosis_df=diagnosis_df, db_manager=db_manager)
-
-
-def _transform_and_load(person_df: pd.DataFrame, case_df: pd.DataFrame, procedure_df: pd.DataFrame,
-                        lab_df: pd.DataFrame, diagnosis_df: pd.DataFrame, db_manager: DBManager):
-    """
-    Transforms the given dataframes into omop compliant tables and loads them into the database specified by the config.
-    """
-
     # Transform into omop tables
     logging.info("Transforming input files into omop tables...")
     omop_provider_df: pd.DataFrame = transform.generate_provider_table(person_df, case_df)
@@ -111,6 +63,52 @@ def _transform_and_load(person_df: pd.DataFrame, case_df: pd.DataFrame, procedur
     db_manager.save(OmopTableEnum.MEASUREMENT, omop_measurement_df)
     db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
     logging.info("Done loading omop tables into the database.")
+
+
+def run_etl_job_for_patient(patient: Patient, db_manager: DBManager):
+    logging.info("Extracting data from the given patient...")
+
+    # Todo Remove dummy data (gender, etc) as soon as present in Patient Object and Frontend
+    birthdate = datetime.datetime(year=patient.year, month=patient.month, day=patient.day)
+    data_person = {'person_id': [patient.id], 'gender_concept_id': [8532], 'year_of_birth': [patient.year],
+                   'month_of_birth': [patient.month], 'day_of_birth': [patient.day], 'birth_datetime': [birthdate],
+                   'race_concept_id': [4218674], 'ethnicity_concept_id': [0], 'location_id': [patient.id],
+                   'provider_id': [patient.id], 'person_source_value': [patient.name], 'gender_source_value': ['w']}
+    omop_person_df: pd.DataFrame = pd.DataFrame(data_person)
+
+    data_location = {'location_id': [patient.id], 'city': ['Unbekannt'], 'zip': ['Unbekannt']}
+    omop_location_df: pd.DataFrame = pd.DataFrame(data_location)
+
+    data_provider = {'provider_id': [patient.id]}
+    omop_provider_df: pd.DataFrame = pd.DataFrame(data_provider)
+
+    print("before generating.")
+    # Generate untaken ids for all conditions
+    condition_occurrence_ids: List[int] = list()
+    for _ in patient.conditions:
+        condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
+        while condition_occurrence_id in condition_occurrence_ids:
+            condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
+        condition_occurrence_ids.append(condition_occurrence_id)
+
+    print(condition_occurrence_ids)
+
+    current_date = datetime.datetime.now()
+    entries = len(patient.conditions)
+
+    # Create dataframe for conditions
+    data_condition_occurrence = {'condition_occurrence_id': condition_occurrence_ids,
+                                 'person_id': [patient.id] * entries,
+                                 'condition_concept_id': patient.conditions,
+                                 'condition_start_date': [current_date] * entries,
+                                 'condition_type_concept_id': [44786627] * entries}
+    omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occurrence)
+
+    db_manager.save(OmopTableEnum.LOCATION, omop_location_df)
+    db_manager.save(OmopTableEnum.PROVIDER, omop_provider_df)
+    db_manager.save(OmopTableEnum.PERSON, omop_person_df)
+    db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
+    logging.info("Done loading a single Patient into the database.")
 
 
 if __name__ == "__main__":
