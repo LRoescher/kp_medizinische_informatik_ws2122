@@ -7,7 +7,8 @@ import logging
 
 from Backend.analysis.patient import Patient
 from Backend.common.config import DbConfig, generate_config
-from Backend.common.database import DBManager, OmopTableEnum
+from Backend.common.database import DBManager, OmopTableEnum, OmopPersonFieldsEnum, OmopLocationFieldsEnum, \
+    OmopProviderFieldsEnum, OmopConditionOccurrenceFieldsEnum
 from Backend.etl import extract, transform
 
 
@@ -66,24 +67,36 @@ def run_etl_job_for_csvs(csv_dir: str, db_config: DbConfig):
 
 
 def run_etl_job_for_patient(patient: Patient, db_manager: DBManager):
+    """
+    Runs an etl-job for a single given patient on the connection specified by the given database manager.
+    """
     logging.info("Extracting data from the given patient...")
 
     # Todo Remove dummy data (gender, etc) as soon as present in Patient Object and Frontend
     birthdate = datetime.datetime(year=patient.year, month=patient.month, day=patient.day)
-    data_person = {'person_id': [patient.id], 'gender_concept_id': [8532], 'year_of_birth': [patient.year],
-                   'month_of_birth': [patient.month], 'day_of_birth': [patient.day], 'birth_datetime': [birthdate],
-                   'race_concept_id': [4218674], 'ethnicity_concept_id': [0], 'location_id': [patient.id],
-                   'provider_id': [patient.id], 'person_source_value': [patient.name], 'gender_source_value': ['w']}
+    data_person = {OmopPersonFieldsEnum.PERSON_ID: [patient.id],
+                   OmopPersonFieldsEnum.GENDER_CONCEPT_ID: [0],
+                   OmopPersonFieldsEnum.YEAR_OF_BIRTH: [patient.year],
+                   OmopPersonFieldsEnum.MONTH_OF_BIRTH: [patient.month],
+                   OmopPersonFieldsEnum.DAY_OF_BIRTH: [patient.day],
+                   OmopPersonFieldsEnum.BIRTH_DATETIME: [birthdate],
+                   OmopPersonFieldsEnum.RACE_CONCEPT_ID: [4218674],
+                   OmopPersonFieldsEnum.ETHNICITY_CONCEPT_ID: [0],
+                   OmopPersonFieldsEnum.LOCATION_ID: [patient.id],
+                   OmopPersonFieldsEnum.PROVIDER_ID: [patient.id],
+                   OmopPersonFieldsEnum.PERSON_SOURCE_VALUE: [patient.name],
+                   OmopPersonFieldsEnum.GENDER_SOURCE_VALUE: ['-']}
     omop_person_df: pd.DataFrame = pd.DataFrame(data_person)
 
-    data_location = {'location_id': [patient.id], 'city': ['Unbekannt'], 'zip': ['Unbekannt']}
+    data_location = {OmopLocationFieldsEnum.LOCATION_ID: [patient.id],
+                     OmopLocationFieldsEnum.CITY: ['Unbekannt'],
+                     OmopLocationFieldsEnum.ZIP: ['Unbekannt']}
     omop_location_df: pd.DataFrame = pd.DataFrame(data_location)
 
-    data_provider = {'provider_id': [patient.id]}
+    data_provider = {OmopProviderFieldsEnum.PROVIDER_ID: [DBManager.PROVIDER_ID]}
     omop_provider_df: pd.DataFrame = pd.DataFrame(data_provider)
 
-    print("before generating.")
-    # Generate untaken ids for all conditions
+    # Generate unused ids for all conditions
     condition_occurrence_ids: List[int] = list()
     for _ in patient.conditions:
         condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
@@ -91,17 +104,15 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager):
             condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
         condition_occurrence_ids.append(condition_occurrence_id)
 
-    print(condition_occurrence_ids)
-
     current_date = datetime.datetime.now()
     entries = len(patient.conditions)
 
     # Create dataframe for conditions
-    data_condition_occurrence = {'condition_occurrence_id': condition_occurrence_ids,
-                                 'person_id': [patient.id] * entries,
-                                 'condition_concept_id': patient.conditions,
-                                 'condition_start_date': [current_date] * entries,
-                                 'condition_type_concept_id': [44786627] * entries}
+    data_condition_occurrence = {OmopConditionOccurrenceFieldsEnum.CONDITION_OCCURRENCE_ID: condition_occurrence_ids,
+                                 OmopConditionOccurrenceFieldsEnum.PERSON_ID: [patient.id] * entries,
+                                 OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID: patient.conditions,
+                                 OmopConditionOccurrenceFieldsEnum.CONDITION_START_DATE: [current_date] * entries,
+                                 OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID: [44786627] * entries}
     omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occurrence)
 
     db_manager.save(OmopTableEnum.LOCATION, omop_location_df)
@@ -109,6 +120,48 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager):
     db_manager.save(OmopTableEnum.PERSON, omop_person_df)
     db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
     logging.info("Done loading a single Patient into the database.")
+
+
+def update_patient(old_patient: Patient, update: Patient, db_manager: DBManager):
+    logging.info("Updating a patient...")
+    # Todo: update more general data if available
+    db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.PERSON_SOURCE_VALUE.value, update.name)
+    db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.DAY_OF_BIRTH.value, update.day)
+    db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.MONTH_OF_BIRTH.value, update.month)
+    db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.YEAR_OF_BIRTH.value, update.year)
+
+    # Todo: update missing conditions as soon as present in the data
+    if old_patient.has_covid() and not update.has_covid():
+        # Remove covid from conditions
+        db_manager.delete_condition_for_patient(old_patient.id, 37311061)
+    if not old_patient.has_covid() and update.has_covid():
+        # Create dataframe for conditions
+        condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
+        current_date = datetime.datetime.now()
+        data_condition_occ = {OmopConditionOccurrenceFieldsEnum.CONDITION_OCCURRENCE_ID: [condition_occurrence_id],
+                              OmopConditionOccurrenceFieldsEnum.PERSON_ID: [old_patient.id],
+                              OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID: [37311061],
+                              OmopConditionOccurrenceFieldsEnum.CONDITION_START_DATE: [current_date],
+                              OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID: [44786627]}
+        omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occ)
+        db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
+
+    if old_patient.has_fever() and not update.has_fever():
+        # Remove fever from conditions
+        db_manager.delete_condition_for_patient(old_patient.id, 437663)
+    if not old_patient.has_fever() and update.has_fever():
+        # Create dataframe for conditions
+        condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
+        current_date = datetime.datetime.now()
+        data_condition_occ = {OmopConditionOccurrenceFieldsEnum.CONDITION_OCCURRENCE_ID: [condition_occurrence_id],
+                              OmopConditionOccurrenceFieldsEnum.PERSON_ID: [old_patient.id],
+                              OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID: [437663],
+                              OmopConditionOccurrenceFieldsEnum.CONDITION_START_DATE: [current_date],
+                              OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID: [44786627]}
+        omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occ)
+        db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
+
+    logging.info("Done updating the patient.")
 
 
 if __name__ == "__main__":

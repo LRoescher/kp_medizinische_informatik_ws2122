@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Dict, Iterator, Optional, List
 
@@ -5,7 +6,7 @@ from Backend.analysis.analysis import evaluate_patient, evaluate_all_in_database
 from Backend.analysis.patient import Patient
 from Backend.common.config import generate_config
 from Backend.common.database import DBManager, OmopTableEnum
-from Backend.etl.etl import run_etl_job_for_csvs, run_etl_job_for_patient
+from Backend.etl.etl import run_etl_job_for_csvs, run_etl_job_for_patient, update_patient
 from Backend.interface import PatientId, Disease, DecisionReasons, PatientData, AnalysisData, Interface
 
 
@@ -26,11 +27,25 @@ class BackendManager(Interface):
         return self.dbManager.check_if_table_is_empty(table_name=OmopTableEnum.CONDITION_OCCURRENCE.value)
 
     def reset_db(self) -> bool:
+        self.patients.clear()
         return self.dbManager.clear_omop_tables()
         # Todo:
         # Falls die Ergebnisse der Analyse auch in der DB gespeichert werden, sollten auch diese zurückgesetzt werden
 
     def add_patient(self, patient_data: PatientData) -> Optional[PatientId]:
+        # Create Patient object
+        patient: Patient = self._create_patient_from_data(patient_data)
+
+        # Save in database
+        run_etl_job_for_patient(patient=patient, db_manager=self.dbManager)
+
+        # Evaluate patient
+        evaluated_patient = evaluate_patient(self.dbManager, patient.id)
+        self.patients.append(evaluated_patient)
+
+        return PatientId(patient.id)
+
+    def _create_patient_from_data(self, patient_data: PatientData) -> Patient:
         # Generate Random id that is not already in the database
         patient_id = self.dbManager.generate_patient_id()
 
@@ -45,21 +60,38 @@ class BackendManager(Interface):
         # Get snomed ids from patient_data
         if patient_data['hasCovid']:
             patient.conditions.append(37311061)
-        elif patient_data['hasFever']:
+        if patient_data['hasFever']:
             patient.conditions.append(437663)
         # Todo Add missing hasX -> Conditions
 
-        run_etl_job_for_patient(patient=patient, db_manager=self.dbManager)
-
-        # Todo start analysis, add result to patients list
-        evaluated_patient = evaluate_patient(self.dbManager, patient_id)
-        self.patients.append(evaluated_patient)
-
-        return PatientId(patient_id)
+        return patient
 
     def update_patient(self, patient_id: PatientId, patient_data: PatientData) -> bool:
-        # Todo get patient with id, update fields insert into database, start analysis, add to patients list
-        pass
+        try:
+            # Get already saved patient
+            old_patient: Patient = evaluate_patient(self.dbManager, patient_id)
+
+            # Create new patient from the given PatientData
+            new_patient: Patient = self._create_patient_from_data(patient_data)
+            new_patient.id = old_patient.id
+
+            # Update old patient with new patient
+            update_patient(old_patient, new_patient, self.dbManager)
+
+            # Evaluate (updated) patient
+            evaluated_patient = evaluate_patient(self.dbManager, new_patient.id)
+
+            # Update evaluation list
+            for patient in self.patients:
+                if patient.id == new_patient.id:
+                    self.patients.remove(patient)
+                    self.patients.append(evaluated_patient)
+
+            return True
+
+        except:
+            logging.error("Updating patient failed.")
+            return False
 
     def upload_csv(self, csv_file: os.path) -> Iterator[int]:
         run_etl_job_for_csvs(csv_file, self.db_config)
@@ -94,7 +126,6 @@ class BackendManager(Interface):
         return PatientData()
 
     def get_decision_reason(self, patient_id: PatientId, disease: Disease) -> DecisionReasons:
-
         for patient in self.patients:
             if PatientId(patient.id) == patient_id:
                 # Found corresponding patient
@@ -118,6 +149,7 @@ class BackendManager(Interface):
 
 if __name__ == "__main__":
     r = BackendManager()
-    print(r.analysis_data)
-    print(r.get_decision_reason(PatientId(2426), Disease.KAWASAKI))
-    print(r.get_decision_reason(PatientId(2426), Disease.PIMS))
+    # print(r.analysis_data)
+    # print(r.get_decision_reason(PatientId(2426), Disease.KAWASAKI))
+    # print(r.get_decision_reason(PatientId(2426), Disease.PIMS))
+    # print(r.dbManager.delete_condition_for_patient(1547, 444413))

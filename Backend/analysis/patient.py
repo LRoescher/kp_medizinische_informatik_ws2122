@@ -249,53 +249,37 @@ class Patient:
         """
         self.reasons_for_kawasaki.clear()
 
-        # Return 0.0 if not in age range
-        if self.calculate_age() > 8:
-            self.kawasaki_score = 0.0
-        else:
-            self.reasons_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
-            score, max_score = self.calculate_shared_score()
-            self.kawasaki_score = score / max_score
-
-    def calculate_shared_score(self) -> (float, float):
-        """
-        Returns a tuple containing the score for symptoms that PIMS and Kawasaki share and the maximum score.
-
-        :return: Tuple of floats (score, max_score)
-        """
         score: float = 0.0
         max_score: float = 8.0
+
+        # Return 0.0 if not in age range
+        if self.calculate_age() > 8:
+            return score
+        self.reasons_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
 
         if self.has_fever():
             score += 2
             self.reasons_for_kawasaki.append(self.REASON_FEVER)
-            self.reasons_for_pims.append(self.REASON_FEVER)
         if self.has_swollen_extremities():
             score += 1
             self.reasons_for_kawasaki.append(self.REASON_SWOLLEN_EXTREMITIES)
-            self.reasons_for_pims.append(self.REASON_SWOLLEN_EXTREMITIES)
         if self.has_conjunctivitis():
             score += 1
             self.reasons_for_kawasaki.append(self.REASON_CONJUNCTIVITIS)
-            self.reasons_for_pims.append(self.REASON_CONJUNCTIVITIS)
         if self.has_lymphadenopathy():
             score += 1
             self.reasons_for_kawasaki.append(self.REASON_SWOLLEN_LYMPHNODES)
-            self.reasons_for_pims.append(self.REASON_SWOLLEN_LYMPHNODES)
         if self.has_mouth_or_mucosa_inflammation():
             score += 1
             self.reasons_for_kawasaki.append(self.REASON_ENANTHEM)
-            self.reasons_for_pims.append(self.REASON_ENANTHEM)
         if self.has_inflammation_lab():
             score += 1
             self.reasons_for_kawasaki.append(self.REASON_INFLAMMATION_LAB)
-            self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
         if self.has_cardiac_condition():
             score += 1
             self.reasons_for_kawasaki.append(self.REASON_CARDIAL_CONDITION)
-            self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
 
-        return score, max_score
+        self.kawasaki_score = score / max_score
 
     def calculate_pims_score(self) -> (float, Set[str]):
         """
@@ -312,23 +296,41 @@ class Patient:
         """
         self.reasons_for_pims.clear()
 
-        if not self.has_covid():
-            self.pims_score = 0.0
+        score: float = 0.0
+        max_score: float = 9.5
 
+        if not self.has_covid():
+            return 0.0
         self.reasons_for_pims.append(self.REASON_COVID)
 
-        if not self.calculate_age() < 20:
-            self.pims_score = 0.0
-
+        if self.calculate_age() < 20:
+            return 0.0
         self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
 
-        score, max_score = self.calculate_shared_score()
-        max_score += 1.5
-
+        if self.has_fever():
+            score += 2
+            self.reasons_for_pims.append(self.REASON_FEVER)
+        if self.has_swollen_extremities():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_SWOLLEN_EXTREMITIES)
+        if self.has_conjunctivitis():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_CONJUNCTIVITIS)
+        if self.has_lymphadenopathy():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_SWOLLEN_LYMPHNODES)
+        if self.has_mouth_or_mucosa_inflammation():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_ENANTHEM)
+        if self.has_inflammation_lab():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
+        if self.has_cardiac_condition():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
         if self.has_gastro_intestinal_condition():
             score += 1
             self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
-
         if self.has_effusion():
             score += 0.5
             self.reasons_for_pims.append(self.REASON_EFFUSION)
