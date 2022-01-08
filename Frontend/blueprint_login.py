@@ -12,6 +12,10 @@ def check_login():
         # needed or the login form will get served without css :)
         return None
 
+    elif request.endpoint == "favicon":
+        # needed or the logo is missing in the login form
+        return None
+
     if "logged_in" not in session or not session["logged_in"]:
         flash("Please login first.", FlashMessageTypes.FAILURE.value)
         return redirect(url_for("access_control.login"))
