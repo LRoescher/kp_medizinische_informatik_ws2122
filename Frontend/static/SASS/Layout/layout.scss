@@ -1,0 +1,36 @@
+// message colors
+$msg_color: black;
+$info_bg_color: #BDE5F8;
+$success_bg_color: #DFF2BF;
+$warning_bg_color: #FEEFB3;
+$failure_bg_color: #FFD2D2;
+
+@forward './two_elements/_top_bar';
+@forward '../Widgets/_menu';
+@forward '../Widgets/_button';
+@forward '../Widgets/_text_box' with (
+    $disclaimer_bg_color: $info_bg_color,
+    $disclaimer_border_color: #2196F3,
+
+    $low_bg_color: $success_bg_color,
+    $low_border_color: #04AA6D,
+
+    $middle_bg_color: $warning_bg_color,
+    $middle_border_color: #ffeb3b,
+
+    $high_bg_color: $failure_bg_color,
+    $high_border_color: #f44336,
+);
+@forward '../Widgets/_flash_messages' with (
+    $info_color: $msg_color,
+    $info_bg_color: $info_bg_color,
+
+    $success_color: $msg_color,
+    $success_bg_color: $success_bg_color,
+
+    $warning_color: $msg_color,
+    $warning_bg_color: $warning_bg_color,
+
+    $failure_color: $msg_color,
+    $failure_bg_color: $failure_bg_color,
+);

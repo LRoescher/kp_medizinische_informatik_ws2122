@@ -1,3 +1,23 @@
+$disclaimer_bg_color: #e7f3fe !default
+$disclaimer_border_color: #2196F3 !default
+
+$border_left_size: 6px !default
+
+$low_bg_color: #ddffdd !default
+$low_border_color: #04AA6D !default
+
+$middle_bg_color: #ffffcc !default
+$middle_border_color: #ffeb3b !default
+
+$high_bg_color: #ffdddd !default
+$high_border_color: #f44336 !default
+
+@mixin message($bg_color, $border_size, $border_color)
+  background-color: $bg_color
+  border-left: $border_size solid $border_color
+  padding: 1%
+  
+
 .description
     padding-bottom: 3%
     padding-top: 3%
@@ -6,9 +26,9 @@
     text-align: center
 
 .disclaimer
-    border: 2px solid #2196F3
+    border: 2px solid $disclaimer_border_color
     border-radius: 8px
-    background-color: #e7f3fe
+    background-color: $disclaimer_bg_color
     padding: 1%
     padding-bottom: 2%
     margin: 1%
@@ -17,16 +37,10 @@
 
 
 .danger_is_low
-  background-color: #ddffdd
-  border-left: 6px solid #04AA6D
-  padding: 1%
-
+  @include message($low_bg_color, $border_left_size, $low_border_color)
+  
 .danger_is_middle
-  background-color: #ffffcc
-  border-left: 6px solid #ffeb3b
-    padding: 1%
+  @include message($middle_bg_color, $border_left_size, $middle_border_color)
 
 .danger_is_high
-  background-color: #ffdddd
-  border-left: 6px solid #f44336
-  padding: 1%
+  @include message($high_bg_color, $border_left_size, $high_border_color)
