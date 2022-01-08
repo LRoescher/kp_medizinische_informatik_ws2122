@@ -1,19 +1,37 @@
 $bg_color: lightblue !default
 $text_color: white !default
+
+%menu_entry
+    height: 10%
+    display: grid
+    grid-template-columns: 40% 60%
     
 #left_menu
     width: 100%
     height: 100%
 
+#left_menu a
+    text-decoration: none
+    
 .menu_entry
-    height: 10%
-    display: grid
-    grid-template-columns: 40% 60%
+    @extend %menu_entry
+
+.menu_entry:hover
+    opacity: 0.75
+    cursor: pointer
 
 #left_menu:hover .full_name
     width: 100%
 
+.small_filler
+    @extend %menu_entry
+
+.big_filler
+    @extend %menu_entry
+    height: 90%
+
 .filler
+    @extend %menu_entry
     height: 40%
 
 .icon
@@ -29,7 +47,7 @@ $text_color: white !default
     font-size: 320%
 
 .icon img
-    width: 50%
+    width: 40%
     height: auto
 
 
@@ -43,7 +61,7 @@ $text_color: white !default
 
     color: $text_color
     text-align: left
-    font-size: 150%
+    font-size: 120%
 
     transition-property: width
     transition-delay: 0s

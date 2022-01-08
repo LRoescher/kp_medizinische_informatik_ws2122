@@ -22,14 +22,18 @@ def py_types():
 @person_data.route("/")
 def get_empty_patient_data():
     # ToDo: remove id from PatientData
-    data = PatientData(id=-1, age=0, name="Tom", hasCovid=False, hasFever=False)
-    return render_template("person_data.html", patient_data=data, annotations=PatientData.__annotations__)
+    data = PatientData(name="Tom", age=0, hasCovid=False, hasFever=False)
+    return render_template("person_data.html",
+                           pagename="Person hinzufügen",
+                           patient_data=data,
+                           annotations=PatientData.__annotations__)
 
 
 @person_data.route("/<int:patient_id>")
 def get_patient_data(patient_id: PatientId):
     # ToDo: translate to german
     return render_template("person_data.html",
+                           pagename="Patientendaten",
                            patient_id=patient_id,
                            patient_data=controller.get_patient_data(patient_id),
                            annotations=PatientData.__annotations__)

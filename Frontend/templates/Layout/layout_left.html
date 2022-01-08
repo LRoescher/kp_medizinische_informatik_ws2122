@@ -8,7 +8,7 @@
     <script src="{{ url_for('static', filename='JavaScript/JQuery.js') }}"></script>
     {% block java_script %}{% endblock %}
     
-    <title>{% block title required %}{% endblock %}</title>
+    <title>{{ pagename }}</title>
     {% endblock %}
 </head>
 <body>

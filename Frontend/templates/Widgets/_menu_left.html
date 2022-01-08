@@ -1,51 +1,71 @@
 <div id="left_menu">
     
-    <div class="menu_entry pagename">
-        <div class="icon">DS</div> <div class="full_name">Seitenname</div>
-    </div>
+    <a class="menu_entry pagename" href="{{ url_for('main') }}">
+        <div class="icon">DS</div> <div class="full_name">{{ pagename }}</div>
+    </a>
 
-    <!-- source: <div>Icons made by <a href="https://www.flaticon.com/authors/monkik" title="monkik">monkik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
-    <div class="menu_entry">
-        <div class="icon">
-            <img src="{{ url_for('static', filename='Icons/data.png') }}" alt="Analyse">
-        </div> 
-        <div class="full_name">Analyse</div>
-    </div>
+    {% if session["logged_in"] is defined and session["logged_in"] %}
 
-    <!-- source: <div>Icons made by <a href="https://icon54.com/" title="Pixel perfect">Pixel perfect</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
-    <div class="menu_entry">
-        <div class="icon">
-            <img src="{{ url_for('static', filename='Icons/add_one.png') }}" alt="Person hinzufügen">
-        </div> 
-        <div class="full_name">Person hinzufügen</div>
-    </div>
+        <!-- source: <div>Icons made by <a href="https://www.flaticon.com/authors/monkik" title="monkik">monkik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
+        <a class="menu_entry" href="{{ url_for('results.get_analysis') }}">
+            <div class="icon">
+                <img src="{{ url_for('static', filename='Icons/data.png') }}" alt="Analyse">
+            </div> 
+            <div class="full_name">Analyse</div>
+        </a>
 
-    <!-- source: <div>Icons made by <a href="" title="Rizki Ahmad Fauzi">Rizki Ahmad Fauzi</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
-    <div class="menu_entry">
-        <div class="icon">
-            <img src="{{ url_for('static', filename='Icons/add_multiple.png') }}" alt="Datensatz hinzufügen">
-        </div> 
-        <div class="full_name">Datensatz hinzufügen</div>
-    </div>
+        <!-- source: <div>Icons made by <a href="https://icon54.com/" title="Pixel perfect">Pixel perfect</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
+        <a class="menu_entry" href="{{ url_for('person_data.get_empty_patient_data') }}">
+            <div class="icon">
+                <img src="{{ url_for('static', filename='Icons/add_one.png') }}" alt="Person hinzufügen">
+            </div> 
+            <div class="full_name">Person hinzufügen</div>
+        </a>
 
-    <div class="menu_entry filler">
-        <div class="icon"></div> <div class="full_name"></div>
-    </div>
+        {% if db_empty %}
+            <!-- source: <div>Icons made by <a href="" title="Rizki Ahmad Fauzi">Rizki Ahmad Fauzi</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
+            <a class="menu_entry" href="{{ url_for('upload_data.upload_page') }}">
+                <div class="icon">
+                    <img src="{{ url_for('static', filename='Icons/add_multiple.png') }}" alt="Datensatz hinzufügen">
+                </div> 
+                <div class="full_name">Datensatz hinzufügen</div>
+            </a>
+        {% else %}
+            <div class="small_filler">
+                <div class="icon"></div> <div class="full_name"></div>
+            </div>
+        {% endif %}
 
-    <!-- source: <div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
-    <div class="menu_entry">
-        <div class="icon">
-            <img src="{{ url_for('static', filename='Icons/bin.png') }}" alt="Datenbank löschen">
-        </div> 
-        <div class="full_name">Datenbank löschen</div>
-    </div>
+        <div class="filler">
+            <div class="icon"></div> <div class="full_name"></div>
+        </div>
 
-    <!-- source: <div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>-->
-    <div class="menu_entry">
-        <div class="icon">
-            <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="logout">
-        </div> 
-        <div class="full_name">Logout</div>
-    </div>
+        {% if not db_empty %}
+            <!-- source: <div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
+            <a class="menu_entry" href="{{ url_for('reset_db') }}">
+                <div class="icon">
+                    <img src="{{ url_for('static', filename='Icons/bin.png') }}" alt="Datenbank löschen">
+                </div> 
+                <div class="full_name">Datenbank löschen</div>
+            </a>
+        {% else %}
+            <div class="small_filler">
+                <div class="icon"></div> <div class="full_name"></div>
+            </div>
+        {% endif %}
+
+        
+        <!-- source: <div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>-->
+        <a class="menu_entry" href="{{ url_for('access_control.logout') }}">
+            <div class="icon">
+                <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="logout">
+            </div> 
+            <div class="full_name">Logout</div>
+        </a>
+    {% else %}
+        <div class="big_filler">
+            <div class="icon"></div> <div class="full_name"></div>
+        </div>
+    {% endif %}
     
 </div>

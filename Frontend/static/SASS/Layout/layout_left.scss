@@ -4,10 +4,9 @@ $info_bg_color: #BDE5F8;
 $success_bg_color: #DFF2BF;
 $warning_bg_color: #FEEFB3;
 $failure_bg_color: #FFD2D2;
-
 @forward './two_elements/_left_bar';
-@forward '../Widgets/_menu_left';
 @forward '../Widgets/_button';
+@forward '../Widgets/_menu_left';
 @forward '../Widgets/_text_box' with (
     $disclaimer_bg_color: $info_bg_color,
     $disclaimer_border_color: #2196F3,

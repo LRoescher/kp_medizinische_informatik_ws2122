@@ -27,6 +27,13 @@ app.register_blueprint(upload_data, url_prefix="/upload_data")
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 
+@app.context_processor
+def global_template_variables():
+    return {
+        "db_empty": controller.is_db_empty()
+    }
+
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'), 'Icons/favicon.ico', mimetype='image/vnd.microsoft.icon')
@@ -34,13 +41,13 @@ def favicon():
 
 @app.route("/")
 def main():
-    return render_template("main.html", db_empty=controller.is_db_empty())
+    return render_template("main.html", pagename="Startseite")
 
 
-@app.route("/<string:name>/")
-def pages(name):
-    # ToDo: remove
-    return render_template(name)
+# @app.route("/<string:name>/")
+# def pages(name):
+#     # ToDo: remove
+#     return render_template(name)
 
 
 @app.route("/reset_db")
