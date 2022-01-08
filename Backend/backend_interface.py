@@ -11,28 +11,57 @@ from Backend.interface import PatientId, Disease, DecisionReasons, PatientData, 
 
 
 class BackendManager(Interface):
+    """
+    Interface for Backend-functionality, like accessing the database.
+    """
 
     def __init__(self):
+        """
+        Creates a new BackendManager.
+        Maintains a list of patient-objects that hold evaluation results.
+        """
         self.db_config = generate_config()[1]
         self.dbManager = DBManager(self.db_config, clear_tables=False)
         self.patients: List[Patient] = list()
 
     def _synchronize(self):
+        """
+        Synchronizes the maintained list of patients with the database.
+        """
         self.patients = evaluate_all_in_database(self.dbManager)
 
     def analyze_all_in_database(self):
+        """
+        Analyzes all patients currently saved in the database.
+        """
         self._synchronize()
 
     def is_db_empty(self) -> bool:
+        """
+        Returns whether the database is empty.
+
+        :return: True if the database is empty
+        """
+        # Checks if there any entries in the condition table
         return self.dbManager.check_if_table_is_empty(table_name=OmopTableEnum.CONDITION_OCCURRENCE.value)
 
     def reset_db(self) -> bool:
+        """
+        Empties the database of all entries created by the etl job or via the frontend.
+
+        :return: True if the database was successfully reset.
+        """
         self.patients.clear()
         return self.dbManager.clear_omop_tables()
-        # Todo:
-        # Falls die Ergebnisse der Analyse auch in der DB gespeichert werden, sollten auch diese zurückgesetzt werden
+        # Todo: Falls die Ergebnisse der Analyse in der DB gespeichert werden, sollten auch diese zurückgesetzt werden
 
     def add_patient(self, patient_data: PatientData) -> Optional[PatientId]:
+        """
+        Creates a patient-object from the given data and saves it in the database.
+
+        :param patient_data: PatientData from the frontend
+        :return: PatientId of the saved patient if successful else None
+        """
         # Create Patient object
         patient: Patient = self._create_patient_from_data(patient_data)
 
@@ -46,6 +75,12 @@ class BackendManager(Interface):
         return PatientId(patient.id)
 
     def _create_patient_from_data(self, patient_data: PatientData) -> Patient:
+        """
+        Creates a patient-object from the given data.
+
+        :param patient_data: PatientData from the Frontend
+        :return: Corresponding Patient
+        """
         # Generate Random id that is not already in the database
         patient_id = self.dbManager.generate_patient_id()
 
@@ -67,6 +102,12 @@ class BackendManager(Interface):
         return patient
 
     def update_patient(self, patient_id: PatientId, patient_data: PatientData) -> bool:
+        """
+        Updates the patient with the given id with the provided patient-data. Overwrites the values of the existing
+        patient. Only fields that can be set via the PatientData will be overwritten.
+
+        :return: True if successfully updated
+        """
         try:
             # Get already saved patient
             old_patient: Patient = evaluate_patient(self.dbManager, patient_id)
@@ -99,6 +140,11 @@ class BackendManager(Interface):
 
     @property
     def analysis_data(self) -> Dict[PatientId, AnalysisData]:
+        """
+        Returns the analysis data as a dictionary with patient-ids as keys.
+
+        :return: A dictionary with PatientIds as keys and AnalysisData as values
+        """
         if not self.patients:
             self._synchronize()
         data_dict = dict()
@@ -112,6 +158,12 @@ class BackendManager(Interface):
         return data_dict
 
     def get_patient_data(self, patient_id: PatientId) -> PatientData:
+        """
+        Gets the PatientData for a specific patientId.
+
+        :param patient_id: id of the patient
+        :return: corresponding PatientData
+        """
         for patient in self.patients:
             if PatientId(patient.id) == patient_id:
                 # Found corresponding patient
@@ -126,6 +178,13 @@ class BackendManager(Interface):
         return PatientData()
 
     def get_decision_reason(self, patient_id: PatientId, disease: Disease) -> DecisionReasons:
+        """
+        Gets the reasons for the calculated score for a given disease and a given patient (id).
+
+        :param patient_id: id of the patient
+        :param disease: disease
+        :return: DecisionReasons for the patient and disease
+        """
         for patient in self.patients:
             if PatientId(patient.id) == patient_id:
                 # Found corresponding patient

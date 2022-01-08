@@ -84,4 +84,5 @@ def evaluate_all_in_database(db_manager: DBManager) -> List[Patient]:
 if __name__ == "__main__":
     db_config = generate_config()[1]
     dbManager = DBManager(db_config, clear_tables=False)
-    print(evaluate_all_in_database(dbManager))
+    result = evaluate_all_in_database(dbManager)
+    print(result)

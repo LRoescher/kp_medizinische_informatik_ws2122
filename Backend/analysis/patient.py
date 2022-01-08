@@ -52,6 +52,10 @@ class Patient:
         self.reasons_for_kawasaki = list()
         self.reasons_for_pims = list()
 
+    def __str__(self):
+        return f"{self.id}: {self.day}-{self.month}-{self.year}, Kawsawki: {self.kawasaki_score}, " \
+               f"Pims: {self.pims_score}"
+
     def add_condition(self, condition):
         """
         Adds the condition to the list of conditions for the patient.
@@ -85,6 +89,7 @@ class Patient:
 
         :return: age in years
         """
+        # current_date = datetime.date.today()
         current_date = datetime.date.today()
         return current_date.year - self.year - ((current_date.month, current_date.day) < (self.month, self.day))
 
@@ -254,7 +259,8 @@ class Patient:
 
         # Return 0.0 if not in age range
         if self.calculate_age() > 8:
-            return score
+            self.kawasaki_score = 0.0
+            return self.kawasaki_score
         self.reasons_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
 
         if self.has_fever():
@@ -280,6 +286,7 @@ class Patient:
             self.reasons_for_kawasaki.append(self.REASON_CARDIAL_CONDITION)
 
         self.kawasaki_score = score / max_score
+        return self.kawasaki_score
 
     def calculate_pims_score(self) -> (float, Set[str]):
         """
@@ -299,14 +306,14 @@ class Patient:
         score: float = 0.0
         max_score: float = 9.5
 
-        if not self.has_covid():
-            return 0.0
-        self.reasons_for_pims.append(self.REASON_COVID)
-
-        if self.calculate_age() < 20:
-            return 0.0
+        if self.calculate_age() >= 20:
+            self.pims_score = 0.0
+            return self.pims_score
         self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
 
+        if self.has_covid():
+            score += 3
+            self.reasons_for_pims.append(self.REASON_COVID)
         if self.has_fever():
             score += 2
             self.reasons_for_pims.append(self.REASON_FEVER)
@@ -336,3 +343,4 @@ class Patient:
             self.reasons_for_pims.append(self.REASON_EFFUSION)
 
         self.pims_score = score / max_score
+        return self.pims_score

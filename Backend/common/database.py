@@ -190,7 +190,6 @@ class DBManager:
 
         :param table: the df should be stored
         :param df: with OMOP data
-        :return:
         """
         logging.info(f"Saving Table {table.value}.")
         # Create a list of tuples from the dataframe values
@@ -306,8 +305,8 @@ class DBManager:
         """
         cursor = self.conn.cursor()
         query: str = f"DELETE FROM {self.DB_SCHEMA}.{OmopTableEnum.CONDITION_OCCURRENCE.value} " \
-                     f"WHERE {OmopConditionOccurrenceFieldsEnum.PERSON_ID} = {person_id} " \
-                     f"AND {OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID} = {condition_id};"
+                     f"WHERE {OmopConditionOccurrenceFieldsEnum.PERSON_ID.value} = {person_id} " \
+                     f"AND {OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID.value} = {condition_id};"
         try:
             # Execute delete query
             cursor.execute(query)
