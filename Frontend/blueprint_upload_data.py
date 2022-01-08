@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, request, session, flash, url_for
+from flask import Blueprint, render_template, send_file, request, session, flash, url_for
 import os
 
 upload_data = Blueprint("upload_data", __name__)
@@ -16,5 +16,13 @@ def upload_file():
     if request.method == 'POST':
         f = request.files['file']
         #Todo: use it
-        f.save(os.path.join(upload_folder, f.filename))
+
+        if "config.yml" in f.filename:
+            f.save("../ETLProcess/src/config.yml")
+        else:
+            f.save(os.path.join(upload_folder, f.filename))
         return render_template("load_batch.html", sucsess=True)
+
+@upload_data.route("/config")
+def download_config():
+    return send_file("../ETLProcess/src/config.yml", as_attachment=True)
