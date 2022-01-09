@@ -7,7 +7,8 @@ import numpy as np
 from typing import Tuple, Optional, List
 from psycopg2.extensions import register_adapter, AsIs
 from Backend.common.config import generate_config, DbConfig
-from Backend.common.omop_enums import OmopTableEnum, OmopConditionOccurrenceFieldsEnum, OmopPersonFieldsEnum
+from Backend.common.omop_enums import OmopTableEnum, OmopConditionOccurrenceFieldsEnum, OmopPersonFieldsEnum, \
+    SnomedConcepts
 
 psycopg2.extensions.register_adapter(np.int64, AsIs)
 
@@ -150,6 +151,13 @@ class DBManager:
         """
         # Remove trailing !/+ characters, because they are not included in OMOP concepts
         code = code.rstrip("!+")
+
+        if code == 'U09' or code == 'U09.9' or code == 'U08' or code == 'U08.9' or code == 'U07.1':
+            # (post) Covid (in personal history)
+            return SnomedConcepts.COVID_19.value
+        elif code == 'U07.2':
+            # Covid (suspected)
+            return SnomedConcepts.COVID_19_VIRUS_NOT_IDENTIFIED.value
 
         cursor = self.conn.cursor()
         cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")

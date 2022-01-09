@@ -100,6 +100,7 @@ class SnomedConcepts(Enum):
     # U10.9 Multisystemisches Entzündungssyndrom in Verbindung mit COVID-19 (Pims) -> 703578
     COVID_19 = 37311061
     COVID_19_VIRUS_NOT_IDENTIFIED = 37311060
-    COVID_19_IN_PERSONAL_HISTORY = 4214956
+    COVID_19_IN_PERSONAL_HISTORY = 37311061
+    POST_COVID = 705076
     PIMS = 703578
 

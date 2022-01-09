@@ -2,8 +2,6 @@ import datetime
 import logging
 from typing import List
 
-import pandas as pd
-
 from Backend.analysis.patient import Patient
 from Backend.common.config import generate_config
 from Backend.common.database import DBManager

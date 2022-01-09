@@ -226,6 +226,7 @@ class Patient:
         snomed_covid_ids = [SnomedConcepts.COVID_19.value,
                             SnomedConcepts.COVID_19_VIRUS_NOT_IDENTIFIED.value,
                             SnomedConcepts.COVID_19_IN_PERSONAL_HISTORY.value,
+                            SnomedConcepts.POST_COVID.value,
                             SnomedConcepts.PIMS.value]
         return any(x in snomed_covid_ids for x in self.conditions)
 
@@ -293,7 +294,7 @@ class Patient:
         self.reasons_for_pims.clear()
 
         score: float = 0.0
-        max_score: float = 9.5
+        max_score: float = 11.5
 
         if self.calculate_age() >= 20:
             self.pims_score = 0.0
@@ -301,7 +302,7 @@ class Patient:
         self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
 
         if self.has_covid():
-            score += 3
+            score += 2
             self.reasons_for_pims.append(self.REASON_COVID)
         if self.has_fever():
             score += 2
