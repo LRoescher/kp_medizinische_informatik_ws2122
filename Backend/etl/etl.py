@@ -7,8 +7,9 @@ import logging
 
 from Backend.analysis.patient import Patient
 from Backend.common.config import DbConfig, generate_config
-from Backend.common.database import DBManager, OmopTableEnum, OmopPersonFieldsEnum, OmopLocationFieldsEnum, \
-    OmopProviderFieldsEnum, OmopConditionOccurrenceFieldsEnum
+from Backend.common.database import DBManager
+from Backend.common.omop_enums import OmopTableEnum, OmopPersonFieldsEnum, OmopLocationFieldsEnum, \
+    OmopProviderFieldsEnum, OmopConditionOccurrenceFieldsEnum, SnomedConcepts
 from Backend.etl import extract, transform
 
 
@@ -72,14 +73,12 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager):
     """
     logging.info("Extracting data from the given patient...")
 
-    # Todo Remove dummy data (gender, etc) as soon as present in Patient Object and Frontend
-    birthdate = datetime.datetime(year=patient.year, month=patient.month, day=patient.day)
     data_person = {OmopPersonFieldsEnum.PERSON_ID.value: [patient.id],
                    OmopPersonFieldsEnum.GENDER_CONCEPT_ID.value: [0],
                    OmopPersonFieldsEnum.YEAR_OF_BIRTH.value: [patient.year],
                    OmopPersonFieldsEnum.MONTH_OF_BIRTH.value: [patient.month],
                    OmopPersonFieldsEnum.DAY_OF_BIRTH.value: [patient.day],
-                   OmopPersonFieldsEnum.BIRTH_DATETIME.value: [birthdate],
+                   OmopPersonFieldsEnum.BIRTH_DATETIME.value: [patient.birthdate],
                    OmopPersonFieldsEnum.RACE_CONCEPT_ID.value: [4218674],
                    OmopPersonFieldsEnum.ETHNICITY_CONCEPT_ID.value: [0],
                    OmopPersonFieldsEnum.LOCATION_ID.value: [patient.id],
@@ -112,7 +111,8 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager):
                                  OmopConditionOccurrenceFieldsEnum.PERSON_ID.value: [patient.id] * entries,
                                  OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID.value: patient.conditions,
                                  OmopConditionOccurrenceFieldsEnum.CONDITION_START_DATE.value: [current_date] * entries,
-                                 OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID.value: [44786627] * entries}
+                                 OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID.value: [44786627] * entries
+                                 }
     omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occurrence)
 
     db_manager.save(OmopTableEnum.LOCATION, omop_location_df)
@@ -124,44 +124,120 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager):
 
 def update_patient(old_patient: Patient, update: Patient, db_manager: DBManager):
     logging.info("Updating a patient...")
-    # Todo: update more general data if available
     db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.PERSON_SOURCE_VALUE.value, update.name)
     db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.DAY_OF_BIRTH.value, update.day)
     db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.MONTH_OF_BIRTH.value, update.month)
     db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.YEAR_OF_BIRTH.value, update.year)
+    db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.BIRTH_DATETIME.value, update.birthdate)
 
-    # Todo: update missing conditions as soon as present in the data
     if old_patient.has_covid() and not update.has_covid():
         # Remove covid from conditions
-        db_manager.delete_condition_for_patient(old_patient.id, 37311061)
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.COVID_19.value)
     if not old_patient.has_covid() and update.has_covid():
-        # Create dataframe for conditions
-        condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
-        current_date = datetime.datetime.now()
-        data_condition_occ = {OmopConditionOccurrenceFieldsEnum.CONDITION_OCCURRENCE_ID.value: [condition_occurrence_id],
-                              OmopConditionOccurrenceFieldsEnum.PERSON_ID.value: [old_patient.id],
-                              OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID.value: [37311061],
-                              OmopConditionOccurrenceFieldsEnum.CONDITION_START_DATE.value: [current_date],
-                              OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID.value: [44786627]}
-        omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occ)
-        db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
+        # Add covid as condition
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.COVID_19.value)
 
     if old_patient.has_fever() and not update.has_fever():
-        # Remove fever from conditions
-        db_manager.delete_condition_for_patient(old_patient.id, 437663)
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.FEVER.value)
     if not old_patient.has_fever() and update.has_fever():
-        # Create dataframe for conditions
-        condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
-        current_date = datetime.datetime.now()
-        data_condition_occ = {OmopConditionOccurrenceFieldsEnum.CONDITION_OCCURRENCE_ID.value: [condition_occurrence_id],
-                              OmopConditionOccurrenceFieldsEnum.PERSON_ID.value: [old_patient.id],
-                              OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID.value: [437663],
-                              OmopConditionOccurrenceFieldsEnum.CONDITION_START_DATE.value: [current_date],
-                              OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID.value: [44786627]}
-        omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occ)
-        db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.FEVER.value)
+
+    if old_patient.has_exanthem() and not update.has_exanthem():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.ERUPTION.value)
+    if not old_patient.has_exanthem() and update.has_exanthem():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.ERUPTION.value)
+
+    if old_patient.has_mouth_or_mucosa_inflammation() and not update.has_mouth_or_mucosa_inflammation():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
+    if not old_patient.has_mouth_or_mucosa_inflammation() and update.has_mouth_or_mucosa_inflammation():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
+
+    if old_patient.has_swollen_extremities() and not update.has_swollen_extremities():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.SWELLING.value)
+    if not old_patient.has_swollen_extremities() and update.has_swollen_extremities():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.SWELLING.value)
+
+    if old_patient.has_conjunctivitis() and not update.has_conjunctivitis():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
+    if not old_patient.has_conjunctivitis() and update.has_conjunctivitis():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
+
+    if old_patient.has_lymphadenopathy() and not update.has_lymphadenopathy():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.LYMPHADENOPATHY.value)
+    if not old_patient.has_lymphadenopathy() and update.has_lymphadenopathy():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.LYMPHADENOPATHY.value)
+
+    if old_patient.has_gastro_intestinal_condition() and not update.has_gastro_intestinal_condition():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.NAUSEA_AND_VOMITING.value)
+    if not old_patient.has_gastro_intestinal_condition() and update.has_gastro_intestinal_condition():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.NAUSEA_AND_VOMITING.value)
+
+    if old_patient.has_ascites() and not update.has_ascites():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.ASCITES.value)
+    if not old_patient.has_ascites() and update.has_ascites():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.ASCITES.value)
+
+    if old_patient.has_pericardial_effusions() and not update.has_pericardial_effusions():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.PERICARDIAL_EFFUSION.value)
+    if not old_patient.has_pericardial_effusions() and update.has_pericardial_effusions():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.PERICARDIAL_EFFUSION.value)
+
+    if old_patient.has_pleural_effusions() and not update.has_pleural_effusions():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.PLEURAL_EFFUSION.value)
+    if not old_patient.has_pleural_effusions() and update.has_pleural_effusions():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.PLEURAL_EFFUSION.value)
+
+    if old_patient.has_pericarditis() and not update.has_pericarditis():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.PERICARDITIS.value)
+    if not old_patient.has_pericarditis() and update.has_pericarditis():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.PERICARDITIS.value)
+
+    if old_patient.has_myocarditis() and not update.has_myocarditis():
+        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.MYOCARDITIS.value)
+    if not old_patient.has_myocarditis() and update.has_myocarditis():
+        _add_concept_for_patient(db_manager=db_manager,
+                                 patient_id=old_patient.id,
+                                 concept_id=SnomedConcepts.MYOCARDITIS.value)
 
     logging.info("Done updating the patient.")
+
+
+def _add_concept_for_patient(db_manager: DBManager, patient_id: int, concept_id: int):
+    # Create dataframe for conditions
+    condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
+    current_date = datetime.datetime.now()
+    data_condition_occ = {OmopConditionOccurrenceFieldsEnum.CONDITION_OCCURRENCE_ID.value: [condition_occurrence_id],
+                          OmopConditionOccurrenceFieldsEnum.PERSON_ID.value: [patient_id],
+                          OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID.value: [concept_id],
+                          OmopConditionOccurrenceFieldsEnum.CONDITION_START_DATE.value: [current_date],
+                          OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID.value: [44786627]}
+    omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occ)
+    # Save in database
+    db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
 
 
 if __name__ == "__main__":

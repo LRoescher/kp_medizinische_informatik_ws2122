@@ -142,4 +142,3 @@ class Interface(Singleton, ABC):
         :return:reason for the decision
         """
         pass
-
