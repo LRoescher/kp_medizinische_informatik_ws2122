@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Blueprint, render_template, redirect, request, url_for, flash
 from Backend.interface import PatientId, Interface, PatientData
 from typing import Optional
@@ -23,7 +25,8 @@ def py_types():
 @person_data.route("/")
 def get_empty_patient_data():
     # ToDo: remove id from PatientData
-    data = PatientData(id=-1, age=0, name="Tom", hasCovid=False, hasFever=False)
+    birthdate = datetime.date.today()
+    data = PatientData(birthdate=birthdate, name="Tom", hasCovid=False, hasFever=False)
     return render_template("person_data.html", patient_data=data, annotations=PatientData.__annotations__)
 
 

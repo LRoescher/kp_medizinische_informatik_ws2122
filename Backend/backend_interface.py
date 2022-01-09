@@ -7,7 +7,7 @@ from Backend.analysis.analysis import evaluate_patient, evaluate_all_in_database
 from Backend.analysis.patient import Patient
 from Backend.common.config import generate_config
 from Backend.common.database import DBManager
-from Backend.common.omop_enums import OmopTableEnum
+from Backend.common.omop_enums import OmopTableEnum, SnomedConcepts
 from Backend.etl.etl import run_etl_job_for_csvs, run_etl_job_for_patient, update_patient
 from Backend.interface import PatientId, Disease, DecisionReasons, PatientData, AnalysisData, Interface
 
@@ -93,31 +93,31 @@ class BackendManager(Interface):
 
         # Get snomed ids from patient_data and add as conditions
         if patient_data['hasCovid']:
-            patient.conditions.append(37311061)
+            patient.conditions.append(SnomedConcepts.COVID_19.value)
         if patient_data['hasFever']:
-            patient.conditions.append(437663)
+            patient.conditions.append(SnomedConcepts.FEVER.value)
         if patient_data['hasExanthem']:
-            patient.conditions.append(140214)
+            patient.conditions.append(SnomedConcepts.ERUPTION.value)
         if patient_data['hasEnanthem']:
-            patient.conditions.append(139057)
+            patient.conditions.append(SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
         if patient_data['hasSwollenExtremeties']:
-            patient.conditions.append(443257)
+            patient.conditions.append(SnomedConcepts.SWELLING.value)
         if patient_data['hasConjunctivitis']:
-            patient.conditions.append(379019)
+            patient.conditions.append(SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
         if patient_data['hasSwollenLymphnodes']:
-            patient.conditions.append(315085)
+            patient.conditions.append(SnomedConcepts.LYMPHADENOPATHY.value)
         if patient_data['hasGastroIntestinalCondition']:
-            patient.conditions.append(27674)
+            patient.conditions.append(SnomedConcepts.NAUSEA_AND_VOMITING.value)
         if patient_data['hasAscites']:
-            patient.conditions.append(200528)
+            patient.conditions.append(SnomedConcepts.ASCITES.value)
         if patient_data['hasPericardialEffusions']:
-            patient.conditions.append(4108814)
+            patient.conditions.append(SnomedConcepts.PERICARDIAL_EFFUSION.value)
         if patient_data['hasPleuralEffusions']:
-            patient.conditions.append(254061)
+            patient.conditions.append(SnomedConcepts.PLEURAL_EFFUSION.value)
         if patient_data['hasPericarditis']:
-            patient.conditions.append(315293)
+            patient.conditions.append(SnomedConcepts.PERICARDITIS.value)
         if patient_data['hasMyocarditis']:
-            patient.conditions.append(4331309)
+            patient.conditions.append(SnomedConcepts.MYOCARDITIS.value)
 
         return patient
 
