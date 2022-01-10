@@ -17,7 +17,9 @@
     </div>
 
     <div id="two_elements_content">
-        {% block content %}{% endblock %}
+        <div id="two_elements_content_frame">
+            {% block content %}{% endblock %}
+        </div>
     </div>
 
     {% include 'Widgets/_flash_messages.html' %}

@@ -1,3 +1,8 @@
+$btn_text_color: #333 !default
+$btn_bg_color: #lightblue !default
+$btn_border_color: #light !default
+$btn_darken_bg_color: #7cc0d7 !default
+
 .btn
     display: block
     padding: 6px 12px
@@ -14,15 +19,15 @@
     border: 1px solid transparent
     border-radius: 4px
     
-    color: #333
-    background-color: #fff
-    border-color: #ccc
+    color: $btn_text_color
+    background-color: $btn_bg_color
+    border-color: $btn_border_color
 
 
 .btn:hover
-    color: #333
-    background-color: #e6e6e6
-    border-color: #adadad
+    color: $btn_text_color
+    background-color: $btn_darken_bg_color
+    border-color: $btn_border_color
 
 a.btn
     text-decoration: none
