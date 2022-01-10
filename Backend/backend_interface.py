@@ -23,18 +23,13 @@ class BackendManager(Interface):
         self.db_config = generate_config()[1]
         self.dbManager = DBManager(self.db_config, clear_tables=False)
         self.patients: List[Patient] = list()
-
-    def _synchronize(self):
-        """
-        Synchronizes the maintained list of patients with the database.
-        """
-        self.patients = evaluate_all_in_database(self.dbManager)
+        self.analyze_all_in_database()
 
     def analyze_all_in_database(self):
         """
         Analyzes all patients currently saved in the database.
         """
-        self._synchronize()
+        self.patients = evaluate_all_in_database(self.dbManager)
 
     def is_db_empty(self) -> bool:
         """
@@ -145,8 +140,6 @@ class BackendManager(Interface):
 
         :return: A dictionary with PatientIds as keys and AnalysisData as values
         """
-        if not self.patients:
-            self._synchronize()
         data_dict = dict()
         for patient in self.patients:
             analysis_data: AnalysisData = {

@@ -122,9 +122,8 @@ class DBManager:
         """
         cursor = self.conn.cursor()
         try:
-            cursor.execute(f"SET search_path TO {self.DB_SCHEMA};")
-
-            cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
+            query: str = f"SELECT COUNT(*) FROM {self.DB_SCHEMA}.{table_name};"
+            cursor.execute(query)
             result = cursor.fetchone()[0]
             self.conn.commit()
             cursor.close()
@@ -144,10 +143,10 @@ class DBManager:
         """
         cursor = self.conn.cursor()
         try:
-            cursor.execute(f"SET search_path TO {self.DB_SCHEMA};")
 
             for table in OmopTableEnum:
-                cursor.execute(f"Truncate {table.value} CASCADE;")
+                query: str = f"Truncate {self.DB_SCHEMA}.{table.value} CASCADE;"
+                cursor.execute(query)
                 self.conn.commit()
 
         except (Exception, psycopg2.DatabaseError) as error:
