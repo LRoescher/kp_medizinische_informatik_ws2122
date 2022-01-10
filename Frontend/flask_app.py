@@ -1,6 +1,7 @@
 from flask import Flask, flash, redirect, render_template, url_for, send_from_directory
 from datetime import timedelta
 from Backend.interface import Interface
+from Backend.backend_interface import BackendManager
 from Frontend.FlashMessageTypes import FlashMessageTypes
 from Frontend.blueprint_person import person_data
 from Frontend.blueprint_login import access_control
@@ -8,10 +9,8 @@ from Frontend.blueprint_results import results
 from Frontend.blueprint_upload_data import upload_data
 import os
 
-# ToDo: remove later
-from Backend.example_interface import Example
 
-controller: Interface = Example()
+controller: Interface = BackendManager()
 
 app = Flask(__name__, template_folder='./templates/')
 app.jinja_options["lstrip_blocks"] = True

@@ -1,23 +1,36 @@
+import os
 import yaml
 import sys
 import getopt
 import logging
-from database import DBManager, DbConfig
 # type hints
-from typing import Tuple, Optional, Dict
+from typing import Tuple, Optional, Dict, TypedDict
+from config.definitions import ROOT_DIR
 
-from patient import Patient
 
-
-def generate_config() -> Tuple[DbConfig]:
+class DbConfig(TypedDict):
     """
-    Combines the config-file and command line arguments to one configuration, including database credentials and the
+    Only for static type checking.
+    """
+    host: str
+    port: str
+    db_name: str
+    username: str
+    password: str
+    db_schema: str
+
+
+def generate_config() -> Tuple[str, DbConfig]:
+    """
+    Combines the config-file and command line arguments to one configuration, including common credentials and the
     path to the input directory.
 
     :return: dir with csv files, config options for the db
     """
     # path to default config file
-    config_path = "config.yml"
+    dirname = os.path.dirname(__file__)
+    config_path = os.path.join(ROOT_DIR, "config", "config.yml")
+    print(f"Reading config file from {config_path}.")
 
     # cmd arguments
     argv = sys.argv[1:]
@@ -87,8 +100,12 @@ def generate_config() -> Tuple[DbConfig]:
         data = yaml.load(file, Loader=yaml.SafeLoader)
 
     # override config with cmd arguments
-    if all(key in data for key in ["db_config", "log_level"]):
+    if all(key in data for key in ["db_config", "csv_dir", "log_level"]):
         data["db_config"].update(tmp_dict)
+        data["csv_dir"] = tmp_csv_dir if tmp_csv_dir is not None else data["csv_dir"]
+        absolute_csv_path = os.path.join(ROOT_DIR, data["csv_dir"])
+        print(f"Setting csv directory as {absolute_csv_path}.")
+        data["csv_dir"] = absolute_csv_path
 
         # set log_level
         tmp_log_level = tmp_log_level if tmp_log_level is not None else data["log_level"]
@@ -123,87 +140,14 @@ def generate_config() -> Tuple[DbConfig]:
         logging.error(
             f"The following arguments are missing for a correct configuration: {list(expected_config_format.keys())}")
 
-    return data["db_config"]
+    csv_files = ["PERSON.csv", "CASE.csv", "LAB.csv", "DIAGNOSIS.csv", "PROCEDURE.csv"]
+    if not (os.path.isdir(data["csv_dir"]) and
+            all(csv_table in os.listdir(data["csv_dir"]) for csv_table in csv_files)):
+        check_ok = False
+        logging.error(f"The csv_dir should contain the following files: {csv_files}. Wrong path: {data['csv_dir']}")
 
+    if not check_ok:
+        logging.error("Shutting down ETL-process due to wrong configuration.")
+        sys.exit(0)
 
-def evaluate_patient(dbManager, patient_id):
-    """
-    Evaluates the pims and kawasaki-scores for a single patient.
-
-    :param dbManager: Database-Manager with a running connection to the database
-    :param patient_id: id of the patient
-    :return: A Tuple containing another tuple with the score for kawasaki and reasons if not 0.0 and the score for pims
-    with the reasons for pims if not 0.0
-    """
-
-    # Create patient object from database query
-    query = f"SELECT * FROM cds_cdm.person WHERE person_id = {patient_id}"
-    df = dbManager.send_query(query)
-    id = df.iloc[0]['person_id']
-    day = df.iloc[0]['day_of_birth']
-    month = df.iloc[0]['month_of_birth']
-    year = df.iloc[0]['year_of_birth']
-    name = df.iloc[0]['person_source_value']
-    patient = Patient(id, day, month, year, name)
-
-    # Get all conditions for every patient
-    query = f"SELECT * FROM cds_cdm.condition_occurrence WHERE person_id = {patient_id}"
-    df = dbManager.send_query(query)
-    for index, row in df.iterrows():
-        patient.add_condition(row['condition_concept_id'])
-
-    # Get all measurements with a high value for every patient
-    concept_high = 4328749
-    query = f"SELECT * FROM cds_cdm.measurement WHERE person_id = {patient_id} AND value_as_concept_id = {concept_high}"
-    df = dbManager.send_query(query)
-    for index, row in df.iterrows():
-        patient.add_high_measurement(row['measurement_concept_id'])
-
-    # For Kawasaki and PIMS only high lab results seem to be relevant for other diseases the concepts for
-    # normal = 4124457 and low = 4267416 should be checked
-
-    patient.calculate_kawasaki_score()
-    patient.calculate_pims_score()
-
-    return patient.get_patient_as_tuple()
-
-
-def evaluate_patients(dbManager, patient_ids: list):
-    """
-    Evaluates all given patients for having kawasaki or pims.
-
-    :param dbManager: Database-Manager with a running connection to the database
-    :param patient_ids: list of patient ids
-    :return: List of Tuples containing scores and reasons for kawasaki and pims for every patient
-    """
-    logging.info(f"Evaluating {len(patient_ids)} patients.")
-    evaluations = list()
-    for patient_id in patient_ids:
-        result = evaluate_patient(dbManager, patient_id)
-        evaluations.append(result)
-    logging.info(f"Finished evaluating {len(patient_ids)} patients.")
-    return evaluations
-
-
-def evaluate_all_in_database(dbManager):
-    """
-    Evaluates all patients currently stored in the database.
-
-    :param dbManager: DatabaseManager with an active connection to the database
-    :return: List of Tuples containing scores and reasons for kawasaki and pims for every patient
-    """
-    # load all patient_ids from db as patient_ids
-    logging.info("Evaluating all patients currently in the given OMOP-Database.")
-    query = f"SELECT person_id FROM cds_cdm.person"
-    df = dbManager.send_query(query)
-    patient_ids = df['person_id'].values.tolist()
-    result = evaluate_patients(dbManager, patient_ids)
-    logging.info(f"Finished evaluating all patients currently in the database.")
-    return result
-
-
-if __name__ == "__main__":
-    db_config = generate_config()
-    dbManager = DBManager(db_config, clear_tables=False)
-    print(evaluate_all_in_database(dbManager))
-
+    return data["csv_dir"], data["db_config"]

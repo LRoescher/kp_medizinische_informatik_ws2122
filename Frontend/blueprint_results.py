@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template
+from Backend.backend_interface import BackendManager
 from Backend.interface import PatientId, Interface, DecisionReasons, Disease, PatientData
-from Backend.example_interface import Example
 
-controller: Interface = Example()
+
+controller: Interface = BackendManager()
 
 results = Blueprint("results", __name__)
 
@@ -32,5 +33,5 @@ def result_kawasaki(patient_id: PatientId):
                            patient_id=patient_id,
                            decision_reason_data=controller.get_decision_reason(patient_id, Disease.KAWASAKI),
                            decision_reason_annotations=DecisionReasons.__annotations__,
-                           patient_data = controller.get_patient_data(patient_id),
-                           annotations = PatientData.__annotations__)
+                           patient_data=controller.get_patient_data(patient_id),
+                           annotations=PatientData.__annotations__)

@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, redirect, request, url_for, flash
 from Backend.interface import PatientId, Interface, PatientData
-from Backend.example_interface import Example
 from typing import Optional
+from Backend.backend_interface import BackendManager
 from Frontend.FlashMessageTypes import FlashMessageTypes
 
-controller: Interface = Example()
+import datetime
+
+controller: Interface = BackendManager()
 
 person_data = Blueprint("person_data", __name__)
 
@@ -21,12 +23,9 @@ def py_types():
 
 @person_data.route("/")
 def get_empty_patient_data():
-    # ToDo: remove id from PatientData
-    data = PatientData(name="Tom", age=0, hasCovid=False, hasFever=False)
-    return render_template("person_data.html",
-                           pagename="Person hinzufügen",
-                           patient_data=data,
-                           annotations=PatientData.__annotations__)
+    birthdate = datetime.date.today()
+    data = PatientData(birthdate=birthdate, name="Tom", hasCovid=False, hasFever=False)
+    return render_template("person_data.html", patient_data=data, annotations=PatientData.__annotations__)
 
 
 @person_data.route("/<int:patient_id>")
@@ -87,4 +86,3 @@ def update_patient_data(patient_id: PatientId):
     else:
         flash(f"Aktualisieren eines Patienten (id: {patient_id}) {patient_data['name']} schlug fehl.", FlashMessageTypes.FAILURE.value)
         return redirect(url_for(".get_patient_data", patient_id=patient_id))
-

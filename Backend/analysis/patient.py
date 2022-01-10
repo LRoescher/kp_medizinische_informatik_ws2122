@@ -2,6 +2,8 @@ import datetime
 
 from typing import Set
 
+from Backend.common.omop_enums import SnomedConcepts
+
 
 class Patient:
     """
@@ -29,28 +31,31 @@ class Patient:
     REASON_EFFUSION: str = "Flüssigkeitsansammlungen"
     REASON_COVID: str = "Covid-19 Erkrankung"
 
-    def __init__(self, patient_id, day, month, year, name):
+    def __init__(self, patient_id: int, name: str, birthdate: datetime.date):
         """
         Creates a new patient.
 
         :param patient_id: unique identifier (Long)
-        :param day: day of birth
-        :param month: month of birth
-        :param year: year of birth
+        :param birthdate: date of birth
         :param name: name of the patient (firstname + lastname)
         """
         self.id = patient_id
-        self.day = day
-        self.month = month
-        self.year = year
         self.name = name
+        self.birthdate = birthdate
+        self.day = birthdate.day
+        self.month = birthdate.month
+        self.year = birthdate.year
         self.conditions = list()
         self.high_measurements = list()
         self.procedures = list()
-        self.kawasaki_score = 0.0
-        self.pims_score = 0.0
-        self.reasons_for_kawasaki = set()
-        self.reasons_for_pims = set()
+        self.kawasaki_score: float = 0.0
+        self.pims_score: float = 0.0
+        self.reasons_for_kawasaki = list()
+        self.reasons_for_pims = list()
+
+    def __str__(self):
+        return f"{self.id}: {self.day}-{self.month}-{self.year}, Kawsawki: {self.kawasaki_score}, " \
+               f"Pims: {self.pims_score}"
 
     def add_condition(self, condition):
         """
@@ -93,8 +98,10 @@ class Patient:
         Returns True if the patient has condition that corresponds to or includes fever.
         :return: True if the patient has a fever
         """
-        # Snomed ids for fever, fever with chills, febrile convulsions, continuous fever
-        snomed_fever_ids = [437663, 4164645, 444413, 4158330]
+        snomed_fever_ids = [SnomedConcepts.FEVER.value,
+                            SnomedConcepts.FEVER_WITH_CHILLS.value,
+                            SnomedConcepts.FEBRILE_CONVULSIONS.value,
+                            SnomedConcepts.CONTINUOUS_FEVER.value]
         return any(x in snomed_fever_ids for x in self.conditions)
 
     def has_exanthem(self) -> bool:
@@ -103,12 +110,9 @@ class Patient:
 
         :return: True if the patient has an exanthem
         """
-        # Snomed id for Eruption (R21: Exanthem maps to this): 140214
-        # Snomed id for Skin AND/OR mucosa finding (B.09 'Nicht näher bezeichnete Virusinfektion, die durch Haut- und
-        # Schleimhautläsionen gekennzeichnet ist' maps to this): 4212577
-        # Snomed id for Disease due to Orthopoxvirus (B08.0: Sonstige näher bezeichnete Virusinfektionen, die durch
-        # Haut- und Schleimhautläsionen gekennzeichnet sind): 443724
-        snomed_exanthem_ids = [140214, 4212577, 443724]
+        snomed_exanthem_ids = [SnomedConcepts.ERUPTION.value,
+                               SnomedConcepts.SKIN_OR_MUCOSA_FINDING_DUE_TO_VIRUS.value,
+                               SnomedConcepts.SKIN_OR_MUCOSA_FINDING_DUE_TO_OTHER_VIRUSES.value]
         return any(x in snomed_exanthem_ids for x in self.conditions)
 
     def has_swollen_extremities(self) -> bool:
@@ -117,10 +121,9 @@ class Patient:
 
         :return: True if the patient has swollen extremities
         """
-        # Snomed id for Swelling/Lump finding: 443257 (R22)
-        # Swelling upper limb: 4168701 (R22.3)
-        # Swelling lower limb: 4171919 (R22.4)
-        swollen_extremities_ids = [443257, 4168701, 4171919]
+        swollen_extremities_ids = [SnomedConcepts.SWELLING.value,
+                                   SnomedConcepts.SWELLING_UPPER_LIMB.value,
+                                   SnomedConcepts.SWELLING_LOWER_LIMB.value]
         return any(x in swollen_extremities_ids for x in self.conditions)
 
     def has_conjunctivitis(self):
@@ -129,10 +132,9 @@ class Patient:
 
         :return: True if the patient has conjunctivitis
         """
-        # Snomed id for (other/unspecified) conjunctivitis: 379019
-        # Mucopurulent conjunctivitis: 376422
-        # Acute conjunctivitis: 376707
-        conjunctivitis_ids = [379019, 376422, 376707]
+        conjunctivitis_ids = [SnomedConcepts.OTHER_CONJUNCTIVITIS.value,
+                              SnomedConcepts.MUCOPURULENT_CONJUNCTIVITIS.value,
+                              SnomedConcepts.ACUTE_CONJUNCTIVITIS.value]
         return any(x in conjunctivitis_ids for x in self.conditions)
 
     def has_lymphadenopathy(self):
@@ -141,10 +143,9 @@ class Patient:
 
         :return: True if the patient has lymphadenopathy
         """
-        # Snomed id for Lymphadenopathy: 315085
-        # Localized enlarged lymph nodes: 4168700
-        # Generalized enlarged lymph nodes: 4165998
-        lymphadenopathy_ids = [315085, 4168700, 4165998]
+        lymphadenopathy_ids = [SnomedConcepts.LYMPHADENOPATHY.value,
+                               SnomedConcepts.LOCALIZED_ENLARGED_LYMPH_NODES.value,
+                               SnomedConcepts.GENERALIZED_ENLARGED_LYMPH_NODES.value]
         return any(x in lymphadenopathy_ids for x in self.conditions)
 
     def has_mouth_or_mucosa_inflammation(self):
@@ -154,15 +155,11 @@ class Patient:
 
         :return: True if the patient has an inflammation of the mouth or mucosa
         """
-        # Snomed if for Disorder of oral soft tissues: 139057
-        # Disorder of lip: 135858
-        # Lesion of oral mucosa: 37016130
-        # Duplicate codes with exanthem
-        # Snomed id for Skin AND/OR mucosa finding (B.09 'Nicht näher bezeichnete Virusinfektion, die durch Haut- und
-        # Schleimhautläsionen gekennzeichnet ist' maps to this): 4212577
-        # Snomed id for Disease due to Orthopoxvirus (B08.0: Sonstige näher bezeichnete Virusinfektionen, die durch
-        # Haut- und Schleimhautläsionen gekennzeichnet sind): 443724
-        snomed_enanthem_ids = [139057, 135858, 37016130, 4212577, 443724]
+        snomed_enanthem_ids = [SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value,
+                               SnomedConcepts.DISORDER_OF_LIP.value,
+                               SnomedConcepts.LESION_OF_ORAL_MUCOSA.value,
+                               SnomedConcepts.SKIN_OR_MUCOSA_FINDING_DUE_TO_VIRUS.value,
+                               SnomedConcepts.SKIN_OR_MUCOSA_FINDING_DUE_TO_OTHER_VIRUSES.value]
         return any(x in snomed_enanthem_ids for x in self.conditions)
 
     def has_cardiac_condition(self):
@@ -176,7 +173,9 @@ class Patient:
         # I30: Akute Perikarditis: .0 (315293) .1 (4217075) .8/.9 (320116)
         # I21: Akuter Myokardinfarkt: .0 (434376) .1 (438170) .2/.3 (312327) .4 (4270024) .9 (312327)
         # I40: Myokariditis: .0 (4331309) .1 (4143969) .8/.9 (312653)
-        snomed_cor_ids = [315293, 4217075, 320116, 434376, 438170, 312327, 4270024, 312327, 4331309, 4143969, 312653]
+        snomed_cor_ids = [SnomedConcepts.PERICARDITIS.value, 4217075, 320116,
+                          SnomedConcepts.MYOCARDIAL_INFARCTION.value, 438170, 312327, 4270024, 312327,
+                          SnomedConcepts.MYOCARDITIS.value, 4143969, 312653]
         return any(x in snomed_cor_ids for x in self.conditions)
 
     def has_gastro_intestinal_condition(self):
@@ -188,7 +187,8 @@ class Patient:
         # Nausea and vomiting (ICD10GM R11 --> SNOMED-ID 27674)
         # (lower) Abdominal Pain (ICD10GM R10.3, R10.4, R10 --> SNOMED-ID 4182562, 200219, 4116811)
         # (Severe) Diarrhea (and vomiting) (SNOMED-ID 196523, 4091519, 4249551, 196151)
-        snomed_gastro_ids = [27674, 4182562, 200219, 4116811, 196523, 4091519, 4249551, 196151]
+        snomed_gastro_ids = [SnomedConcepts.NAUSEA_AND_VOMITING.value,
+                             4182562, 200219, 4116811, 196523, 4091519, 4249551, 196151]
         return any(x in snomed_gastro_ids for x in self.conditions)
 
     def has_inflammation_lab(self):
@@ -211,10 +211,9 @@ class Patient:
 
         :return: True if the patient has effusions
         """
-        # Ascites (R18 -> 200528)
-        # Pleural Effusion (J90 -> 254061)
-        # Pericardial Effusion (I31.3 -> 4108814)
-        snomed_oedema_ids = [200528, 254061, 4108814]
+        snomed_oedema_ids = [SnomedConcepts.ASCITES.value,
+                             SnomedConcepts.PLEURAL_EFFUSION.value,
+                             SnomedConcepts.PERICARDIAL_EFFUSION.value]
         return any(x in snomed_oedema_ids for x in self.conditions)
 
     def has_covid(self):
@@ -224,15 +223,11 @@ class Patient:
 
         :return: True if the patient has COVID-19
         """
-        # Snomed ifs for:
-        # U07.1 Emergency use of U07.1 | COVID-19, virus identified -> 37311061
-        # U07.2 Emergency use of U07.2 | COVID-19, virus not identified -> 37311060
-        #
-        # ToDo: ETL-Job anpassen. Hier werden icd codes verwendet nicht icd 10 gm codes, omop nicht aktuell
-        # U08.9 Covid in der Eigenanamnese (ICD10 nicht GM!)-> 4214956, 37311061
-        # U09.9 Post-Covid (ICD10 nicht GM!)-> 4214956, 37311061
-        # U10.9 Multisystemisches Entzündungssyndrom in Verbindung mit COVID-19 (Pims) -> 703578
-        snomed_covid_ids = [37311061, 37311060, 4214956, 703578]
+        snomed_covid_ids = [SnomedConcepts.COVID_19.value,
+                            SnomedConcepts.COVID_19_VIRUS_NOT_IDENTIFIED.value,
+                            SnomedConcepts.COVID_19_IN_PERSONAL_HISTORY.value,
+                            SnomedConcepts.POST_COVID.value,
+                            SnomedConcepts.PIMS.value]
         return any(x in snomed_covid_ids for x in self.conditions)
 
     def calculate_kawasaki_score(self) -> (float, Set[str]):
@@ -249,53 +244,39 @@ class Patient:
         """
         self.reasons_for_kawasaki.clear()
 
-        # Return 0.0 if not in age range
-        if self.calculate_age() > 8:
-            self.kawasaki_score = 0.0
-        else:
-            self.reasons_for_kawasaki.add(self.REASON_YOUNGER_THAN_EIGHT)
-            score, max_score = self.calculate_shared_score()
-            self.kawasaki_score = score / max_score, self.reasons_for_kawasaki
-
-    def calculate_shared_score(self) -> (float, float):
-        """
-        Returns a tuple containing the score for symptoms that PIMS and Kawasaki share and the maximum score.
-
-        :return: Tuple of floats (score, max_score)
-        """
         score: float = 0.0
         max_score: float = 8.0
 
+        # Return 0.0 if not in age range
+        if self.calculate_age() > 8:
+            self.kawasaki_score = 0.0
+            return self.kawasaki_score
+        self.reasons_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
+
         if self.has_fever():
             score += 2
-            self.reasons_for_kawasaki.add(self.REASON_FEVER)
-            self.reasons_for_pims.add(self.REASON_FEVER)
+            self.reasons_for_kawasaki.append(self.REASON_FEVER)
         if self.has_swollen_extremities():
             score += 1
-            self.reasons_for_kawasaki.add(self.REASON_SWOLLEN_EXTREMITIES)
-            self.reasons_for_pims.add(self.REASON_SWOLLEN_EXTREMITIES)
+            self.reasons_for_kawasaki.append(self.REASON_SWOLLEN_EXTREMITIES)
         if self.has_conjunctivitis():
             score += 1
-            self.reasons_for_kawasaki.add(self.REASON_CONJUNCTIVITIS)
-            self.reasons_for_pims.add(self.REASON_CONJUNCTIVITIS)
+            self.reasons_for_kawasaki.append(self.REASON_CONJUNCTIVITIS)
         if self.has_lymphadenopathy():
             score += 1
-            self.reasons_for_kawasaki.add(self.REASON_SWOLLEN_LYMPHNODES)
-            self.reasons_for_pims.add(self.REASON_SWOLLEN_LYMPHNODES)
+            self.reasons_for_kawasaki.append(self.REASON_SWOLLEN_LYMPHNODES)
         if self.has_mouth_or_mucosa_inflammation():
             score += 1
-            self.reasons_for_kawasaki.add(self.REASON_ENANTHEM)
-            self.reasons_for_pims.add(self.REASON_ENANTHEM)
+            self.reasons_for_kawasaki.append(self.REASON_ENANTHEM)
         if self.has_inflammation_lab():
             score += 1
-            self.reasons_for_kawasaki.add(self.REASON_INFLAMMATION_LAB)
-            self.reasons_for_pims.add(self.REASON_INFLAMMATION_LAB)
+            self.reasons_for_kawasaki.append(self.REASON_INFLAMMATION_LAB)
         if self.has_cardiac_condition():
             score += 1
-            self.reasons_for_kawasaki.add(self.REASON_CARDIAL_CONDITION)
-            self.reasons_for_pims.add(self.REASON_CARDIAL_CONDITION)
+            self.reasons_for_kawasaki.append(self.REASON_CARDIAL_CONDITION)
 
-        return score, max_score
+        self.kawasaki_score = score / max_score
+        return self.kawasaki_score
 
     def calculate_pims_score(self) -> (float, Set[str]):
         """
@@ -312,34 +293,74 @@ class Patient:
         """
         self.reasons_for_pims.clear()
 
-        if not self.has_covid():
+        score: float = 0.0
+        max_score: float = 11.5
+
+        if self.calculate_age() >= 20:
             self.pims_score = 0.0
+            return self.pims_score
+        self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
 
-        self.reasons_for_pims.add(self.REASON_COVID)
-
-        if not self.calculate_age() < 20:
-            self.pims_score = 0.0
-
-        self.reasons_for_pims.add(self.REASON_YOUNGER_THAN_TWENTY)
-
-        score, max_score = self.calculate_shared_score()
-        max_score += 1.5
-
+        if self.has_covid():
+            score += 2
+            self.reasons_for_pims.append(self.REASON_COVID)
+        if self.has_fever():
+            score += 2
+            self.reasons_for_pims.append(self.REASON_FEVER)
+        if self.has_swollen_extremities():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_SWOLLEN_EXTREMITIES)
+        if self.has_conjunctivitis():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_CONJUNCTIVITIS)
+        if self.has_lymphadenopathy():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_SWOLLEN_LYMPHNODES)
+        if self.has_mouth_or_mucosa_inflammation():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_ENANTHEM)
+        if self.has_inflammation_lab():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
+        if self.has_cardiac_condition():
+            score += 1
+            self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
         if self.has_gastro_intestinal_condition():
             score += 1
-            self.reasons_for_pims.add(self.REASON_GASTRO_INTESTINAL_CONDITION)
-
+            self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
         if self.has_effusion():
             score += 0.5
-            self.reasons_for_pims.add(self.REASON_EFFUSION)
+            self.reasons_for_pims.append(self.REASON_EFFUSION)
 
         self.pims_score = score / max_score
+        return self.pims_score
 
-    def get_patient_as_tuple(self):
+    def has_ascites(self):
         """
-        Returns a tuple that represents the most important information about the patient. Contains the id, the name,
-        the kawasaki-score, reasons for that score, the pims-score and reasons for that score
+        Returns True if the patient has ascites as a condition.
+        """
+        return 200528 in self.conditions
 
-        :return: Tuple
+    def has_pericardial_effusions(self):
         """
-        return self.id, self.name, self.kawasaki_score, self.reasons_for_kawasaki, self.pims_score, self.reasons_for_pims
+        Returns True if the patient has pericardial effusions as a condition.
+        """
+        return 4108814 in self.conditions
+
+    def has_pleural_effusions(self):
+        """
+        Returns True if the patient has pleural effusions as a condition.
+        """
+        return 254061 in self.conditions
+
+    def has_pericarditis(self):
+        """
+        Returns True if the patient has pericarditis as a condition.
+        """
+        return 315293 in self.conditions
+
+    def has_myocarditis(self):
+        """
+        Returns True if the patient has myocarditis as a condition.
+        """
+        return 4331309 in self.conditions

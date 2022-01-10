@@ -145,6 +145,13 @@ class DBManager:
         # Remove trailing !/+ characters, because they are not included in OMOP concepts
         code = code.rstrip("!+")
 
+        if code == 'U09' or code == 'U09.9' or code == 'U08' or code == 'U08.9' or code == 'U07.1':
+            # (post) Covid (in personal history)
+            return 37311061
+        elif code == 'U07.2':
+            # Covid (suspected)
+            return 37311060
+
         cursor = self.conn.cursor()
         cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")
         try:
