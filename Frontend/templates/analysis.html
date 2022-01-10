@@ -134,6 +134,7 @@
         * @returns {Object[]} the sorted table
         */
         function sort(table, high_to_low, order){
+            var i = true;
             for(element of order.split('').reverse()){
                 switch(element){
                     case "N":
@@ -152,9 +153,10 @@
                         table.sort(pims_filter);
                         break;
                 }
-                if(high_to_low[element]){
+                if(high_to_low[element] == i){
                     table = table.reverse();    
                 }
+                i = !i
             }
             return table
         }
@@ -227,6 +229,7 @@
         <div class="grid_table_head_entry"><span id="name" class="triangle">&#8710;</span> Patientenname</div>
         <div class="grid_table_head_entry"><span id="kawasaki" class="triangle">&#8711;</span> Kawasaki</div>
         <div class="grid_table_head_entry"><span id="pims" class="triangle">&#8711;</span> PIMS</div>
+
 
     </div>
 {% endblock %}
