@@ -4,72 +4,13 @@ import pandas as pd
 import logging
 import psycopg2
 import numpy as np
-from enum import Enum
 from typing import Tuple, Optional, List
 from psycopg2.extensions import register_adapter, AsIs
 from Backend.common.config import generate_config, DbConfig
+from Backend.common.omop_enums import OmopTableEnum, OmopConditionOccurrenceFieldsEnum, OmopPersonFieldsEnum, \
+    SnomedConcepts
 
 psycopg2.extensions.register_adapter(np.int64, AsIs)
-
-
-class OmopTableEnum(Enum):
-    """
-    Enum for the table-names in the used OMOP-database.
-    """
-    VISIT_OCCURRENCE = "visit_occurrence"
-    OBSERVATION_PERIOD = "observation_period"
-    PROCEDURE_OCCURRENCE = "procedure_occurrence"
-    MEASUREMENT = "measurement"
-    CONDITION_OCCURRENCE = "condition_occurrence"
-    PERSON = "person"
-    LOCATION = "location"
-    PROVIDER = "provider"
-
-
-class OmopPersonFieldsEnum(Enum):
-    """
-    Enum for the fields of the person table.
-    """
-    PERSON_ID = "person_id"
-    GENDER_CONCEPT_ID = "gender_concept_id"
-    YEAR_OF_BIRTH = "year_of_birth"
-    MONTH_OF_BIRTH = "month_of_birth"
-    DAY_OF_BIRTH = "day_of_birth"
-    BIRTH_DATETIME = "birth_datetime"
-    RACE_CONCEPT_ID = "race_concept_id"
-    ETHNICITY_CONCEPT_ID = "ethnicity_concept_id"
-    LOCATION_ID = "location_id"
-    PERSON_SOURCE_VALUE = "person_source_value"
-    GENDER_SOURCE_VALUE = "gender_source_value"
-    PROVIDER_ID = "provider_id"
-
-
-class OmopConditionOccurrenceFieldsEnum(Enum):
-    """
-    Enum for the fields of the condition-occurrence table
-    """
-    CONDITION_OCCURRENCE_ID = 'condition_occurrence_id'
-    PERSON_ID = 'person_id'
-    CONDITION_CONCEPT_ID = 'condition_concept_id'
-    CONDITION_START_DATE = 'condition_start_date'
-    CONDITION_TYPE_CONCEPT_ID = 'condition_type_concept_id'
-    CONDITION_SOURCE_VALUE = 'condition_source_value'
-
-
-class OmopLocationFieldsEnum(Enum):
-    """
-    Enum for the fields of the location table.
-    """
-    LOCATION_ID = 'location_id'
-    ZIP = 'zip'
-    CITY = 'city'
-
-
-class OmopProviderFieldsEnum(Enum):
-    """
-    Enum for the fields of the provider table.
-    """
-    PROVIDER_ID = 'provider_id'
 
 
 class DBManager:
@@ -209,6 +150,13 @@ class DBManager:
         """
         # Remove trailing !/+ characters, because they are not included in OMOP concepts
         code = code.rstrip("!+")
+
+        if code == 'U09' or code == 'U09.9' or code == 'U08' or code == 'U08.9' or code == 'U07.1':
+            # (post) Covid (in personal history)
+            return SnomedConcepts.COVID_19.value
+        elif code == 'U07.2':
+            # Covid (suspected)
+            return SnomedConcepts.COVID_19_VIRUS_NOT_IDENTIFIED.value
 
         cursor = self.conn.cursor()
         cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")

@@ -1,3 +1,4 @@
+import datetime
 import logging
 from typing import List
 
@@ -22,8 +23,9 @@ def evaluate_patient(db_manager: DBManager, patient_id) -> Patient:
     day = df.iloc[0]['day_of_birth']
     month = df.iloc[0]['month_of_birth']
     year = df.iloc[0]['year_of_birth']
+    birthdate = datetime.date(year, month, day)
     name = df.iloc[0]['person_source_value']
-    patient = Patient(patient_id, day, month, year, name)
+    patient = Patient(patient_id=patient_id, name=name, birthdate=birthdate)
 
     # Get all conditions for every patient
     query = f"SELECT * FROM cds_cdm.condition_occurrence WHERE person_id = {patient_id}"

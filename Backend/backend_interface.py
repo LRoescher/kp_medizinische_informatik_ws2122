@@ -1,11 +1,13 @@
 import logging
 import os
+from datetime import date
 from typing import Dict, Iterator, Optional, List
 
 from Backend.analysis.analysis import evaluate_patient, evaluate_all_in_database
 from Backend.analysis.patient import Patient
 from Backend.common.config import generate_config
-from Backend.common.database import DBManager, OmopTableEnum
+from Backend.common.database import DBManager
+from Backend.common.omop_enums import OmopTableEnum, SnomedConcepts
 from Backend.etl.etl import run_etl_job_for_csvs, run_etl_job_for_patient, update_patient
 from Backend.interface import PatientId, Disease, DecisionReasons, PatientData, AnalysisData, Interface
 
@@ -79,20 +81,38 @@ class BackendManager(Interface):
         # Generate Random id that is not already in the database
         patient_id = self.dbManager.generate_patient_id()
 
-        # Todo remove dummy data (birthdate, etc.), get from front end instead
         # Get birthday data
-        day = 1
-        month = 1
-        year = 2020
+        birthdate: date = patient_data['birthdate']
 
-        patient: Patient = Patient(patient_id=patient_id, name=patient_data['name'], day=day, month=month, year=year)
+        patient: Patient = Patient(patient_id=patient_id, name=patient_data['name'], birthdate=birthdate)
 
-        # Get snomed ids from patient_data
+        # Get snomed ids from patient_data and add as conditions
         if patient_data['hasCovid']:
-            patient.conditions.append(37311061)
+            patient.conditions.append(SnomedConcepts.COVID_19.value)
         if patient_data['hasFever']:
-            patient.conditions.append(437663)
-        # Todo Add missing hasX -> Conditions
+            patient.conditions.append(SnomedConcepts.FEVER.value)
+        if patient_data['hasExanthem']:
+            patient.conditions.append(SnomedConcepts.ERUPTION.value)
+        if patient_data['hasEnanthem']:
+            patient.conditions.append(SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
+        if patient_data['hasSwollenExtremeties']:
+            patient.conditions.append(SnomedConcepts.SWELLING.value)
+        if patient_data['hasConjunctivitis']:
+            patient.conditions.append(SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
+        if patient_data['hasSwollenLymphnodes']:
+            patient.conditions.append(SnomedConcepts.LYMPHADENOPATHY.value)
+        if patient_data['hasGastroIntestinalCondition']:
+            patient.conditions.append(SnomedConcepts.NAUSEA_AND_VOMITING.value)
+        if patient_data['hasAscites']:
+            patient.conditions.append(SnomedConcepts.ASCITES.value)
+        if patient_data['hasPericardialEffusions']:
+            patient.conditions.append(SnomedConcepts.PERICARDIAL_EFFUSION.value)
+        if patient_data['hasPleuralEffusions']:
+            patient.conditions.append(SnomedConcepts.PLEURAL_EFFUSION.value)
+        if patient_data['hasPericarditis']:
+            patient.conditions.append(SnomedConcepts.PERICARDITIS.value)
+        if patient_data['hasMyocarditis']:
+            patient.conditions.append(SnomedConcepts.MYOCARDITIS.value)
 
         return patient
 
@@ -164,7 +184,18 @@ class BackendManager(Interface):
                     'name': patient.name,
                     'age': patient.calculate_age(),
                     'hasCovid': patient.has_covid(),
-                    'hasFever': patient.has_fever()
+                    'hasFever': patient.has_fever(),
+                    'hasExanthem': patient.has_exanthem(),
+                    'hasEnanthem': patient.has_mouth_or_mucosa_inflammation(),
+                    'hasSwollenExtremeties': patient.has_swollen_extremities(),
+                    'hasConjunctivitis': patient.has_conjunctivitis(),
+                    'hasSwollenLymphnodes': patient.has_lymphadenopathy(),
+                    'hasGastroIntestinalCondition': patient.has_gastro_intestinal_condition(),
+                    'hasAscites': patient.has_ascites(),
+                    'hasPericardialEffusions': patient.has_pericardial_effusions(),
+                    'hasPleuralEffusions': patient.has_pleural_effusions(),
+                    'hasPericarditis': patient.has_pericarditis(),
+                    'hasMyocarditis': patient.has_myocarditis()
                 }
                 return patient_data
         # No patient found, Todo what to return?
@@ -186,15 +217,13 @@ class BackendManager(Interface):
                     decision_reasons = {
                         'disease': Disease.KAWASAKI,
                         'probability': patient.kawasaki_score,
-                        'pro': patient.reasons_for_kawasaki,
-                        'con': list()
+                        'pro': patient.reasons_for_kawasaki
                     }
                 elif disease == Disease.PIMS:
                     decision_reasons = {
                         'disease': Disease.PIMS,
                         'probability': patient.pims_score,
-                        'pro': patient.reasons_for_pims,
-                        'con': list()
+                        'pro': patient.reasons_for_pims
                     }
                 return decision_reasons
 

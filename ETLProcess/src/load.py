@@ -34,12 +34,12 @@ class OmopTableEnum(Enum):
 
 class DBManager:
     """
-    Class responsible for connecting to the omop-common and loading CDM-compliant tables into it.
+    Class responsible for connecting to the omop-database and loading CDM-compliant tables into it.
     """
 
     def __init__(self, db_config: DbConfig, clear_tables: bool = False):
         """
-        Creates a new Loader. Establishes a common connection.
+        Creates a new Loader. Establishes a database connection.
 
         :param db_config:
         :param clear_tables: If set to True: clears all target omop-tables
@@ -51,13 +51,13 @@ class DBManager:
 
     def _connect(self, db_config: DbConfig) -> Optional[psycopg2._psycopg.connection]:
         """
-        Connect to the PostgreSQL common server.
-        :return a connection to the common server
+        Connect to the PostgreSQL database server.
+        :return a connection to the database server
         """
         conn = None
         try:
             # connect to the PostgreSQL server
-            logging.info("Trying to connect to the common...")
+            logging.info("Trying to connect to the database...")
             conn = psycopg2.connect(
                 host=db_config["host"],
                 port=db_config["port"],
@@ -72,7 +72,7 @@ class DBManager:
 
     def clear_omop_tables(self) -> bool:
         """
-        Removes all tables from the omop common, that have been added by this program.
+        Removes all tables from the omop database, that have been added by this program.
         :return: True if the operation was successful
         """
         cursor = self.conn.cursor()
@@ -84,18 +84,18 @@ class DBManager:
                 self.conn.commit()
 
         except (Exception, psycopg2.DatabaseError) as error:
-            logging.error("Failed to clear omop entries from the common.")
+            logging.error("Failed to clear omop entries from the database.")
             logging.error(error)
             self.conn.rollback()
             cursor.close()
             return False
-        logging.info("Successfully cleared omop common")
+        logging.info("Successfully cleared omop database")
         cursor.close()
         return True
 
     def _fire_query(self, query: str, tuples: List[Tuple]) -> bool:
         """
-        Sends the query enriched with dataframe entries to the connected common server.
+        Sends the query enriched with dataframe entries to the connected database server.
 
         :param query: the query itself with placeholders
         :param tuples: the data which will be inserted into the query
@@ -103,7 +103,7 @@ class DBManager:
         """
         cursor = self.conn.cursor()
         try:
-            # Select common schema and execute query on it
+            # Select database schema and execute query on it
             cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")
             cursor.executemany(query, tuples)
             self.conn.commit()
@@ -144,6 +144,13 @@ class DBManager:
         """
         # Remove trailing !/+ characters, because they are not included in OMOP concepts
         code = code.rstrip("!+")
+
+        if code == 'U09' or code == 'U09.9' or code == 'U08' or code == 'U08.9' or code == 'U07.1':
+            # (post) Covid (in personal history)
+            return 37311061
+        elif code == 'U07.2':
+            # Covid (suspected)
+            return 37311060
 
         cursor = self.conn.cursor()
         cursor.execute(f"SET search_path TO {self.DB_SCHEMA}")

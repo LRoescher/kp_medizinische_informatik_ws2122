@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import date
 from typing import Iterator, TypedDict, List, Dict, NewType, Optional
 from enum import Enum
 from Backend.Singleton import Singleton
@@ -22,11 +23,33 @@ class AnalysisData(TypedDict):
 
 class PatientData(TypedDict):
     """ Expected format for patient data """
-    age: int
+    birthdate: date
+    # Full name
     name: str
     hasCovid: bool
     hasFever: bool
-    # ToDo: Covid, Fieber, restliche Symptome
+    # Ausschlag auf der Haut
+    hasExanthem: bool
+    # Entzündung im Mundraum (Lippen, Zunge, Mundschleimhaut)
+    hasEnanthem: bool
+    # Geschwollene, gerötete Extremitäten
+    hasSwollenExtremeties: bool
+    # Bindehautentzündung
+    hasConjunctivitis: bool
+    # Geschwollene Lymphknoten
+    hasSwollenLymphnodes: bool
+    # Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen
+    hasGastroIntestinalCondition: bool
+    # Aszites (Flüssigkeitsansammlung im Bauchraum)
+    hasAscites: bool
+    # Perikardergüsse (Flüssigkeitsansammlung im Herzbeutel)
+    hasPericardialEffusions: bool
+    # Pleuraergüsse (Flüssigkeitsansammlung in der Lunge)
+    hasPleuralEffusions: bool
+    # Perikarditits (Herzbeutelentzündung)
+    hasPericarditis: bool
+    # Hat Myokarditis (Herzmuskelenzündung)
+    hasMyocarditis: bool
 
 
 class DecisionReasons(TypedDict):
@@ -34,7 +57,6 @@ class DecisionReasons(TypedDict):
     disease: Disease
     probability: float
     pro: List[str]  # strs have to be equal to PatientData
-    con: List[str]  # strs have to be equal to PatientData
 
 
 class Interface(Singleton, ABC):
@@ -120,4 +142,3 @@ class Interface(Singleton, ABC):
         :return:reason for the decision
         """
         pass
-
