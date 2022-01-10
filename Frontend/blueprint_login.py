@@ -22,7 +22,7 @@ def check_login():
         return None
 
     if "logged_in" not in session or not session["logged_in"]:
-        flash("Please login first.", FlashMessageTypes.FAILURE.value)
+        flash("Bitte loggen Sie sich zuerst ein.", FlashMessageTypes.FAILURE.value)
         return redirect(url_for("access_control.login"))
     else:
         session.modified = True
@@ -38,18 +38,19 @@ def do_admin_login():
     if request.form['password'] == 'password' and request.form['username'] == 'admin':
         session['logged_in'] = True
         session.permanent = True
-        flash("Login success", FlashMessageTypes.SUCCESS.value)
+        flash("Login erfolgreich!", FlashMessageTypes.SUCCESS.value)
 
         if controller.is_db_empty():
             return redirect(url_for("main"))
         return redirect(url_for("results.get_analysis"))
 
     else:
-        flash('wrong password!', FlashMessageTypes.FAILURE.value)
+        flash('Nutzername oder Passwort ist falsch!', FlashMessageTypes.FAILURE.value)
         return redirect(url_for("access_control.login"))
 
 
 @access_control.route("/logout")
 def logout():
     session['logged_in'] = False
+    flash("Logout erfolgreich!")
     return redirect(url_for("access_control.login"))

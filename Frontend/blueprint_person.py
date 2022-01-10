@@ -60,16 +60,16 @@ def add_patient_data():
     patient_data = get_patient_data_from_request()
 
     if patient_data is None:
-        flash("Adding a new Patient failed.", FlashMessageTypes.FAILURE.value)
+        flash("Hinzufügen eines neuen Patienten ist fehlgeschlagen.", FlashMessageTypes.FAILURE.value)
         return redirect("/")
 
     patient_id = controller.add_patient(patient_data)
 
     if patient_id:
-        flash(f"Patient {patient_data['name']} successfully added.", FlashMessageTypes.SUCCESS.value)
+        flash(f"Patient {patient_data['name']} wurde erfolgreich hinzugefügt.", FlashMessageTypes.SUCCESS.value)
         return redirect(url_for('.get_patient_data', patient_id=patient_id))
     else:
-        flash(f"Adding Patient {patient_data['name']} failed.", FlashMessageTypes.FAILURE.value)
+        flash(f"Hinzufügen des Patienten  {patient_data['name']} ist fehlgeschlagen.", FlashMessageTypes.FAILURE.value)
         return redirect(url_for(".get_empty_patient_data"))
 
 
@@ -78,13 +78,13 @@ def update_patient_data(patient_id: PatientId):
     patient_data = get_patient_data_from_request()
 
     if patient_data is None:
-        flash(f"Updating Patient with id:({patient_id}) failed.", FlashMessageTypes.FAILURE.value)
+        flash(f"Aktualisieren eines Patienten mit der ID:({patient_id}) schlug fehl.", FlashMessageTypes.FAILURE.value)
         return redirect(url_for(".get_patient_data", patient_id=patient_id))
 
     if controller.update_patient(patient_id, patient_data):
-        flash(f"Patient {patient_data['name']} successfully added.", FlashMessageTypes.SUCCESS.value)
+        flash(f"Patient {patient_data['name']} wurde erfolgreich aktualisiert.", FlashMessageTypes.SUCCESS.value)
         return redirect(url_for('.get_patient_data', patient_id=patient_id))
     else:
-        flash(f"Updating Patient (id: {patient_id}) {patient_data['name']} failed.", FlashMessageTypes.FAILURE.value)
+        flash(f"Aktualisieren eines Patienten (id: {patient_id}) {patient_data['name']} schlug fehl.", FlashMessageTypes.FAILURE.value)
         return redirect(url_for(".get_patient_data", patient_id=patient_id))
 

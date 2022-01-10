@@ -44,12 +44,6 @@ def main():
     return render_template("main.html", pagename="Startseite")
 
 
-# @app.route("/<string:name>/")
-# def pages(name):
-#     # ToDo: remove
-#     return render_template(name)
-
-
 @app.route("/reset_db")
 def reset_db():
     if controller.reset_db():
