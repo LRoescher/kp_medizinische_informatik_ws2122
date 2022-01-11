@@ -11,11 +11,11 @@
 
 {% block content %}
     <form action="{% if patient_id is defined %} {{ url_for('.update_patient_data', patient_id=patient_id) }} {% else %} {{ url_for('.add_patient_data') }} {% endif %}"
-        method="post" autocomplete="on" 
-    >
+        method="post" autocomplete="on">
+        
         <div class="grid_table">
             {% for name, value in patient_data.items() %}
-                <div class="grid_table_entry"><label for="{{ name }}">{{ name }}:</label></div>
+                <div class="grid_table_entry"><label for="{{ name }}">{{ translate(name) }}:</label></div>
 
                 {% if annotations[name] == str %}
                     <div class="grid_table_entry"><input type="text" name="{{ name }}" value="{{ value }}"></div>
@@ -25,6 +25,8 @@
                     <div class="grid_table_entry"><input type="number" name="{{ name }}" value="{{ value }}" step="1"></div>
                 {% elif annotations[name] == float %}
                     <div class="grid_table_entry"><input type="number" name="{{ name }}" value="{{ value }}" step="0.1"></div>
+                {% elif annotations[name] == date %}
+                    <div class="grid_table_entry"><input type="date" placeholder="Geburtsdatum" min="1900-01-01" max="2050-01-01" name="{{ name }}" value="{{ value.strftime('%Y-%m-%d') }}"></div>
                 {% endif %}
             {% endfor %}
 

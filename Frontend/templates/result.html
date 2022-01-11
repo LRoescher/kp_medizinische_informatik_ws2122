@@ -9,38 +9,46 @@
     result
 {% endblock %}
 
+{% macro message_box(disease, name, probability) %}
+    {% if probability <= 0.3 %}
+        {% set danger = 'danger_is_low' %}
+    {% elif probability <= 0.6 %}
+        {% set danger = 'danger_is_middle' %}
+    {% else %}
+        {% set danger = 'danger_is_high' %}
+    {% endif %}
+    <div id="result" class="{{danger}}">
+        Die Wahrscheinlichkeit das <strong>{{ name }}</strong> an {{ disease }} erkrankt ist beträgt <strong>{{ probability }}</strong>.
+    </div>
+{% endmacro %}
+
 {% block content %}
-    <div class="disclaimer">Hier könnten Sie über Ihren Haftungsauschluss informieren.</div>
-    <div class="description">
-        <h1>Begründung der Entscheidung zu {{ decision_reason_data.disease }}</h1>
+    <div class="disclaimer">
+        Die dargestellten Informationen dürfen keinesfalls für eigenständige und ungeprüfte Diagnosezwecke verwendet werden. 
+        Das System ersetzt keinesfalls die fachliche Beratung durch einen Arzt. Konsultieren Sie bei gesundheitlichen Fragen 
+        oder Beschwerden immer den Arzt Ihres Vertrauens!
+    </div>
+
+    <div id="description">
+        <h2>Begründung der Entscheidung zu {{ decision_reason_data.disease.value }}</h2>
         Im folgenden finden Sie eine Aufschlüsselung der Parametern auf welchen dieses System seine Entscheidung
         getroffen hat. Im weiteren könnte Sie dieser Text darüber informieren was
         <a href="https://www.letmegooglethat.com/?q=Kawasaki+Krankheit">Kawasaki</a> ist.
     </div>
 
-    <div id="result" class="danger_is_low">
-        Die Wahrscheinlichkeit das der Patient(<strong>{{ patient_data.name }}</strong>) an {{ decision_reason_data.disease }} leidet ist <strong>{{ decision_reason_data.probability }}</strong>.
-    </div>
+    {{ message_box(decision_reason_data.disease.value, patient_data.name, decision_reason_data.probability) }}
 
-    <div class="grid_table">
-        <div class="grid_table_head_entry">Spricht für eine Erkrankung</div>
-        <div class="grid_table_head_entry">nicht nachgewiesene Symptome</div>
-        <div class="grid_table_head_entry">Spricht gegen eine Erkrankung</div>
-
-        <div class="grid_table_entry">
-            {% for proreason in decision_reason_data.pro %}
-                <div>{{ proreason }}</div>
-            {% endfor %}
-        </div>
-        <div class="grid_table_entry"></div>
-        <div class="grid_table_entry">
-            <div class="grid_table_entry">
-            {% for contrareason in decision_reason_data.con %}
-                <div>{{ contrareason }}</div>
-            {% endfor %}
-        </div>
-        </div>
-
+    <div id="reason">
+        {% if decision_reason_data.pro|length == 0 %}
+            Keines der für die Erkrankung mit {{ decision_reason_data.disease.value }} typischen Symptome wurde festgestellt.
+        {% else %}
+            Die Entscheidung begründet sich mit dem Auftreten der folgenden Symptome: 
+            <ul>
+                {% for reason in decision_reason_data.pro %}
+                    <li>{{ translate(reason) }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
     </div>
 
 <div class="description">

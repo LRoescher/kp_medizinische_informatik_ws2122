@@ -59,6 +59,38 @@ class DecisionReasons(TypedDict):
     pro: List[str]  # strs have to be equal to PatientData
 
 
+# Übersetzung der Symptome ins Deutsche
+TranslationGerman = {
+    "birthdate": "Geburtsdatum",
+    # Full name
+    "name": "Name",
+    "hasCovid": "Covid19",
+    "hasFever": "Fieber",
+    # Ausschlag auf der Haut
+    "hasExanthem": "Exanthem",
+    # Entzündung im Mundraum (Lippen, Zunge, Mundschleimhaut)
+    "hasEnanthem": "Enanthem",
+    # Geschwollene, gerötete Extremitäten
+    "hasSwollenExtremeties": "Geschwollene, gerötete Extremitäten",
+    # Bindehautentzündung
+    "hasConjunctivitis": "Bindehautentzündung",
+    # Geschwollene Lymphknoten
+    "hasSwollenLymphnodes": "Geschwollene Lymphknoten",
+    # Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen
+    "hasGastroIntestinalCondition": "Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen",
+    # Aszites (Flüssigkeitsansammlung im Bauchraum)
+    "hasAscites": "Aszites",
+    # Perikardergüsse (Flüssigkeitsansammlung im Herzbeutel)
+    "hasPericardialEffusions": "Perikardergüsse",
+    # Pleuraergüsse (Flüssigkeitsansammlung in der Lunge)
+    "hasPleuralEffusions": "Pleuraergüsse",
+    # Perikarditits (Herzbeutelentzündung)
+    "hasPericarditis": "Perikarditits",
+    # Hat Myokarditis (Herzmuskelenzündung)
+    "hasMyocarditis": "Myokarditis"
+}
+
+
 class Interface(Singleton, ABC):
 
     @abstractmethod

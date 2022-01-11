@@ -1,16 +1,32 @@
-// message colors
+// bg colors
 $bg_color: lightblue !default;
-$bg_color_lighten: white !default;
-$bg_color_darken: black !default;
+$bg_color_lighten: #d2eaf1 !default;
+$bg_color_darken: #7cc0d7 !default;
 
+// message colors
 $msg_color: black;
 $info_bg_color: #BDE5F8;
 $success_bg_color: #DFF2BF;
 $warning_bg_color: #FEEFB3;
 $failure_bg_color: #FFD2D2;
-@forward './two_elements/_left_bar';
-@forward '../Widgets/_button';
-@forward '../Widgets/_menu_left';
+
+
+@forward './two_elements/_left_bar' with (
+    $frame_bg_color: $bg_color,
+    $darken_frame_bg_color: $bg_color_darken
+);
+
+@forward '../Widgets/_menu_left' with (
+    $bg_color: $bg_color
+);
+
+@forward '../Widgets/_button' with (
+    $btn_bg_color: $bg_color_lighten,
+    $btn_border_color: $bg_color_lighten,
+    $btn_darken_bg_color: $bg_color_darken
+);
+
+
 @forward '../Widgets/_text_box' with (
     $disclaimer_bg_color: $info_bg_color,
     $disclaimer_border_color: #2196F3,
@@ -24,6 +40,7 @@ $failure_bg_color: #FFD2D2;
     $high_bg_color: $failure_bg_color,
     $high_border_color: #f44336,
 );
+
 @forward '../Widgets/_flash_messages' with (
     $info_color: $msg_color,
     $info_bg_color: $info_bg_color,
