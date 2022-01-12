@@ -21,6 +21,13 @@ class Example(Interface):
                                                             hasFever=bool(random.randint(0, 1)),
                                                             hasCovid=bool(random.randint(0, 1)))
 
+    def reset_config(self):
+        """
+        Resets the configuration and database connection.
+        To be used when the configuration files are changed.
+        """
+        pass
+
     def is_db_empty(self) -> bool:
         return True
 

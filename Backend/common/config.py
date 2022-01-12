@@ -28,7 +28,6 @@ def generate_config() -> Tuple[str, DbConfig]:
     :return: dir with csv files, config options for the db
     """
     # path to default config file
-    dirname = os.path.dirname(__file__)
     config_path = os.path.join(ROOT_DIR, "config", "config.yml")
     print(f"Reading config file from {config_path}.")
 
@@ -123,13 +122,15 @@ def generate_config() -> Tuple[str, DbConfig]:
 
     # check config / type checking
     expected_config_format: Dict[str, type] = DbConfig.__annotations__
+    expected_config_format: Dict[str, type] = {'host': str, 'port': str, 'db_name': str, 'username': str, 'password': str, 'db_schema': str}
     check_ok: bool = True
     for k, v in data["db_config"].items():
+
         if k not in expected_config_format:
             check_ok = False
             logging.error(f"There is no configuration Argument with the name: {k}")
         else:
-            if not isinstance(v, expected_config_format[k]):
+            if not isinstance(v, str):
                 check_ok = False
                 logging.error(f"The Argument: {k} should have the type {expected_config_format[k]} not {type(v)}")
 

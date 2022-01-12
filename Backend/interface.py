@@ -62,6 +62,14 @@ class DecisionReasons(TypedDict):
 class Interface(Singleton, ABC):
 
     @abstractmethod
+    def reset_config(self):
+        """
+        Resets the configuration and database connection.
+        To be used when the configuration files are changed.
+        """
+        pass
+
+    @abstractmethod
     def is_db_empty(self) -> bool:
         """
         check if db is empty

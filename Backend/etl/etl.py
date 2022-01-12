@@ -13,7 +13,7 @@ from Backend.common.omop_enums import OmopTableEnum, OmopPersonFieldsEnum, OmopL
 from Backend.etl import extract, transform
 
 
-def run_etl_job_for_csvs(csv_dir: str, db_config: DbConfig):
+def run_etl_job_for_csvs(csv_dir: str, db_config: DbConfig) -> bool:
     """
     Runs the entire ETL-Job for the given csvs files at the specified path.
     First all csv files are transformed into pandas dataframes. Then they are transformed into omop compliant tables.
@@ -49,25 +49,36 @@ def run_etl_job_for_csvs(csv_dir: str, db_config: DbConfig):
     omop_person_df: pd.DataFrame = transform.generate_person_table(person_df)
     omop_observation_period_df: pd.DataFrame = transform.generate_observation_period_table(case_df)
     omop_visit_occurrence_df: pd.DataFrame = transform.generate_visit_occurrence_table(case_df)
-    omop_procedure_occurrence_df: pd.DataFrame = transform.generate_procedure_occurrence_table(procedure_df, db_manager)
-    omop_measurement_df: pd.DataFrame = transform.generate_measurement_table(lab_df, db_manager)
-    omop_condition_occurrence_df: pd.DataFrame = transform.generate_condition_occurrence_table(diagnosis_df, db_manager)
+    try:
+        omop_procedure_occurrence_df: pd.DataFrame = transform.generate_procedure_occurrence_table(procedure_df,
+                                                                                                   db_manager)
+        omop_measurement_df: pd.DataFrame = transform.generate_measurement_table(lab_df,
+                                                                                 db_manager)
+        omop_condition_occurrence_df: pd.DataFrame = transform.generate_condition_occurrence_table(diagnosis_df,
+                                                                                                   db_manager)
+    except AttributeError:
+        logging.error("Error during Transformation.")
+        return False
     logging.info("Transformations finished.")
 
     # Load into postgres database
     logging.info("Loading omop tables into the database...")
-    db_manager.save(OmopTableEnum.PROVIDER, omop_provider_df)
-    db_manager.save(OmopTableEnum.LOCATION, omop_location_df)
-    db_manager.save(OmopTableEnum.PERSON, omop_person_df)
-    db_manager.save(OmopTableEnum.OBSERVATION_PERIOD, omop_observation_period_df)
-    db_manager.save(OmopTableEnum.VISIT_OCCURRENCE, omop_visit_occurrence_df)
-    db_manager.save(OmopTableEnum.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
-    db_manager.save(OmopTableEnum.MEASUREMENT, omop_measurement_df)
-    db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
-    logging.info("Done loading omop tables into the database.")
+    try:
+        db_manager.save(OmopTableEnum.PROVIDER, omop_provider_df)
+        db_manager.save(OmopTableEnum.LOCATION, omop_location_df)
+        db_manager.save(OmopTableEnum.PERSON, omop_person_df)
+        db_manager.save(OmopTableEnum.OBSERVATION_PERIOD, omop_observation_period_df)
+        db_manager.save(OmopTableEnum.VISIT_OCCURRENCE, omop_visit_occurrence_df)
+        db_manager.save(OmopTableEnum.PROCEDURE_OCCURRENCE, omop_procedure_occurrence_df)
+        db_manager.save(OmopTableEnum.MEASUREMENT, omop_measurement_df)
+        db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
+        logging.info("Done loading omop tables into the database.")
+        return True
+    except AttributeError:
+        return False
 
 
-def run_etl_job_for_patient(patient: Patient, db_manager: DBManager):
+def run_etl_job_for_patient(patient: Patient, db_manager: DBManager) -> bool:
     """
     Runs an etl-job for a single given patient on the connection specified by the given database manager.
     """
@@ -96,12 +107,16 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager):
     omop_provider_df: pd.DataFrame = pd.DataFrame(data_provider)
 
     # Generate unused ids for all conditions
-    condition_occurrence_ids: List[int] = list()
-    for _ in patient.conditions:
-        condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
-        while condition_occurrence_id in condition_occurrence_ids:
+    try:
+        condition_occurrence_ids: List[int] = list()
+        for _ in patient.conditions:
             condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
-        condition_occurrence_ids.append(condition_occurrence_id)
+            while condition_occurrence_id in condition_occurrence_ids:
+                condition_occurrence_id: int = db_manager.generate_condition_occurrence_id()
+            condition_occurrence_ids.append(condition_occurrence_id)
+    except AttributeError:
+        logging.error("Error during database access.")
+        return False
 
     current_date = datetime.datetime.now()
     entries = len(patient.conditions)
@@ -115,115 +130,125 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager):
                                  }
     omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occurrence)
 
-    db_manager.save(OmopTableEnum.LOCATION, omop_location_df)
-    db_manager.save(OmopTableEnum.PROVIDER, omop_provider_df)
-    db_manager.save(OmopTableEnum.PERSON, omop_person_df)
-    db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
-    logging.info("Done loading a single Patient into the database.")
+    try:
+        db_manager.save(OmopTableEnum.LOCATION, omop_location_df)
+        db_manager.save(OmopTableEnum.PROVIDER, omop_provider_df)
+        db_manager.save(OmopTableEnum.PERSON, omop_person_df)
+        db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
+        logging.info("Done loading a single Patient into the database.")
+        return True
+    except AttributeError:
+        logging.error("Error during database access.")
+        return False
 
 
-def update_patient(old_patient: Patient, update: Patient, db_manager: DBManager):
+def update_patient(old_patient: Patient, update: Patient, db_manager: DBManager) -> bool:
     logging.info("Updating a patient...")
-    db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.PERSON_SOURCE_VALUE.value, update.name)
-    db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.DAY_OF_BIRTH.value, update.day)
-    db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.MONTH_OF_BIRTH.value, update.month)
-    db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.YEAR_OF_BIRTH.value, update.year)
-    db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.BIRTH_DATETIME.value, update.birthdate)
+    try:
+        db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.PERSON_SOURCE_VALUE.value, update.name)
+        db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.DAY_OF_BIRTH.value, update.day)
+        db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.MONTH_OF_BIRTH.value, update.month)
+        db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.YEAR_OF_BIRTH.value, update.year)
+        db_manager.update_person_field(old_patient.id, OmopPersonFieldsEnum.BIRTH_DATETIME.value, update.birthdate)
 
-    if old_patient.has_covid() and not update.has_covid():
-        # Remove covid from conditions
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.COVID_19.value)
-    if not old_patient.has_covid() and update.has_covid():
-        # Add covid as condition
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.COVID_19.value)
+        if old_patient.has_covid() and not update.has_covid():
+            # Remove covid from conditions
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.COVID_19.value)
+        if not old_patient.has_covid() and update.has_covid():
+            # Add covid as condition
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.COVID_19.value)
 
-    if old_patient.has_fever() and not update.has_fever():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.FEVER.value)
-    if not old_patient.has_fever() and update.has_fever():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.FEVER.value)
+        if old_patient.has_fever() and not update.has_fever():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.FEVER.value)
+        if not old_patient.has_fever() and update.has_fever():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.FEVER.value)
 
-    if old_patient.has_exanthem() and not update.has_exanthem():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.ERUPTION.value)
-    if not old_patient.has_exanthem() and update.has_exanthem():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.ERUPTION.value)
+        if old_patient.has_exanthem() and not update.has_exanthem():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.ERUPTION.value)
+        if not old_patient.has_exanthem() and update.has_exanthem():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.ERUPTION.value)
 
-    if old_patient.has_mouth_or_mucosa_inflammation() and not update.has_mouth_or_mucosa_inflammation():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
-    if not old_patient.has_mouth_or_mucosa_inflammation() and update.has_mouth_or_mucosa_inflammation():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
+        if old_patient.has_mouth_or_mucosa_inflammation() and not update.has_mouth_or_mucosa_inflammation():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
+        if not old_patient.has_mouth_or_mucosa_inflammation() and update.has_mouth_or_mucosa_inflammation():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
 
-    if old_patient.has_swollen_extremities() and not update.has_swollen_extremities():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.SWELLING.value)
-    if not old_patient.has_swollen_extremities() and update.has_swollen_extremities():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.SWELLING.value)
+        if old_patient.has_swollen_extremities() and not update.has_swollen_extremities():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.SWELLING.value)
+        if not old_patient.has_swollen_extremities() and update.has_swollen_extremities():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.SWELLING.value)
 
-    if old_patient.has_conjunctivitis() and not update.has_conjunctivitis():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
-    if not old_patient.has_conjunctivitis() and update.has_conjunctivitis():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
+        if old_patient.has_conjunctivitis() and not update.has_conjunctivitis():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
+        if not old_patient.has_conjunctivitis() and update.has_conjunctivitis():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
 
-    if old_patient.has_lymphadenopathy() and not update.has_lymphadenopathy():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.LYMPHADENOPATHY.value)
-    if not old_patient.has_lymphadenopathy() and update.has_lymphadenopathy():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.LYMPHADENOPATHY.value)
+        if old_patient.has_lymphadenopathy() and not update.has_lymphadenopathy():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.LYMPHADENOPATHY.value)
+        if not old_patient.has_lymphadenopathy() and update.has_lymphadenopathy():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.LYMPHADENOPATHY.value)
 
-    if old_patient.has_gastro_intestinal_condition() and not update.has_gastro_intestinal_condition():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.NAUSEA_AND_VOMITING.value)
-    if not old_patient.has_gastro_intestinal_condition() and update.has_gastro_intestinal_condition():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.NAUSEA_AND_VOMITING.value)
+        if old_patient.has_gastro_intestinal_condition() and not update.has_gastro_intestinal_condition():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.NAUSEA_AND_VOMITING.value)
+        if not old_patient.has_gastro_intestinal_condition() and update.has_gastro_intestinal_condition():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.NAUSEA_AND_VOMITING.value)
 
-    if old_patient.has_ascites() and not update.has_ascites():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.ASCITES.value)
-    if not old_patient.has_ascites() and update.has_ascites():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.ASCITES.value)
+        if old_patient.has_ascites() and not update.has_ascites():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.ASCITES.value)
+        if not old_patient.has_ascites() and update.has_ascites():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.ASCITES.value)
 
-    if old_patient.has_pericardial_effusions() and not update.has_pericardial_effusions():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.PERICARDIAL_EFFUSION.value)
-    if not old_patient.has_pericardial_effusions() and update.has_pericardial_effusions():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.PERICARDIAL_EFFUSION.value)
+        if old_patient.has_pericardial_effusions() and not update.has_pericardial_effusions():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.PERICARDIAL_EFFUSION.value)
+        if not old_patient.has_pericardial_effusions() and update.has_pericardial_effusions():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.PERICARDIAL_EFFUSION.value)
 
-    if old_patient.has_pleural_effusions() and not update.has_pleural_effusions():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.PLEURAL_EFFUSION.value)
-    if not old_patient.has_pleural_effusions() and update.has_pleural_effusions():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.PLEURAL_EFFUSION.value)
+        if old_patient.has_pleural_effusions() and not update.has_pleural_effusions():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.PLEURAL_EFFUSION.value)
+        if not old_patient.has_pleural_effusions() and update.has_pleural_effusions():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.PLEURAL_EFFUSION.value)
 
-    if old_patient.has_pericarditis() and not update.has_pericarditis():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.PERICARDITIS.value)
-    if not old_patient.has_pericarditis() and update.has_pericarditis():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.PERICARDITIS.value)
+        if old_patient.has_pericarditis() and not update.has_pericarditis():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.PERICARDITIS.value)
+        if not old_patient.has_pericarditis() and update.has_pericarditis():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.PERICARDITIS.value)
 
-    if old_patient.has_myocarditis() and not update.has_myocarditis():
-        db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.MYOCARDITIS.value)
-    if not old_patient.has_myocarditis() and update.has_myocarditis():
-        _add_concept_for_patient(db_manager=db_manager,
-                                 patient_id=old_patient.id,
-                                 concept_id=SnomedConcepts.MYOCARDITIS.value)
+        if old_patient.has_myocarditis() and not update.has_myocarditis():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.MYOCARDITIS.value)
+        if not old_patient.has_myocarditis() and update.has_myocarditis():
+            _add_concept_for_patient(db_manager=db_manager,
+                                     patient_id=old_patient.id,
+                                     concept_id=SnomedConcepts.MYOCARDITIS.value)
 
-    logging.info("Done updating the patient.")
+        logging.info("Done updating the patient.")
+        return True
+    except AttributeError:
+        logging.info("Error during database access.")
+        return False
 
 
 def _add_concept_for_patient(db_manager: DBManager, patient_id: int, concept_id: int):

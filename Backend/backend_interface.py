@@ -27,6 +27,16 @@ class BackendManager(Interface):
         self.patients: List[Patient] = list()
         self.analyze_all_in_database()
 
+    def reset_config(self):
+        """
+        Resets the configuration and database connection.
+        To be used when the configuration files are changed.
+        """
+        logging.info("Resetting Configuration.")
+        self.db_config = generate_config()[1]
+        logging.info("Resetting DatabaseManager.")
+        self.dbManager = DBManager(self.db_config, clear_tables=False)
+
     def analyze_all_in_database(self):
         """
         Analyzes all patients currently saved in the database.
@@ -40,7 +50,11 @@ class BackendManager(Interface):
         :return: True if the database is empty
         """
         # Checks if there any entries in the condition table
-        return self.dbManager.check_if_table_is_empty(table_name=OmopTableEnum.CONDITION_OCCURRENCE.value)
+        try:
+            return self.dbManager.check_if_table_is_empty(table_name=OmopTableEnum.CONDITION_OCCURRENCE.value)
+        except AttributeError:
+            # Return False if the database operation fails
+            return False
 
     def reset_db(self) -> bool:
         """
@@ -49,8 +63,11 @@ class BackendManager(Interface):
         :return: True if the database was successfully reset.
         """
         self.patients.clear()
-        return self.dbManager.clear_omop_tables()
-        # Todo: Falls die Ergebnisse der Analyse in der DB gespeichert werden, sollten auch diese zurückgesetzt werden
+        try:
+            return self.dbManager.clear_omop_tables()
+        except AttributeError:
+            # Return False if the database operation fails
+            return False
 
     def add_patient(self, patient_data: PatientData) -> Optional[PatientId]:
         """
@@ -62,57 +79,73 @@ class BackendManager(Interface):
         # Create Patient object
         patient: Patient = self._create_patient_from_data(patient_data)
 
+        if not patient:
+            logging.error("Could not create a valid Patient from the given PatientData.")
+            return None
+
         # Save in database
-        run_etl_job_for_patient(patient=patient, db_manager=self.dbManager)
+        if not run_etl_job_for_patient(patient=patient, db_manager=self.dbManager):
+            logging.error("Error storing patient in the database.")
+            return None
 
         # Evaluate patient
         evaluated_patient = evaluate_patient(self.dbManager, patient.id)
-        self.patients.append(evaluated_patient)
+        if not evaluated_patient:
+            return None
 
+        self.patients.append(evaluated_patient)
         return PatientId(patient.id)
 
-    def _create_patient_from_data(self, patient_data: PatientData) -> Patient:
+    def _create_patient_from_data(self, patient_data: PatientData) -> Optional[Patient]:
         """
-        Creates a patient-object from the given data.
+        Creates a patient-object from the given data. Returns None if the creation failed.
 
         :param patient_data: PatientData from the Frontend
         :return: Corresponding Patient
         """
         # Generate Random id that is not already in the database
-        patient_id = self.dbManager.generate_patient_id()
+        try:
+            patient_id = self.dbManager.generate_patient_id()
+        except AttributeError:
+            # Error during database interaction
+            return None
 
         # Get birthday data
         birthdate: date = patient_data['birthdate']
 
         patient: Patient = Patient(patient_id=patient_id, name=patient_data['name'], birthdate=birthdate)
-
-        # Get snomed ids from patient_data and add as conditions
-        if patient_data['hasCovid']:
-            patient.conditions.append(SnomedConcepts.COVID_19.value)
-        if patient_data['hasFever']:
-            patient.conditions.append(SnomedConcepts.FEVER.value)
-        if patient_data['hasExanthem']:
-            patient.conditions.append(SnomedConcepts.ERUPTION.value)
-        if patient_data['hasEnanthem']:
-            patient.conditions.append(SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
-        if patient_data['hasSwollenExtremeties']:
-            patient.conditions.append(SnomedConcepts.SWELLING.value)
-        if patient_data['hasConjunctivitis']:
-            patient.conditions.append(SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
-        if patient_data['hasSwollenLymphnodes']:
-            patient.conditions.append(SnomedConcepts.LYMPHADENOPATHY.value)
-        if patient_data['hasGastroIntestinalCondition']:
-            patient.conditions.append(SnomedConcepts.NAUSEA_AND_VOMITING.value)
-        if patient_data['hasAscites']:
-            patient.conditions.append(SnomedConcepts.ASCITES.value)
-        if patient_data['hasPericardialEffusions']:
-            patient.conditions.append(SnomedConcepts.PERICARDIAL_EFFUSION.value)
-        if patient_data['hasPleuralEffusions']:
-            patient.conditions.append(SnomedConcepts.PLEURAL_EFFUSION.value)
-        if patient_data['hasPericarditis']:
-            patient.conditions.append(SnomedConcepts.PERICARDITIS.value)
-        if patient_data['hasMyocarditis']:
-            patient.conditions.append(SnomedConcepts.MYOCARDITIS.value)
+        try:
+            # Get snomed ids from patient_data and add as conditions
+            if patient_data['hasCovid']:
+                patient.conditions.append(SnomedConcepts.COVID_19.value)
+            if patient_data['hasFever']:
+                patient.conditions.append(SnomedConcepts.FEVER.value)
+            if patient_data['hasExanthem']:
+                patient.conditions.append(SnomedConcepts.ERUPTION.value)
+            if patient_data['hasEnanthem']:
+                patient.conditions.append(SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
+            if patient_data['hasSwollenExtremeties']:
+                patient.conditions.append(SnomedConcepts.SWELLING.value)
+            if patient_data['hasConjunctivitis']:
+                patient.conditions.append(SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
+            if patient_data['hasSwollenLymphnodes']:
+                patient.conditions.append(SnomedConcepts.LYMPHADENOPATHY.value)
+            if patient_data['hasGastroIntestinalCondition']:
+                patient.conditions.append(SnomedConcepts.NAUSEA_AND_VOMITING.value)
+            if patient_data['hasAscites']:
+                patient.conditions.append(SnomedConcepts.ASCITES.value)
+            if patient_data['hasPericardialEffusions']:
+                patient.conditions.append(SnomedConcepts.PERICARDIAL_EFFUSION.value)
+            if patient_data['hasPleuralEffusions']:
+                patient.conditions.append(SnomedConcepts.PLEURAL_EFFUSION.value)
+            if patient_data['hasPericarditis']:
+                patient.conditions.append(SnomedConcepts.PERICARDITIS.value)
+            if patient_data['hasMyocarditis']:
+                patient.conditions.append(SnomedConcepts.MYOCARDITIS.value)
+        except (KeyError, ValueError, AttributeError) as error:
+            logging.error("Error during patient creation from patient_data.")
+            logging.error(error)
+            return None
 
         return patient
 
@@ -123,31 +156,37 @@ class BackendManager(Interface):
 
         :return: True if successfully updated
         """
-        try:
-            # Get already saved patient
-            old_patient: Patient = evaluate_patient(self.dbManager, patient_id)
-
-            # Create new patient from the given PatientData
-            new_patient: Patient = self._create_patient_from_data(patient_data)
-            new_patient.id = old_patient.id
-
-            # Update old patient with new patient
-            update_patient(old_patient, new_patient, self.dbManager)
-
-            # Evaluate (updated) patient
-            evaluated_patient = evaluate_patient(self.dbManager, new_patient.id)
-
-            # Update evaluation list
-            for patient in self.patients:
-                if patient.id == new_patient.id:
-                    self.patients.remove(patient)
-                    self.patients.append(evaluated_patient)
-
-            return True
-
-        except:
-            logging.error("Updating patient failed.")
+        # Get already saved patient
+        old_patient: Patient = evaluate_patient(self.dbManager, patient_id)
+        if not old_patient:
+            logging.error("Could not update a patient, because the id does not exist.")
             return False
+
+        # Create new patient from the given PatientData
+        new_patient: Patient = self._create_patient_from_data(patient_data)
+        if not new_patient:
+            logging.error("Could not create a patient with the given patient_data.")
+            return False
+        new_patient.id = old_patient.id
+
+        # Update old patient with new patient
+        if not update_patient(old_patient, new_patient, self.dbManager):
+            logging.error("Could not update the patient.")
+            return False
+
+        # Evaluate (updated) patient
+        evaluated_patient = evaluate_patient(self.dbManager, new_patient.id)
+        if not evaluated_patient:
+            logging.error("Error during evaluation of the new patient.")
+            return False
+
+        # Update evaluation list
+        for patient in self.patients:
+            if patient.id == new_patient.id:
+                self.patients.remove(patient)
+                self.patients.append(evaluated_patient)
+
+        return True
 
     def upload_csv(self, csv_file: os.path) -> Iterator[int]:
         run_etl_job_for_csvs(csv_file, self.db_config)
