@@ -93,7 +93,7 @@ def evaluate_all_in_database(db_manager: DBManager) -> List[Patient]:
         patient_ids = df['person_id'].values.tolist()
         patients = evaluate_patients(db_manager, patient_ids)
         logging.info(f"Finished evaluating all patients currently in the database.")
-    except TypeError:
+    except (TypeError, AttributeError):
         logging.error("Error during evaluation. List of Patients might be incomplete")
     return patients
 
