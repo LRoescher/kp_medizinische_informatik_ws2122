@@ -11,11 +11,19 @@
 <!-- TODO: rework -->
 
 {% block content %}
-    <div class="grid_table_entry disclaimer">Dies ist nur in Mock-up. Alle Seiten sind statisch, das heißt jegliche
-        Eingaben haben keinerlei Auswirkungen. Die hier gezeigten Funktionalitäten sind teilweise kontextabhängig,
-        ein Fakt der im Rahmen dieses Mock-up nicht beachtet wird. Beispielsweise wird es nur <strong>einmalig</strong>
-        möglich sein eine Batch-Datensatz hochzuladen. Im Anschluss ist es dann nur noch möglich einzelne Patienten
-        Hinzuzufügen.
+    <div class="grid_table_entry disclaimer">
+    <p>
+        Willkommen im Webclient des Entscheidungsunterst&uuml;tzungssystems für das <strong>Kawasaki-Syndrom</strong>
+        und <strong>PIMS</strong> (Paediatric inflammatory multisystem syndrome).
+        <br/>
+        Diese Anwendung soll medizinisches Fachpersonal hinsichtlich der Diagnose der oben genannten Krankheiten
+        unterst&uuml;tzen. Das System kann genutzt werden, um eine Wahrscheinlichkeit der Erkrankung für einzelne
+        Patienten zu bestimmen. Es ist aber auch m&ouml;glich eine Analyse für Gruppen von Patienten durchzuf&uuml;hren,
+         in dem entsprechende Datentabellen hier hochgeladen werden.
+        <br/>
+        Beachten Sie, dass die hier berechneten Ergebnisse ohne Gew&auml;hr zu verstehen sind. S&auml;mtliche Ergebnisse
+        m&uuml;ssen durch medizinisches Fachpersonal auf ihre Richtigkeit &uuml;berpr&uuml;ft werden.
+    </p>
     </div>
 
 
@@ -24,11 +32,11 @@
     </a>
 
     <a href="{{ url_for('data_manager.upload_page') }}" class="btn grid_table_entry">
-            Datensatz hinzufügen
+            Datensatz hinzuf&uuml;gen
     </a>
     
     <a href="{{ url_for('data_manager.reset_db') }}" class="btn grid_table_entry">
-            Datenbank zurücksetzen
+            Datenbank zur&uuml;cksetzen
     </a>
 
 {% endblock %}
