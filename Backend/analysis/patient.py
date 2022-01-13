@@ -30,6 +30,7 @@ class Patient:
     REASON_INFLAMMATION_LAB: str = "Entzündungsparameter im Blut"
     REASON_EFFUSION: str = "Flüssigkeitsansammlungen"
     REASON_COVID: str = "Covid-19 Erkrankung"
+    REASON_HAS_KAWASAKI: str = "Kawasaki-Syndrom"
 
     def __init__(self, patient_id: int, name: str, birthdate: datetime.date):
         """
@@ -230,6 +231,10 @@ class Patient:
                             SnomedConcepts.PIMS.value]
         return any(x in snomed_covid_ids for x in self.conditions)
 
+    def has_kawasaki(self):
+        snomed_kawasaki_id = SnomedConcepts.KAWASAKI.value
+        return snomed_kawasaki_id in self.conditions
+
     def calculate_kawasaki_score(self) -> (float, Set[str]):
         """
         Calculates a score (probability) for the patient having Kawasaki-Disease. The score will be between 0.0 and 1.0.
@@ -307,20 +312,30 @@ class Patient:
         if self.has_covid():
             score += 2
             self.reasons_for_pims.append(self.REASON_COVID)
+
+        if self.has_kawasaki():
+            score += 7
+            self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
+
         if self.has_fever():
-            score += 2
+            if not self.has_kawasaki():
+                score += 2
             self.reasons_for_pims.append(self.REASON_FEVER)
         if self.has_swollen_extremities():
-            score += 1
+            if not self.has_kawasaki():
+                score += 1
             self.reasons_for_pims.append(self.REASON_SWOLLEN_EXTREMITIES)
         if self.has_conjunctivitis():
-            score += 1
+            if not self.has_kawasaki():
+                score += 1
             self.reasons_for_pims.append(self.REASON_CONJUNCTIVITIS)
         if self.has_lymphadenopathy():
-            score += 1
+            if not self.has_kawasaki():
+                score += 1
             self.reasons_for_pims.append(self.REASON_SWOLLEN_LYMPHNODES)
         if self.has_mouth_or_mucosa_inflammation():
-            score += 1
+            if not self.has_kawasaki():
+                score += 1
             self.reasons_for_pims.append(self.REASON_ENANTHEM)
         if self.has_inflammation_lab():
             score += 1

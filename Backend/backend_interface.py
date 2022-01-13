@@ -1,7 +1,7 @@
 import logging
 import os
 from datetime import date
-from typing import Dict, Iterator, Optional, List
+from typing import Dict, Optional, List
 
 from Backend.analysis.analysis import evaluate_patient, evaluate_all_in_database
 from Backend.analysis.patient import Patient
