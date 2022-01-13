@@ -61,7 +61,10 @@ class DBManager:
         Checks if the given table is empty.
         :return: True if the table is empty, false if there are entries for that table
         """
-        cursor = self.conn.cursor()
+        if self.conn != None:
+            cursor = self.conn.cursor()
+        else:
+            return True
         try:
             cursor.execute(f"SET search_path TO {self.DB_SCHEMA};")
 
