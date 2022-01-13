@@ -1,0 +1,26 @@
+{% extends "Layout/layout.html" %}
+
+{% block stylesheets %}
+    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/main.css') }}">
+{% endblock %}
+
+
+{% block title %}
+    Einstellungen
+{% endblock %}
+
+{% block content %}
+
+    <a href="{{ url_for('person_data.get_empty_patient_data') }}" class="btn">
+        Konfigurationsdatei herunterladen
+    </a>
+
+    <a {% if not db_empty %} href="{{ url_for('data_manager.analyse_data') }}" {% endif %} class="btn  {% if db_empty %} disabled {% endif %}">
+        Analyse neustarten
+    </a>
+
+    <a {% if not db_empty %} href="{{ url_for('data_manager.reset_db') }}" {% endif %} class="btn  {% if db_empty %} disabled {% endif %}">
+        Datenbank zurücksetzen
+    </a>
+
+{% endblock %}

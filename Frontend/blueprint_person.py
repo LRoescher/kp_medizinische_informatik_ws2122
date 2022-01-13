@@ -2,11 +2,13 @@ from flask import Blueprint, render_template, redirect, request, url_for, flash
 from Backend.interface import PatientId, Interface, PatientData
 from typing import Optional
 from Backend.backend_interface import BackendManager
+from Backend.example_interface import Example
 from Frontend.FlashMessageTypes import FlashMessageTypes
+from datetime import date, datetime
 
 import datetime
 
-controller: Interface = BackendManager()
+controller: Interface = Example()
 
 person_data = Blueprint("person_data", __name__)
 
@@ -17,13 +19,15 @@ def py_types():
         "int": int,
         "bool": bool,
         "str": str,
-        "float": float
+        "float": float,
+        "date": date
     }
 
 
 @person_data.route("/")
 def get_empty_patient_data():
     birthdate = datetime.date.today()
+    # ToDo
     data = PatientData(birthdate=birthdate, name="Tom", hasCovid=False, hasFever=False)
     return render_template("person_data.html", patient_data=data, annotations=PatientData.__annotations__)
 
@@ -42,10 +46,13 @@ def get_patient_data_from_request() -> Optional[PatientData]:
     patient_data: PatientData = {}
     for key, data_type in PatientData.__annotations__.items():
         if key in request.form:
-            if data_type is not bool:
-                patient_data[key] = request.form[key]
-            else:
+            if data_type is bool:
                 patient_data[key] = True
+            elif data_type is date:
+                patient_data[key] = datetime.datetime.strptime(request.form[key], "%Y-%m-%d")
+            else:
+                patient_data[key] = request.form[key]
+
         elif key not in request.form and data_type is bool:
             patient_data[key] = False
 

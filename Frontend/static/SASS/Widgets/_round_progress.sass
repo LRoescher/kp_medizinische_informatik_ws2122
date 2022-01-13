@@ -1,0 +1,86 @@
+// Author: Kyle Shanks
+
+$diameter: 60px !default
+$bg_color: white !default
+$border_color: #7cc0d7 !default
+$border_bg_color: lightgrey !default
+$text_color: black !default
+$complete_bg_color: #a3f1a3 !default
+$error_bg_color: #e96969 !default
+
+
+
+.abs-center 
+    position: absolute
+    top: 50%
+    left: 50%
+    transform: translate(-50%, -50%)
+    
+.container 
+    transform-style: preserve-3d
+    transform: translate(-50%, -50%)
+
+    &.flipped 
+        transition: 1.5s ease
+        transform: translate(-50%, -50%) rotateY(180deg)
+
+    &.complete 
+        & .progress_icon-background
+            fill: $complete_bg_color
+            stroke: $complete_bg_color
+
+        & .error 
+            opacity: 0
+            transition: 0.3s ease
+
+    &.error
+        & .progress_icon-background
+            fill: $error_bg_color
+            stroke: $error_bg_color
+
+        & .check 
+            opacity: 0
+            transition: 1.5s ease
+
+
+.front, .back 
+    backface-visibility: hidden
+
+.front 
+    z-index: 2
+    transform: rotateY(0deg)
+
+.back 
+    transform: rotateY(180deg)
+    
+.rad-progress, .alt-state
+    height: $diameter
+    
+// define start position (currently: top)
+.rad-progress 
+    transform: translate(-50%, -50%) rotateZ(-90deg)
+
+.progress-background 
+    stroke: $border_bg_color
+    stroke-width: 8
+    fill: none 
+
+.progress-bar 
+    stroke: $border_color
+    stroke-width: 8
+    fill: none
+    box-sizing: border-box
+    transition: 0.5s cubic-bezier(0.5,0,0.2,1)
+
+.progress-label 
+    font-size: 70%
+    
+.progress_icon
+    font-size: 200%
+    color: $text_color
+
+    &.check::before 
+        content: "\2713"
+
+    &.error::before
+        content: "\2715"

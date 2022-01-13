@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template
 from Backend.backend_interface import BackendManager
 from Backend.interface import PatientId, Interface, DecisionReasons, Disease, PatientData
+from Backend.example_interface import Example
 
-
-controller: Interface = BackendManager()
+controller: Interface = Example()
 
 results = Blueprint("results", __name__)
 
@@ -12,7 +12,7 @@ results = Blueprint("results", __name__)
 
 @results.route("/all")
 def get_analysis():
-    return render_template("analysis.html", pagename="Analyse",analysis_data=controller.analysis_data)
+    return render_template("analysis.html", pagename="Analyse", analysis_data=controller.analysis_data)
 
 
 @results.route("/pims/<int:patient_id>")

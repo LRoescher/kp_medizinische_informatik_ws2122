@@ -2,9 +2,10 @@ from flask import Blueprint, render_template, redirect, request, session, flash,
 from Frontend.FlashMessageTypes import FlashMessageTypes
 from Backend.interface import Interface
 from Backend.backend_interface import BackendManager
+from Backend.example_interface import Example
 
 access_control = Blueprint("access_control", __name__)
-controller: Interface = BackendManager()
+controller: Interface = Example()
 
 
 @access_control.before_app_request
