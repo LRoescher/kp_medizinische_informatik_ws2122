@@ -1,7 +1,71 @@
 @use 'Layout/layout'
 @use 'Widgets/_grid_table' as grid_table
 
-@include grid_table.grid_table(2)
+
+$bg_color: lightblue !default
+$text_border_radius: 15px !default
+$text_bg_color: #d2eaf1 !default
+
+$icon_bg_color: #7cc0d7 !default
+
+
+form
+    display: grid
+    grid-template-rows: 33% 33% 33%
+
+svg
+    height: 0
+    width: 0
+    margin: 0
+    padding: 0
+
+#two_elements_content_frame
+    margin: 15%
+    
+.login_grid_entry
+    display: flex
+    padding: 2%
+
+.login_grid_entry input
+    width: 100%
+    margin: 0
+    padding: 0
+
+.login_icon
+    height: 100%
+    width: 15%
+    margin: 0
+    padding: 0
+    background-color: $icon_bg_color
+    border-bottom-left-radius: $text_border_radius
+    border-top-left-radius: $text_border_radius
+    
 
 input
-    width: 30%
+    border: solid 1px $bg_color
+    border-top-right-radius: $text_border_radius
+    border-bottom-right-radius: $text_border_radius
+
+    background-color: $text_bg_color
+    font-size: 1.3em
+
+input:hover
+    outline-width: 2px
+    outline-color: $icon_bg_color
+
+input:focus
+    outline-width: 2px
+    outline-color: $icon_bg_color
+
+input:focus-visible  
+    outline-width: 2px
+    outline-color: $icon_bg_color
+
+.login
+    border-radius: $text_border_radius
+    background-color: $icon_bg_color
+
+.login:hover
+    opacity: 0.75
+
+

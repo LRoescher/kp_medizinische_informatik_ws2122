@@ -1,0 +1,27 @@
+<!-- Author: Tim -->
+
+{% macro progressbar() %}
+
+  <div class="wizard-progress">
+      <!-- <div class="step complete">
+        A
+        <div class="node"></div>
+      </div>
+      <div class="step in-progress">
+        B
+        <div class="node"></div>
+      </div>
+      <div class="step">
+        C
+        <div class="node"></div>
+      </div> -->
+
+      {% for key, arg in kwargs.items() %}
+        <div id="{{ key }}"" class="step">
+          {{ arg }}
+          <div class="node"></div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% endmacro %}

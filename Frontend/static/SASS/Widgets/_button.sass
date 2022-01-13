@@ -1,8 +1,12 @@
+$btn_text_color: black !default
+$btn_bg_color: #d2eaf1 !default
+$btn_border_color: #d2eaf1 !default
+$btn_darken_bg_color: #7cc0d7 !default
+
 .btn
     display: block
     padding: 6px 12px
     margin: 1%
-    font-size: 14px
     font-weight: 400
     line-height: 1.42857143
     text-align: center
@@ -12,18 +16,22 @@
     cursor: pointer
     background-image: none
     border: 1px solid transparent
-    border-radius: 4px
+    border-radius: 15px
     
-    color: #333
-    background-color: #fff
-    border-color: #ccc
+    color: $btn_text_color
+    background-color: $btn_bg_color
+    border-color: $btn_border_color
 
 
 .btn:hover
-    color: #333
-    background-color: #e6e6e6
-    border-color: #adadad
+    color: $btn_text_color
+    background-color: $btn_darken_bg_color
+    border-color: $btn_border_color
 
 a.btn
     text-decoration: none
     color: black
+
+.btn.disabled
+    opacity: 0.5
+    cursor: not-allowed

@@ -8,6 +8,7 @@
 {% block title %}
     Startseite
 {% endblock %}
+<!-- TODO: rework -->
 
 {% block content %}
     <div class="grid_table_entry disclaimer">Dies ist nur in Mock-up. Alle Seiten sind statisch, das heißt jegliche
@@ -23,7 +24,7 @@
     </a>
 
     <a href="{{ url_for('upload_data.upload_page') }}" class="btn grid_table_entry">
-            Daten upload
+            Datensatz hinzufügen
     </a>
     
     <a href="{{ url_for('reset_db') }}" class="btn grid_table_entry">

@@ -1,3 +1,16 @@
+$info_color: #00529B !default
+$info_bg_color: #BDE5F8 !default
+
+$success_color: #4F8A10 !default
+$success_bg_color: #DFF2BF !default
+
+$warning_color: #9F6000 !default
+$warning_bg_color: #FEEFB3 !default
+
+$failure_color: #D8000C !default
+$failure_bg_color: #FFD2D2 !default
+
+
 #flash_messages
     position: fixed
     right: 1%
@@ -10,23 +23,23 @@
     padding: 5px
     margin-bottom: 2%
     border: solid 1px grey
-    border-radius: 8px
+    border-radius: 15px
     background-color: lightgrey
     display: none
 
 .message
-    color: #00529B
-    background-color: #BDE5F8
+    color: $info_color
+    background-color: $info_bg_color
 
 .success
-    color: #4F8A10
-    background-color: #DFF2BF
+    color: $success_color
+    background-color: $success_bg_color
 
 .warning
-    color: #9F6000
-    background-color: #FEEFB3
+    color: $warning_color
+    background-color: $warning_bg_color
 
 .failure
-    color: #D8000C
-    background-color: #FFD2D2
+    color: $failure_color
+    background-color: $failure_bg_color
 

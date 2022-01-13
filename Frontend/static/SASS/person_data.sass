@@ -1,9 +1,43 @@
+$bg_color: lightblue !default
+$input_border_radius: 15px !default
+$bg_color_lighten: #d2eaf1 !default
+$bg_color_darken: #7cc0d7 !default
+
 @use 'Layout/layout'
 @use 'Widgets/_grid_table' as grid_table
 
 @include grid_table.grid_table(2)
 
+.grid_table_entry
+    margin: 2%
+    height: 2em
+    display: flex
+
+    align-items: center
+
 input
-    width: 30%
+    border: solid 1px $bg_color
+    border-radius: $input_border_radius
+
+    background-color: $bg_color_lighten
+    height: 80%
+    width: 80%
+
+input:hover
+    outline-width: 2px
+    outline-color: $bg_color_darken
+
+input:focus
+    outline-width: 2px
+    outline-color: $bg_color_darken
+
+input:focus-visible  
+    outline-width: 2px
+    outline-color: $bg_color_darken
+
+input[type="checkbox"]:checked
+  background-color: $bg_color_darken
+  color: white
+  height:60%
 
 

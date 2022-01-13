@@ -1,11 +1,50 @@
 @use 'Layout/layout'
 @use 'Widgets/_grid_table' as grid_table
 
-@include grid_table.grid_table(3, ("style": solid, "color": lightgrey, "width": 1px))
+$bg_color: lightblue !default
+$input_border_radius: 15px !default
+$bg_color_lighten: #d2eaf1 !default
+$bg_color_darken: #7cc0d7 !default
+
+@include grid_table.grid_table(3, ("style": solid, "color": #7cc0d7, "width": 1px))
+
+#filter
+    margin: 2%
+    display: flex
+    justify-content: space-between
+    height: 2em
+
+option,
+select,
+input
+    border: solid 1px $bg_color
+    border-radius: $input_border_radius
+
+    background-color: $bg_color_lighten
+    height: 80%
+    width: 40%
+
+option:hover,
+select:hover,
+input:hover
+    outline-width: 2px
+    outline-color: $bg_color_darken
+
+option:focus,
+select:focus,
+input:focus
+    outline-width: 2px
+    outline-color: $bg_color_darken
+
+option:focus,
+select:focus-visible,
+input:focus-visible  
+    outline-width: 2px
+    outline-color: $bg_color_darken
 
 .grid_table_head_entry:hover
-    background: lightgrey
-    border: solid 2px white
+    background-color: $bg_color_lighten
+    cursor: pointer
 
 .triangle
     pointer-events: none
@@ -13,8 +52,12 @@
     vertical-align: middle
     font-size: 50%
 
+.patientname .grid_table_entry:hover
+    background-color: $bg_color_lighten
+
 .grid_table_entry:hover
-    border: solid 2px lightgrey
+    opacity: 0.7
+    cursor: pointer
 
 .grid_table_entry:nth-child(3n+2)
     text-align: center
@@ -23,7 +66,7 @@
     text-align: center
 
 .search_highlight
-    background: lightgrey
+    background: #eeff15
 
 a
     text-decoration: none

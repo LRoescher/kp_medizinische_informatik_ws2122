@@ -1,26 +1,348 @@
 {% extends "Layout/layout.html" %}
+{% from "Macros/_progressbar.html" import progressbar %}
+{% from "Macros/_upload_field.html" import upload_file %}
 
 {% block stylesheets %}
     <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/load_batch.css') }}">
 {% endblock %}
 
-
 {% block title %}
     Upload
 {% endblock %}
 
-{% block content %}
-    
-    <div class="grid_table">
+{% block java_script %}
+  <script type="text/javascript">
+    var uploads = 0;
 
-      <form action = "{{ url_for('upload_data.upload_file') }}" method = "POST" enctype = "multipart/form-data">
-          <div class="grid_table_entry"><input type = "file" name = "file" /></div>
-          {% if sucsess %}
-            <div class="grid_table_entry">SUCCESS</div>
-          {% endif %}
-          <div class="grid_table_entry"><input class="grid_table_entry" type = "submit"/></div>
-          <a href="{{ url_for('upload_data.download_config') }}" title="Dann wieder hochladen"> Konfiguration herunterladen</a>
-      </form>
-    </div>
+    $(document).ready(function(){
+      $("#run_etl").hide();
+      $("#upload_data").hide();
+      $(".upload_progress").hide();
+      $("#upload_config").show();
+      $("#step_config").addClass("in-progress");
+
+      registerActionListener();
+    });
+  
+  /**
+  * set all action listener
+  * @function registerActionListener
+  */
+  function registerActionListener(){
+
+    // control flow
+
+    // config
+    $("#skip_upload_config, #config_uploaded").click((event) => finished_config($(event.target)));
+
+    // data upload
+    $("#skip_upload_data, #data_uploaded").click((event) => finished_upload($(event.target)));
+
+    // etl
+    $("#finish_btn").click((event) => {
+      $("#finish_btn").hide();
+      $("#finish_progress").show();
+      var id = "finish_progress";
+      var failure = false;
+      $(".progress-bar").css("transition-duration", "60s");
+      update_progress(id, 49);
+
+
+      // etl
+      $.ajax({
+        url: "{{ url_for('data_manager.run_etl') }}",
+        type: 'post',
+        //data: fd,
+        contentType: false,
+        processData: false,
+        success: function(response){
+          if(response.success){
+            update_progress(id, 50);
+            $(".progress-bar").css("transition-duration", "23s");
+
+            // analyse data
+            update_progress(id, 99);
+            $.ajax({
+              url: "{{ url_for('data_manager.analyse_data') }}",
+              type: 'get',
+              //data: fd,
+              contentType: false,
+              processData: false,
+              success: function(response){
+                if(response.success){
+                  update_progress(id, 100);
+                  $("#step_etl").removeClass("in-progress")
+                                  .addClass("complete");
+                  
+                }else if (response.msg){
+                  error(id);
+                  // TODO: display msg
+                }
+                else{
+                  error(id);
+                }},
+              error: function(response){
+                error(id)
+                console.log(response.statusText);
+                // TODO: display msg
+              },
+            });
+            
+          }else if (response.msg){
+            error(id);
+            // TODO: display msg
+            failure = true;
+          }
+          else{
+            error(id);
+            failure = true;
+          }},
+        error: function(response){
+          error(id)
+          console.log(response.statusText);
+          // TODO: display msg
+          failure = true
+          
+        },
+      });
+    });
+
+
+    // file upload handling
+    $('.drop_zone').on('dragover', function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    $(".drop_zone").on("dragenter", function(event){
+      event.preventDefault();
+      event.stopPropagation();
+      $(event.target).addClass("in_drop_zone");
+    });
+
+    $("body").on("dragenter", function(event){
+      event.preventDefault();
+      event.stopPropagation();
+      $(".in_drop_zone").removeClass("in_drop_zone");
+    });
+
+
+    $(".drop_zone").on("drop", function(event){
+      event.preventDefault();
+      event.stopPropagation();
+      $(".in_drop_zone").removeClass("in_drop_zone");
+      var file = null;
+
+      if (event.originalEvent.dataTransfer.items && event.originalEvent.dataTransfer.items[0].kind === 'file') {
+        file = event.originalEvent.dataTransfer.items[0].getAsFile();
+      } else if(event.originalEvent.dataTransfer.files.length > 0) {
+        // Use DataTransfer interface to access the file(s)
+        file = event.originalEvent.dataTransfer.files[0]
+      }
+
+      var id = "";
+      var target = $(event.target);
+      while (!target.is("body")){
+        if (target.hasClass('drop_zone')){
+          id = target[0].id;
+          break;
+        } else {
+          target = target.parent();
+        }
+      }
+      
+      if (file != null && id != ""){
+        var url = "{{ url_for('data_manager.upload_file') }}";
+
+        upload_file(url, id, file);
+      }
+
+    });
+  }
+
+  /**
+  * config is finished
+  * @function finished_config
+  * @param {Object} target - that is clicked on
+  */
+  function finished_config(target){
+    if (!target.hasClass("disabled")){
+      $("#upload_config").hide();
+      $("#run_etl").hide();
+      $("#upload_data").show();
+      $("#step_config").removeClass("in-progress")
+                       .addClass("complete");
+      $("#step_data").addClass("in-progress");
+    }
+  }
+
+  /**
+  * data upload is finished
+  * @function finished_upload
+  * @param {Object} target - that is clicked on
+  */
+  function finished_upload(target){
+    if (!target.hasClass("disabled")){
+      $("#upload_config").hide();
+      $("#upload_data").hide();
+      $("#run_etl").show();
+      $("#step_data").removeClass("in-progress")
+                     .addClass("complete");
+      $("#step_etl").addClass("in-progress");
+    }
+  }
+
+  /**
+  * file upload finished - handel bg logic
+  * @function upload_file_finished
+  * @param {string} id - of the drop_zone
+  * @param {boolean} success - of the upload
+  * @param {boolean} complete - the upload of all necessary files
+  */
+  function upload_file_finished(id, success, complete){
+
+    if (id == "config" && success){
+      $("#" + id).removeClass("failed");
+      $("#" + id).addClass("complet");
+      $("#skip_upload_config").addClass("disabled");
+      $("#config_uploaded").removeClass("disabled");
+    } else if (success){
+      $("#" + id).removeClass("failed");
+      $("#" + id).addClass("complet");
+
+      // check if all files are there
+      if (complete){
+        $("#data_uploaded").removeClass("disabled");
+      } else {
+        $("#skip_upload_data").addClass("disabled");
+        $("#data_uploaded").addClass("disabled");
+      }
+
+    } else {
+      $("#" + id).removeClass("complet");
+      $("#" + id).addClass("failed");
+      $("#skip_upload_data").addClass("disabled");
+      $("#data_uploaded").addClass("disabled");
+    }
+
+  }
+
+  /**
+  * upload the given file and controll progress bar
+  * @function upload_file
+  * @param {string} target_url - the file should be send to
+  * @param {string} id - of the drop_zone
+  * @param {Object} file - that should be uploaded
+  */
+  function upload_file(target_url, id, file){
+
+    // fake a progress bar
+    $("#"+id + " .upload_empty").hide();
+    $("#"+id + " .upload_progress").show();
+    update_progress(id, 10);
+    if (id != "config"){uploads++}
+    update_progress(id, 99);
+
+    var fd = new FormData();
+    fd.append('key', id);
+    fd.append('uploads', uploads);
+    fd.append('file', file);
+    var complete = false
+
+    $.ajax({
+      url: target_url,
+      type: 'post',
+      data: fd,
+      contentType: false,
+      processData: false,
+      success: function(response){
+        complete = response.complete;
+        if(response.success){
+          update_progress(id, 100);
+          upload_file_finished(id, true, complete);
+          
+        }else if (response.msg){
+          error(id);
+          upload_file_finished(id, false, complete);
+          // TODO: display msg
+        }
+        else{
+          error(id);
+          upload_file_finished(id, false, complete);
+        }},
+      error: function(response){
+        error(id)
+        console.log(response.statusText);
+        upload_file_finished(id, false, complete);
+        // TODO: display msg
+      },
+    });
+  }
+
+  /**
+  * update the round progress bar
+  * @function update_progress
+  * @param {string} id - of the drop_zone
+  * @param {int} pct - the upload is complete
+  */
+  function update_progress(id, pct) {
+      if(!isNaN(pct) && pct != null) {
+        if(pct > 100) {pct = 100}; // Too High
+        if(pct < 0) {pct = 0};     // Too Low
+        var offset = (( -parseFloat(pct) /100) * 220) - 220; // Getting offset for the SVG
+    
+        $("#"+id+' .progress-bar').attr('stroke-dashoffset',offset);
+        $("#"+id+' .progress-label').text(Number(Math.round(pct+'e2')+'e-2')+'%'); // Rounds to two decimal places
+
+        // Check for finish
+        (pct === 100)?( complete(id) ):( incomplete(id) );
+      };
+      
+  };
+
+  // Complete and Error States
+  function complete(id) { $("#"+id+' .container').addClass('flipped complete').removeClass('error'); };
+  function incomplete(id) { $("#"+id+' .container').removeClass('flipped complete'); };
+  function error(id) { $("#"+id+' .container').addClass('flipped error').removeClass('complete');  };
+  function no_error(id) { $("#"+id+' .container').removeClass('flipped error'); };
+  
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+  {{ progressbar(step_config="Config hochladen", 
+                 step_data="Daten hochladen",
+                 step_etl="ETL starten") }}
+
+  
+
+  <div id="upload_config">
+    {% if config_exists %}
+      <a id="skip_upload_config" class="btn">Existierende Konfigurationsdatei verwenden</a>
+    {% endif %}
+    {{ upload_file("config", "config.yml") }}
+    <a id="config_uploaded" class="btn half_right disabled">weiter</a>
+  </div>
+
+  <div id="upload_data">
+    {% if data_exists %}
+      <a id="skip_upload_data" class="btn">Existierende Daten verwenden</a>
+    {% endif %}
+    {{ upload_file("case", "CASE.csv") }}
+    {{ upload_file("diagnosis", "DIAGNOSIS.csv") }}
+    {{ upload_file("lab", "LAB.csv") }}
+    {{ upload_file("person", "PERSON.csv") }}
+    {{ upload_file("procedure", "PROCEDURE.csv") }}
+    <a id="data_uploaded" class="btn half_right disabled">weiter</a>
+  </div>
+
+  <div id="run_etl">
+    <a id="finish_btn" class="btn">Start</a>
+    <div id="finish_progress" class="upload_progress">
+      {% include "Widgets/_round_progress.html" %}
+  </div>
+  </div>
 
 {% endblock %}

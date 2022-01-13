@@ -6,11 +6,11 @@
 
 {% macro grid_table_entry(probability) %}
     {% if probability <= 0.3 %}
-        {% set danger = 'danger_is_low' %}
+        {% set danger = 'success' %}
     {% elif probability <= 0.6 %}
-        {% set danger = 'danger_is_middle' %}
+        {% set danger = 'warning' %}
     {% else %}
-        {% set danger = 'danger_is_high' %}
+        {% set danger = 'failure' %}
     {% endif %}
     <div class="grid_table_entry {{danger}}">{{(probability * 100) | round(2)}}%</div>
 {% endmacro %}
@@ -25,7 +25,7 @@
                     "prob_kawasaki": {{ patient_analysis.probability_kawasaki }},
                     "prob_pims": {{ patient_analysis.probability_pims }},
                     "html":
-                        `<a class="grid_table_link" href="{{url_for('person_data.get_patient_data', patient_id=patient_id)}}"><div class="grid_table_entry">HIGHLIGHTED_NAME</div></a>
+                        `<a class="grid_table_link patientname" href="{{url_for('person_data.get_patient_data', patient_id=patient_id)}}"><div class="grid_table_entry">HIGHLIGHTED_NAME</div></a>
                         <a class="grid_table_link" href="{{url_for('.result_kawasaki', patient_id=patient_id)}}">{{grid_table_entry(patient_analysis.probability_kawasaki)}}</a>
                         <a class="grid_table_link" href="{{url_for('.result_pims', patient_id=patient_id)}}">{{grid_table_entry(patient_analysis.probability_pims)}}</a>`
                 },
@@ -134,6 +134,7 @@
         * @returns {Object[]} the sorted table
         */
         function sort(table, high_to_low, order){
+            var i = true;
             for(element of order.split('').reverse()){
                 switch(element){
                     case "N":
@@ -152,9 +153,10 @@
                         table.sort(pims_filter);
                         break;
                 }
-                if(high_to_low[element]){
+                if(high_to_low[element] == i){
                     table = table.reverse();    
                 }
+                i = !i
             }
             return table
         }
@@ -208,7 +210,11 @@
 
 
 {% block content %}
-    <div class="disclaimer">Hier könnten Sie über Ihren Haftungsauschluss informieren. </div>
+    <div class="disclaimer">
+        Die dargestellten Informationen dürfen keinesfalls für eigenständige und ungeprüfte Diagnosezwecke verwendet werden. 
+        Das System ersetzt keinesfalls die fachliche Beratung durch einen Arzt. Konsultieren Sie bei gesundheitlichen Fragen 
+        oder Beschwerden immer den Arzt Ihres Vertrauens!
+    </div>
 
     <div id="filter">
         <input id="searchbar" type="text" placeholder="suchen .. "/>
@@ -227,6 +233,7 @@
         <div class="grid_table_head_entry"><span id="name" class="triangle">&#8710;</span> Patientenname</div>
         <div class="grid_table_head_entry"><span id="kawasaki" class="triangle">&#8711;</span> Kawasaki</div>
         <div class="grid_table_head_entry"><span id="pims" class="triangle">&#8711;</span> PIMS</div>
+
 
     </div>
 {% endblock %}

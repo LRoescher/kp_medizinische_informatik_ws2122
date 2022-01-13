@@ -3,7 +3,7 @@ from typing import Dict, Iterator, Optional
 
 from Backend.interface import PatientId, Disease, DecisionReasons, PatientData, AnalysisData, Interface
 from time import sleep
-
+from datetime import datetime, date
 import random, string
 
 
@@ -16,7 +16,7 @@ class Example(Interface):
             self.__analyse_data[PatientId(i)] = AnalysisData(name=name,
                                                              probability_pims=random.random(),
                                                              probability_kawasaki=random.random())
-            self.__patient_data[PatientId(i)] = PatientData(age=random.randint(0, 110),
+            self.__patient_data[PatientId(i)] = PatientData(birthdate=datetime.strptime("2022-01-10", "%Y-%m-%d"),
                                                             name=name,
                                                             hasFever=bool(random.randint(0, 1)),
                                                             hasCovid=bool(random.randint(0, 1)))
@@ -77,6 +77,6 @@ class Example(Interface):
     def get_decision_reason(self, patient_id: PatientId, disease: Disease) -> DecisionReasons:
         # ToDo: extend
         if disease == Disease.KAWASAKI:
-            return DecisionReasons(disease=Disease.KAWASAKI, probability=0.5, pro=["hasCovid"], con=["hasFever"])
+            return DecisionReasons(disease=Disease.KAWASAKI, probability=0.5, pro=["hasCovid"])
         if disease == Disease.PIMS:
-            return DecisionReasons(disease=Disease.PIMS, probability=0.5, pro=["hasCovid"], con=["hasFun"])
+            return DecisionReasons(disease=Disease.PIMS, probability=0.5, pro=["hasCovid"])

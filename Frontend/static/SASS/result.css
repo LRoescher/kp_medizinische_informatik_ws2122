@@ -253,10 +253,10 @@ a.btn {
   text-align: center;
   font-size: 1.5em;
   border-bottom-style: solid;
-  border-bottom-color: #7cc0d7;
+  border-bottom-color: lightgrey;
   border-bottom-width: 1px;
   border-right-style: solid;
-  border-right-color: #7cc0d7;
+  border-right-color: lightgrey;
   border-right-width: 1px;
 }
 
@@ -270,7 +270,7 @@ a.btn {
   padding-left: 5%;
   padding-right: 2%;
   border-right-style: solid;
-  border-right-color: #7cc0d7;
+  border-right-color: lightgrey;
   border-right-width: 1px;
 }
 
@@ -278,75 +278,13 @@ a.btn {
   border-right-style: none;
 }
 
-#filter {
-  margin: 2%;
-  display: flex;
-  justify-content: space-between;
-  height: 2em;
+#result {
+  margin-bottom: 2%;
+  margin-top: 2%;
 }
 
-option,
-select,
-input {
-  border: solid 1px lightblue;
-  border-radius: 15px;
-  background-color: #d2eaf1;
-  height: 80%;
-  width: 40%;
-}
-
-option:hover,
-select:hover,
-input:hover {
-  outline-width: 2px;
-  outline-color: #7cc0d7;
-}
-
-option:focus,
-select:focus,
-input:focus {
-  outline-width: 2px;
-  outline-color: #7cc0d7;
-}
-
-option:focus,
-select:focus-visible,
-input:focus-visible {
-  outline-width: 2px;
-  outline-color: #7cc0d7;
-}
-
-.grid_table_head_entry:hover {
-  background-color: #d2eaf1;
-  cursor: pointer;
-}
-
-.triangle {
-  pointer-events: none;
-  text-align: center;
-  vertical-align: middle;
-  font-size: 50%;
-}
-
-.patientname .grid_table_entry:hover {
-  background-color: #d2eaf1;
-}
-
-.grid_table_entry:hover {
-  opacity: 0.7;
-  cursor: pointer;
-}
-
-.grid_table_entry:nth-child(3n+2) {
-  text-align: center;
-}
-
-.grid_table_entry:nth-child(3n) {
-  text-align: center;
-}
-
-.search_highlight {
-  background: #eeff15;
+#reason ul {
+  padding-left: 5%;
 }
 
 a {
@@ -354,4 +292,4 @@ a {
   color: black;
 }
 
-/*# sourceMappingURL=analysis.css.map */
+/*# sourceMappingURL=result.css.map */

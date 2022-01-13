@@ -59,6 +59,38 @@ class DecisionReasons(TypedDict):
     pro: List[str]  # strs have to be equal to PatientData
 
 
+# Übersetzung der Symptome ins Deutsche
+TranslationGerman = {
+    "birthdate": "Geburtsdatum",
+    # Full name
+    "name": "Name",
+    "hasCovid": "Covid19",
+    "hasFever": "Fieber",
+    # Ausschlag auf der Haut
+    "hasExanthem": "Exanthem",
+    # Entzündung im Mundraum (Lippen, Zunge, Mundschleimhaut)
+    "hasEnanthem": "Enanthem",
+    # Geschwollene, gerötete Extremitäten
+    "hasSwollenExtremeties": "Geschwollene, gerötete Extremitäten",
+    # Bindehautentzündung
+    "hasConjunctivitis": "Bindehautentzündung",
+    # Geschwollene Lymphknoten
+    "hasSwollenLymphnodes": "Geschwollene Lymphknoten",
+    # Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen
+    "hasGastroIntestinalCondition": "Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen",
+    # Aszites (Flüssigkeitsansammlung im Bauchraum)
+    "hasAscites": "Aszites",
+    # Perikardergüsse (Flüssigkeitsansammlung im Herzbeutel)
+    "hasPericardialEffusions": "Perikardergüsse",
+    # Pleuraergüsse (Flüssigkeitsansammlung in der Lunge)
+    "hasPleuralEffusions": "Pleuraergüsse",
+    # Perikarditits (Herzbeutelentzündung)
+    "hasPericarditis": "Perikarditits",
+    # Hat Myokarditis (Herzmuskelenzündung)
+    "hasMyocarditis": "Myokarditis"
+}
+
+
 class Interface(Singleton, ABC):
 
     @abstractmethod
@@ -109,15 +141,22 @@ class Interface(Singleton, ABC):
         pass
 
     @abstractmethod
-    def upload_csv(self, csv_file: os.path) -> Iterator[int]:
-        """
-        run ETL-job for new csv-file
+    def run_etl(self, csv_dir: os.path) -> bool:
+        '''
+        executes etl-job
 
-        After checking if the db is really empty, this function run the ETL-job. The Progress will be represented by the
-        numbers from 0 to 100.
-        :param csv_file: with new data
-        :return: progress
-        """
+        :param csv_dir: with all needed files
+        :return: success
+        '''
+        pass
+
+    @abstractmethod
+    def run_analysis(self) -> bool:
+        '''
+        analyse data
+
+        :return: success
+        '''
         pass
 
     @property
