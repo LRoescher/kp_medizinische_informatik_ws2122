@@ -246,7 +246,7 @@ class BackendManager(Interface):
                 # Found corresponding patient
                 patient_data: PatientData = {
                     'name': patient.name,
-                    'age': patient.calculate_age(),
+                    'birthdate': patient.birthdate,
                     'hasCovid': patient.has_covid(),
                     'hasFever': patient.has_fever(),
                     'hasExanthem': patient.has_exanthem(),
@@ -262,7 +262,6 @@ class BackendManager(Interface):
                     'hasMyocarditis': patient.has_myocarditis()
                 }
                 return patient_data
-        # No patient found, Todo what to return?
         return PatientData()
 
     def get_decision_reason(self, patient_id: PatientId, disease: Disease) -> DecisionReasons:
