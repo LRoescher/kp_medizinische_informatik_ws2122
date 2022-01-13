@@ -118,7 +118,8 @@ def generate_config() -> Tuple[str, DbConfig]:
         del data["log_level"]
     else:
         logging.error("The default config.yaml is invalid.")
-        sys.exit(0)
+        logging.error("Shutting down ETL-process due to wrong configuration.")
+        raise AttributeError("Invalid configuration file.")
 
     # check config / type checking
     expected_config_format: Dict[str, type] = DbConfig.__annotations__
@@ -149,6 +150,6 @@ def generate_config() -> Tuple[str, DbConfig]:
 
     if not check_ok:
         logging.error("Shutting down ETL-process due to wrong configuration.")
-        sys.exit(0)
+        raise AttributeError("Invalid configuration file.")
 
     return data["csv_dir"], data["db_config"]

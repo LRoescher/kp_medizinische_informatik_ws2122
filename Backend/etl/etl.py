@@ -122,17 +122,23 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager) -> bool:
     entries = len(patient.conditions)
 
     # Create dataframe for conditions
-    data_condition_occurrence = {OmopConditionOccurrenceFieldsEnum.CONDITION_OCCURRENCE_ID.value: condition_occurrence_ids,
-                                 OmopConditionOccurrenceFieldsEnum.PERSON_ID.value: [patient.id] * entries,
-                                 OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID.value: patient.conditions,
-                                 OmopConditionOccurrenceFieldsEnum.CONDITION_START_DATE.value: [current_date] * entries,
-                                 OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID.value: [44786627] * entries
-                                 }
+    data_condition_occurrence = {
+        OmopConditionOccurrenceFieldsEnum.CONDITION_OCCURRENCE_ID.value: condition_occurrence_ids,
+        OmopConditionOccurrenceFieldsEnum.PERSON_ID.value: [patient.id] * entries,
+        OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID.value: patient.conditions,
+        OmopConditionOccurrenceFieldsEnum.CONDITION_START_DATE.value: [current_date] * entries,
+        OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID.value: [44786627] * entries
+        }
     omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occurrence)
 
+    # Load dataframe into the omop database
     try:
         db_manager.save(OmopTableEnum.LOCATION, omop_location_df)
-        db_manager.save(OmopTableEnum.PROVIDER, omop_provider_df)
+        # Add Provider if provider id is not taken.
+        if not db_manager.id_is_taken(OmopTableEnum.PROVIDER.value,
+                                      OmopProviderFieldsEnum.PROVIDER_ID.value,
+                                      DBManager.PROVIDER_ID):
+            db_manager.save(OmopTableEnum.PROVIDER, omop_provider_df)
         db_manager.save(OmopTableEnum.PERSON, omop_person_df)
         db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
         logging.info("Done loading a single Patient into the database.")

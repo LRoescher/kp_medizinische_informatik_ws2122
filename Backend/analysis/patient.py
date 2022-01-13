@@ -245,7 +245,7 @@ class Patient:
         self.reasons_for_kawasaki.clear()
 
         score: float = 0.0
-        max_score: float = 8.0
+        max_score: float = 8.0 - 1.0
 
         # Return 0.0 if not in age range
         if self.calculate_age() > 8:
@@ -275,7 +275,10 @@ class Patient:
             score += 1
             self.reasons_for_kawasaki.append(self.REASON_CARDIAL_CONDITION)
 
-        self.kawasaki_score = score / max_score
+        if score >= max_score:
+            self.kawasaki_score = 1.0
+        else:
+            self.kawasaki_score = score / max_score
         return self.kawasaki_score
 
     def calculate_pims_score(self) -> (float, Set[str]):
@@ -294,7 +297,7 @@ class Patient:
         self.reasons_for_pims.clear()
 
         score: float = 0.0
-        max_score: float = 11.5
+        max_score: float = 11.5 - 1.0
 
         if self.calculate_age() >= 20:
             self.pims_score = 0.0
@@ -332,7 +335,11 @@ class Patient:
             score += 0.5
             self.reasons_for_pims.append(self.REASON_EFFUSION)
 
-        self.pims_score = score / max_score
+        if score >= max_score:
+            self.pims_score = 1.0
+        else:
+            self.pims_score = score / max_score
+
         return self.pims_score
 
     def has_ascites(self):

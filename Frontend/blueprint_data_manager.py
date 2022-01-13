@@ -3,6 +3,7 @@ from Frontend.FlashMessageTypes import FlashMessageTypes
 from Backend.interface import Interface
 from Backend.backend_interface import BackendManager
 from typing import Dict, Optional
+from config.definitions import ROOT_DIR
 import os
 
 # Data files
@@ -15,7 +16,7 @@ PROCEDURE = "PROCEDURE.csv"
 data_manager = Blueprint("data_manager", __name__)
 upload_folder = "../upload"
 
-config_path = "../ETLProcess/src/config.yml"
+config_path = os.path.join(ROOT_DIR, "config", "config.yml")
 case_path = os.path.join(upload_folder, CASE)
 diagnosis_path = os.path.join(upload_folder, DIAGNOSIS)
 lab_path = os.path.join(upload_folder, LAB)
@@ -114,6 +115,10 @@ def upload_file():
             check_list = procedure_head
 
         file.save(path)
+
+        # Reset DB-Manager with new config file
+        if key == "config":
+            controller.reset_config()
 
         if check_list is not None:
             with open(path) as f:

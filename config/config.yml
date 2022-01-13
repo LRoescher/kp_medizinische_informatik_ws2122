@@ -6,5 +6,5 @@ db_config:
   password: "postgres"
   db_schema: "cds_cdm"
 
-csv_dir: "data/2. Bereistellung Korrektur"
+csv_dir: "upload"
 log_level: 20 # INFO

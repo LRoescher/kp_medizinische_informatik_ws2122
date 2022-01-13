@@ -256,9 +256,9 @@ class DBManager:
         """
         # Generates a random number until no match is found in the condition occurrence table
         new_id = randrange(10000, 9999999)
-        while self._id_is_taken(OmopTableEnum.CONDITION_OCCURRENCE.value,
-                                OmopConditionOccurrenceFieldsEnum.CONDITION_OCCURRENCE_ID.value,
-                                new_id):
+        while self.id_is_taken(OmopTableEnum.CONDITION_OCCURRENCE.value,
+                               OmopConditionOccurrenceFieldsEnum.CONDITION_OCCURRENCE_ID.value,
+                               new_id):
             new_id = randrange(10000, 9999999)
         return new_id
 
@@ -269,11 +269,11 @@ class DBManager:
         :return: an integer that is currently not used by the person table as an id
         """
         new_id = randrange(10000, 9999999)
-        while self._id_is_taken(OmopTableEnum.PERSON.value, OmopPersonFieldsEnum.PERSON_ID.value, new_id):
+        while self.id_is_taken(OmopTableEnum.PERSON.value, OmopPersonFieldsEnum.PERSON_ID.value, new_id):
             new_id = randrange(10000, 9999999)
         return new_id
 
-    def _id_is_taken(self, table: str, field: str, new_id: int) -> bool:
+    def id_is_taken(self, table: str, field: str, new_id: int) -> bool:
         """
         Checks if the given id is taken by an entry for the given field of the given table.
 

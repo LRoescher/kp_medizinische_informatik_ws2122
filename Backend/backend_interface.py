@@ -22,8 +22,9 @@ class BackendManager(Interface):
         Creates a new BackendManager.
         Maintains a list of patient-objects that hold evaluation results.
         """
-        self.db_config = generate_config()[1]
-        self.dbManager = DBManager(self.db_config, clear_tables=False)
+        self.db_config = None
+        self.dbManager = None
+        self.reset_config()
         self.patients: List[Patient] = list()
         self.analyze_all_in_database()
 
@@ -31,17 +32,26 @@ class BackendManager(Interface):
         """
         Resets the configuration and database connection.
         To be used when the configuration files are changed.
+
+        If the config file is invalid both the config and the db-manager will be set to none.
         """
-        logging.info("Resetting Configuration.")
-        self.db_config = generate_config()[1]
-        logging.info("Resetting DatabaseManager.")
-        self.dbManager = DBManager(self.db_config, clear_tables=False)
+        try:
+            logging.info("Resetting Configuration.")
+            self.db_config = generate_config()[1]
+            logging.info("Resetting DatabaseManager.")
+            self.dbManager = DBManager(self.db_config, clear_tables=False)
+        except AttributeError as error:
+            logging.error("Error during initialization. Make sure the config file is valid.")
+            logging.error(error)
+            self.db_config = None
+            self.dbManager = None
 
     def analyze_all_in_database(self):
         """
         Analyzes all patients currently saved in the database.
         """
-        self.patients = evaluate_all_in_database(self.dbManager)
+        if self.dbManager:
+            self.patients = evaluate_all_in_database(self.dbManager)
 
     def is_db_empty(self) -> bool:
         """
@@ -187,11 +197,6 @@ class BackendManager(Interface):
                 self.patients.append(evaluated_patient)
 
         return True
-
-    # deprecated
-    def upload_csv(self, csv_file: os.path) -> Iterator[int]:
-        run_etl_job_for_csvs(csv_file, self.db_config)
-        # Todo get path to target directory, start etl job here? or with a dedicated method call
 
     def run_etl(self, csv_dir: os.path) -> bool:
         try:

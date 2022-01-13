@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask, render_template, send_from_directory
 from datetime import timedelta
 from Backend.interface import Interface, TranslationGerman
@@ -26,12 +28,12 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 
 def translate(key: str) -> str:
-    '''
+    """
     translate Symptoms to German
 
     :param key: symptom
     :return: german identifier or input
-    '''
+    """
     return TranslationGerman[key] if key in TranslationGerman else key
 
 
