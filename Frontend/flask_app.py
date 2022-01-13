@@ -1,22 +1,19 @@
-from flask import Flask, flash, redirect, render_template, url_for, send_from_directory
+from flask import Flask, render_template, send_from_directory
 from datetime import timedelta
 from Backend.interface import Interface, TranslationGerman
 from Backend.backend_interface import BackendManager
-from Frontend.FlashMessageTypes import FlashMessageTypes
 from Frontend.blueprint_person import person_data
 from Frontend.blueprint_login import access_control
 from Frontend.blueprint_results import results
 from Frontend.blueprint_data_manager import data_manager
-from Backend.example_interface import Example
 import os
 
 
-controller: Interface = Example()
+controller: Interface = BackendManager()
 
 app = Flask(__name__, template_folder='./templates/')
 app.jinja_options["lstrip_blocks"] = True
 app.jinja_options["trim_blocks"] = True
-#ToDo: change
 app.permanent_session_lifetime = timedelta(minutes=5)   # 5 min auto logout
 
 # blueprints
@@ -62,5 +59,4 @@ def settings():
 
 
 if __name__ == "__main__":
-    #ToDo: remove debug
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=8080)

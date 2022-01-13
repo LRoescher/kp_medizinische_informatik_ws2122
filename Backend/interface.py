@@ -133,15 +133,22 @@ class Interface(Singleton, ABC):
         pass
 
     @abstractmethod
-    def upload_csv(self, csv_file: os.path) -> Iterator[int]:
-        """
-        run ETL-job for new csv-file
+    def run_etl(self, csv_dir: os.path) -> bool:
+        '''
+        executes etl-job
 
-        After checking if the db is really empty, this function run the ETL-job. The Progress will be represented by the
-        numbers from 0 to 100.
-        :param csv_file: with new data
-        :return: progress
-        """
+        :param csv_dir: with all needed files
+        :return: success
+        '''
+        pass
+
+    @abstractmethod
+    def run_analysis(self) -> bool:
+        '''
+        analyse data
+
+        :return: success
+        '''
         pass
 
     @property

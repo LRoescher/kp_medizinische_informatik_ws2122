@@ -1,7 +1,7 @@
 from flask import Blueprint, send_file, request, flash, redirect, render_template, url_for, jsonify
 from Frontend.FlashMessageTypes import FlashMessageTypes
 from Backend.interface import Interface
-from Backend.example_interface import Example
+from Backend.backend_interface import BackendManager
 from typing import Dict, Optional
 import os
 
@@ -34,7 +34,7 @@ person_head = ["PROVIDER_ID", "PATIENT_ID", "NAME", "FORNAME", "GENDER", "BIRTHD
 procedure_head = ["ID", "OPS_VERSION", "OPS_CODE", "PATIENT_ID", "EXECUTION_DATE"]
 
 
-controller: Interface = Example()
+controller: Interface = BackendManager()
 
 
 def check_existing_files() -> Dict[str, bool]:
@@ -60,6 +60,8 @@ def clear_uploads() -> bool:
 
 @data_manager.route("/etl")
 def upload_page():
+    if controller.is_db_empty():
+        redirect(url_for("results.get_analysis"))
     ex_f = check_existing_files()
     config_exists = ex_f["config"]
     del ex_f["config"]
@@ -72,9 +74,8 @@ def upload_page():
 
 @data_manager.route("/etl/run", methods=["POST"])
 def run_etl():
-    # ToDO: implement
-    print("run etl")
-    return jsonify({"success": True})
+    success = controller.run_etl(upload_folder)
+    return jsonify({"success": success})
 
 
 @data_manager.route('/etl/upload', methods=['POST'])
@@ -118,6 +119,7 @@ def upload_file():
             with open(path) as f:
                 if set(check_list) != set(f.readline().strip().replace(" ", "").split(";")):
                     success = False
+                    os.remove(path)
         print("check", success)
 
         complete = all(check_existing_files().values())
@@ -137,13 +139,13 @@ def download_config():
 @data_manager.route("/reset_db")
 def reset_db():
     if controller.reset_db():
-        flash("Database reset successful.", FlashMessageTypes.SUCCESS.value)
+        flash("Datenbank erfolgreich zurückgesetzt.", FlashMessageTypes.SUCCESS.value)
     else:
-        flash("Database reset failed.", FlashMessageTypes.FAILURE.value)
+        flash("Datenbank konnte nicht zurückgesetzt werden..", FlashMessageTypes.FAILURE.value)
     return redirect(url_for("settings"))
 
 
 @data_manager.route("/analysis/run")
 def analyse_data():
-    #ToDo: implement
-    return jsonify({"success": True})
+    success = controller.run_analysis()
+    return jsonify({"success": success})

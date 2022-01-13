@@ -2,13 +2,12 @@ from flask import Blueprint, render_template, redirect, request, url_for, flash
 from Backend.interface import PatientId, Interface, PatientData
 from typing import Optional
 from Backend.backend_interface import BackendManager
-from Backend.example_interface import Example
 from Frontend.FlashMessageTypes import FlashMessageTypes
 from datetime import date, datetime
 
 import datetime
 
-controller: Interface = Example()
+controller: Interface = BackendManager()
 
 person_data = Blueprint("person_data", __name__)
 
@@ -26,9 +25,34 @@ def py_types():
 
 @person_data.route("/")
 def get_empty_patient_data():
-    birthdate = datetime.date.today()
-    # ToDo
-    data = PatientData(birthdate=birthdate, name="Tom", hasCovid=False, hasFever=False)
+    data = PatientData(birthdate=datetime.date.today(),
+                        # Full name
+                        name="",
+                        hasCovid=False,
+                        hasFever=False,
+                        # Ausschlag auf der Haut
+                        hasExanthem=False,
+                        # Entzündung im Mundraum (Lippen, Zunge, Mundschleimhaut)
+                        hasEnanthem=False,
+                        # Geschwollene, gerötete Extremitäten
+                        hasSwollenExtremeties=False,
+                        # Bindehautentzündung
+                        hasConjunctivitis=False,
+                        # Geschwollene Lymphknoten
+                        hasSwollenLymphnodes=False,
+                        # Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen
+                        hasGastroIntestinalCondition=False,
+                        # Aszites (Flüssigkeitsansammlung im Bauchraum)
+                        hasAscites=False,
+                        # Perikardergüsse (Flüssigkeitsansammlung im Herzbeutel)
+                        hasPericardialEffusions=False,
+                        # Pleuraergüsse (Flüssigkeitsansammlung in der Lunge)
+                        hasPleuralEffusions=False,
+                        # Perikarditits (Herzbeutelentzündung)
+                        hasPericarditis=False,
+                        # Hat Myokarditis (Herzmuskelenzündung)
+                        hasMyocarditis=False
+                        )
     return render_template("person_data.html", patient_data=data, annotations=PatientData.__annotations__)
 
 

@@ -24,10 +24,10 @@
     </a>
 
     <a {% if db_empty %} href="{{ url_for('data_manager.upload_page') }}" {% endif %} class="btn grid_table_entry {% if not db_empty %} disabled {% endif %}">
-            Daten upload
+            Datensatz hinzufügen
     </a>
     
-    <a {% if not db_empty %} href="{{ url_for('reset_db') }}" {% endif %} class="btn grid_table_entry {% if db_empty %} disabled {% endif %}">
+    <a {% if not db_empty %} href="{{ url_for('data_manager.reset_db') }}" {% endif %} class="btn grid_table_entry {% if db_empty %} disabled {% endif %}">
             Datenbank zurücksetzen
     </a>
 

@@ -25,6 +25,7 @@ class BackendManager(Interface):
         self.db_config = generate_config()[1]
         self.dbManager = DBManager(self.db_config, clear_tables=False)
         self.patients: List[Patient] = list()
+        self.run_analysis()
 
     def _synchronize(self):
         """
@@ -154,9 +155,29 @@ class BackendManager(Interface):
             logging.error("Updating patient failed.")
             return False
 
+    # deprecated
     def upload_csv(self, csv_file: os.path) -> Iterator[int]:
         run_etl_job_for_csvs(csv_file, self.db_config)
         # Todo get path to target directory, start etl job here? or with a dedicated method call
+
+    def run_etl(self, csv_dir: os.path) -> bool:
+        try:
+            run_etl_job_for_csvs(csv_dir, self.db_config)
+        except Exception as e:
+            print(e)
+            return False
+        return True
+
+    def run_analysis(self) -> bool:
+        try:
+            if not self.is_db_empty():
+                self._synchronize()
+            else:
+                return False
+        except Exception as e:
+            print(e)
+            return False
+        return True
 
     @property
     def analysis_data(self) -> Dict[PatientId, AnalysisData]:

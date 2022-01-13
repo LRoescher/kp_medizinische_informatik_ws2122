@@ -18,7 +18,7 @@
         {% set danger = 'danger_is_high' %}
     {% endif %}
     <div id="result" class="{{danger}}">
-        Die Wahrscheinlichkeit das <strong>{{ name }}</strong> an {{ disease }} erkrankt ist beträgt <strong>{{ probability }}</strong>.
+        Die Wahrscheinlichkeit das <strong>{{ name }}</strong> an {{ disease }} erkrankt ist beträgt <strong>{{ (probability * 100) | round(2) }}</strong>.
     </div>
 {% endmacro %}
 

@@ -44,8 +44,9 @@
       $("#finish_progress").show();
       var id = "finish_progress";
       var failure = false;
-      $(".progress-bar").css("transition-duration", "30s");
+      $(".progress-bar").css("transition-duration", "60s");
       update_progress(id, 49);
+
 
       // etl
       $.ajax({
@@ -57,6 +58,35 @@
         success: function(response){
           if(response.success){
             update_progress(id, 50);
+            $(".progress-bar").css("transition-duration", "23s");
+
+            // analyse data
+            update_progress(id, 99);
+            $.ajax({
+              url: "{{ url_for('data_manager.analyse_data') }}",
+              type: 'get',
+              //data: fd,
+              contentType: false,
+              processData: false,
+              success: function(response){
+                if(response.success){
+                  update_progress(id, 100);
+                  $("#step_etl").removeClass("in-progress")
+                                  .addClass("complete");
+                  
+                }else if (response.msg){
+                  error(id);
+                  // TODO: display msg
+                }
+                else{
+                  error(id);
+                }},
+              error: function(response){
+                error(id)
+                console.log(response.statusText);
+                // TODO: display msg
+              },
+            });
             
           }else if (response.msg){
             error(id);
@@ -75,46 +105,11 @@
           
         },
       });
-
-      if(failure){
-        console.log("failure running the etl-job");
-        error(id);
-        return
-      }
-      console.log(11111);
-      // analyse data
-      update_progress(id, 99);
-      $.ajax({
-        url: "{{ url_for('data_manager.analyse_data') }}",
-        type: 'get',
-        //data: fd,
-        contentType: false,
-        processData: false,
-        success: function(response){
-          if(response.success){
-            update_progress(id, 100);
-            $("#step_etl").removeClass("in-progress")
-                             .addClass("complete");
-            
-          }else if (response.msg){
-            error(id);
-            // TODO: display msg
-          }
-          else{
-            error(id);
-          }},
-        error: function(response){
-          error(id)
-          console.log(response.statusText);
-          // TODO: display msg
-        },
-      });
     });
 
 
     // file upload handling
     $('.drop_zone').on('dragover', function(event) {
-      console.log("dragover");
       event.preventDefault();
       event.stopPropagation();
     });
@@ -128,8 +123,6 @@
     $("body").on("dragenter", function(event){
       event.preventDefault();
       event.stopPropagation();
-      console.log("dragenter")
-      console.log(event)
       $(".in_drop_zone").removeClass("in_drop_zone");
     });
 
@@ -207,7 +200,6 @@
   * @param {boolean} complete - the upload of all necessary files
   */
   function upload_file_finished(id, success, complete){
-    console.log(id, success, complete)
 
     if (id == "config" && success){
       $("#" + id).removeClass("failed");
