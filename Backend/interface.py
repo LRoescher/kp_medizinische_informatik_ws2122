@@ -10,7 +10,7 @@ PatientId = NewType("PatientId", int)
 
 class Disease(Enum):
     """ The diseases this system should detect """
-    KAWASAKI = "Kawasaki"
+    KAWASAKI = "Kawasaki-Syndrom"
     PIMS = "Pediatric Inflammatory Multisystem Syndrome"
 
 
@@ -69,7 +69,7 @@ TranslationGerman = {
     # Ausschlag auf der Haut
     "hasExanthem": "Exanthem",
     # Entzündung im Mundraum (Lippen, Zunge, Mundschleimhaut)
-    "hasEnanthem": "Enanthem",
+    "hasEnanthem": "Entzündung von Lippen, Zunge oder Mundschleimhaut",
     # Geschwollene, gerötete Extremitäten
     "hasSwollenExtremeties": "Geschwollene, gerötete Extremitäten",
     # Bindehautentzündung

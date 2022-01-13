@@ -18,25 +18,27 @@
         {% set danger = 'danger_is_high' %}
     {% endif %}
     <div id="result" class="{{danger}}">
-        Die Wahrscheinlichkeit das <strong>{{ name }}</strong> an {{ disease }} erkrankt ist beträgt <strong>{{ (probability * 100) | round(2) }}</strong>.
+        Die Wahrscheinlichkeit das <strong>{{ name }}</strong> an {{ disease }} erkrankt ist beträgt <strong>{{ (probability * 100) | round(2) }} %</strong>.
     </div>
 {% endmacro %}
 
 {% block content %}
     <div class="disclaimer">
-        Die dargestellten Informationen dürfen keinesfalls für eigenständige und ungeprüfte Diagnosezwecke verwendet werden. 
-        Das System ersetzt keinesfalls die fachliche Beratung durch einen Arzt. Konsultieren Sie bei gesundheitlichen Fragen 
-        oder Beschwerden immer den Arzt Ihres Vertrauens!
+        <p>
+        Auf dieser Seite wird die Auswertung f&uuml;r einen einzelnen Patienten angezeigt.
+        <br/>
+        S&auml;mtliche berechneten Wahrscheinlichkeiten sind ohne Gew&auml;hr. Das System ersetzt in keinem Fall die
+        Auswertung durch einen Arzt. Die Ergebnisse m&uuml;ssen immer durch medizinisch geschultes Personal gepr&uuml;ft
+        werden.
+    </p>
     </div>
 
     <div id="description">
-        <h2>Begründung der Entscheidung zu {{ decision_reason_data.disease.value }}</h2>
-        Im folgenden finden Sie eine Aufschlüsselung der Parametern auf welchen dieses System seine Entscheidung
-        getroffen hat. Im weiteren könnte Sie dieser Text darüber informieren was
-        <a href="https://www.letmegooglethat.com/?q=Kawasaki+Krankheit">Kawasaki</a> ist.
+        <h2 style="text-align: center;">Auswertung zum {{ decision_reason_data.disease.value }}</h2>
     </div>
 
     {{ message_box(decision_reason_data.disease.value, patient_data.name, decision_reason_data.probability) }}
+    <br/>
 
     <div id="reason">
         {% if decision_reason_data.pro|length == 0 %}
@@ -53,7 +55,12 @@
 
 <div class="description">
     <h3>Standardbehandlung</h3>
-    Im Allgemeinen erfolgt die Behandlung mit der intravenösen Gabe von Immunglobulinen.
+    <ul>
+        <li>Station&auml;re Behandlung</li>
+        <li>Gabe von Immunglobulinen (intraven&ouml;s)</li>
+        <li>Gabe von Acetylsalicyls&auml;ure</li>
+        <li>Gabe von Glucocorticoiden</li>
+    </ul>
 
 </div>
 
