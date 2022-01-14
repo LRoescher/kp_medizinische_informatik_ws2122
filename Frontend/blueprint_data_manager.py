@@ -75,6 +75,7 @@ def upload_page():
 
 @data_manager.route("/etl/run", methods=["POST"])
 def run_etl():
+    controller.reset_config()
     success = controller.run_etl(upload_folder)
     return jsonify({"success": success})
 
@@ -115,10 +116,6 @@ def upload_file():
             check_list = procedure_head
 
         file.save(path)
-
-        # Reset DB-Manager with new config file
-        if key == "config":
-            controller.reset_config()
 
         if check_list is not None:
             with open(path) as f:

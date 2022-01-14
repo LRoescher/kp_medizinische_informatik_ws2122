@@ -1,7 +1,8 @@
 <div id="left_menu">
-    
+
     <a class="menu_entry pagename" href="{{ url_for('main') }}">
-        <div class="icon">DS</div> <div class="full_name">{{ pagename }}</div>
+        <div class="icon">DS</div>
+        <div class="full_name">{{ pagename }}</div>
     </a>
 
     {% if session["logged_in"] is defined and session["logged_in"] %}
@@ -10,7 +11,7 @@
         <a class="menu_entry" href="{{ url_for('results.get_analysis') }}">
             <div class="icon">
                 <img src="{{ url_for('static', filename='Icons/data.png') }}" alt="Analyse">
-            </div> 
+            </div>
             <div class="full_name">Analyse</div>
         </a>
 
@@ -18,34 +19,29 @@
         <a class="menu_entry" href="{{ url_for('person_data.get_empty_patient_data') }}">
             <div class="icon">
                 <img src="{{ url_for('static', filename='Icons/add_one.png') }}" alt="Person hinzufügen">
-            </div> 
+            </div>
             <div class="full_name">Person hinzufügen</div>
         </a>
 
-        {% if db_empty %}
-            <!-- source: <div>Icons made by <a href="" title="Rizki Ahmad Fauzi">Rizki Ahmad Fauzi</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
-            <a class="menu_entry" href="{{ url_for('data_manager.upload_page') }}">
-                <div class="icon">
-                    <img src="{{ url_for('static', filename='Icons/add_multiple.png') }}" alt="Datensatz hinzufügen">
-                </div> 
-                <div class="full_name">Datensatz hinzufügen</div>
-            </a>
-        {% else %}
-            <div class="small_filler">
-                <div class="icon"></div> <div class="full_name"></div>
+        <!-- source: <div>Icons made by <a href="" title="Rizki Ahmad Fauzi">Rizki Ahmad Fauzi</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
+        <a class="menu_entry" href="{{ url_for('data_manager.upload_page') }}">
+            <div class="icon">
+                <img src="{{ url_for('static', filename='Icons/add_multiple.png') }}" alt="Datensatz hinzufügen">
             </div>
-        {% endif %}
+            <div class="full_name">Datensatz hinzufügen</div>
+        </a>
 
         <div class="filler">
-            <div class="icon"></div> <div class="full_name"></div>
+            <div class="icon"></div>
+            <div class="full_name"></div>
         </div>
 
-        
+
         <!-- source: <div>Icons erstellt von <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/de/" title="Flaticon">www.flaticon.com</a></div> -->
         <a class="menu_entry" href="{{ url_for('settings') }}">
             <div class="icon">
                 <img src="{{ url_for('static', filename='Icons/settings.png') }}" alt="Einstellungen">
-            </div> 
+            </div>
             <div class="full_name">Einstellungen</div>
         </a>
 
@@ -53,13 +49,14 @@
         <a class="menu_entry" href="{{ url_for('access_control.logout') }}">
             <div class="icon">
                 <img src="{{ url_for('static', filename='Icons/logout.png') }}" alt="logout">
-            </div> 
+            </div>
             <div class="full_name">Logout</div>
         </a>
     {% else %}
         <div class="big_filler">
-            <div class="icon"></div> <div class="full_name"></div>
+            <div class="icon"></div>
+            <div class="full_name"></div>
         </div>
     {% endif %}
-    
+
 </div>
