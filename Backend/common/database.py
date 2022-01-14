@@ -7,7 +7,7 @@ from typing import Tuple, Optional, List
 from psycopg2.extensions import register_adapter, AsIs
 from Backend.common.config import generate_config, DbConfig
 from Backend.common.omop_enums import OmopTableEnum, OmopConditionOccurrenceFieldsEnum, OmopPersonFieldsEnum, \
-    SnomedConcepts
+    SnomedConcepts, OmopObservationPeriodFieldsEnum
 
 psycopg2.extensions.register_adapter(np.int64, AsIs)
 
@@ -270,6 +270,18 @@ class DBManager:
         """
         new_id = randrange(10000, 9999999)
         while self.id_is_taken(OmopTableEnum.PERSON.value, OmopPersonFieldsEnum.PERSON_ID.value, new_id):
+            new_id = randrange(10000, 9999999)
+        return new_id
+
+    def generate_case_id(self) -> int:
+        """
+        Generates a unique identifier that is not already taken by an entry in the case table.
+
+        :return: an integer that is currently not used by the case table as an id
+        """
+        new_id = randrange(10000, 9999999)
+        while self.id_is_taken(OmopTableEnum.OBSERVATION_PERIOD.value,
+                               OmopObservationPeriodFieldsEnum.ID.value, new_id):
             new_id = randrange(10000, 9999999)
         return new_id
 

@@ -4,7 +4,7 @@ from typing import List, Optional
 from Backend.analysis.patient import Patient
 from Backend.common.config import generate_config
 from Backend.common.database import DBManager
-from Backend.common.omop_enums import OmopPersonFieldsEnum, OmopTableEnum
+from Backend.common.omop_enums import OmopPersonFieldsEnum, OmopTableEnum, OmopObservationPeriodFieldsEnum
 
 
 def evaluate_patient(db_manager: DBManager, patient_id: int) -> Optional[Patient]:
@@ -17,8 +17,8 @@ def evaluate_patient(db_manager: DBManager, patient_id: int) -> Optional[Patient
     :return: A patient with scores calculated for each disease
     """
     try:
-        # Create patient object from the database query
-        query = f"SELECT * FROM cds_cdm.person WHERE person_id = {patient_id}"
+        # Get basic person data
+        query = f"SELECT * FROM cds_cdm.{OmopTableEnum.PERSON.value} WHERE person_id = {patient_id}"
         df = db_manager.send_query(query)
         patient_id = df.iloc[0]['person_id']
         day = df.iloc[0]['day_of_birth']
@@ -26,7 +26,20 @@ def evaluate_patient(db_manager: DBManager, patient_id: int) -> Optional[Patient
         year = df.iloc[0]['year_of_birth']
         birthdate = datetime.date(year, month, day)
         name = df.iloc[0]['person_source_value']
-        patient = Patient(patient_id=patient_id, name=name, birthdate=birthdate)
+
+        # Get (latest) case date from observation period
+        case_date = datetime.date.today()
+        try:
+            query = f"SELECT * FROM cds_cdm.{OmopTableEnum.OBSERVATION_PERIOD.value} " \
+                    f"WHERE {OmopObservationPeriodFieldsEnum.PERSON_ID.value} = {patient_id}"
+            df = db_manager.send_query(query)
+            case_date = df.iloc[0]['observation_period_end_date']
+        except (AttributeError, IndexError):
+            logging.warning("Could not find a valid case date. Using today.")
+            case_date = datetime.date.today()
+
+        # Create patient object from the database query
+        patient = Patient(patient_id=patient_id, name=name, birthdate=birthdate, case_date=case_date)
 
         # Get all conditions for every patient
         query = f"SELECT * FROM cds_cdm.condition_occurrence WHERE person_id = {patient_id}"

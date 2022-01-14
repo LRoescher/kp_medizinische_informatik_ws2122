@@ -61,6 +61,17 @@ class OmopProviderFieldsEnum(Enum):
     PROVIDER_ID = 'provider_id'
 
 
+class OmopObservationPeriodFieldsEnum(Enum):
+    """
+    Enum for the fields of the observation period table.
+    """
+    ID = 'observation_period_id'
+    PERSON_ID = 'person_id'
+    START_DATE = 'observation_period_start_date'
+    END_DATE = 'observation_period_end_date'
+    TYPE_CONCEPT_ID = 'period_type_concept_id'
+
+
 class SnomedConcepts(Enum):
     """
     Enum for conditions known to this program. The values of the fields are the corresponding snomed ids.

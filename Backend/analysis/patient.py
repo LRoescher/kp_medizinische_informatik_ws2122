@@ -32,20 +32,22 @@ class Patient:
     REASON_COVID: str = "Covid-19 Erkrankung"
     REASON_HAS_KAWASAKI: str = "Kawasaki-Syndrom"
 
-    def __init__(self, patient_id: int, name: str, birthdate: datetime.date):
+    def __init__(self, patient_id: int, name: str, birthdate: datetime.date, case_date: datetime.date):
         """
         Creates a new patient.
 
         :param patient_id: unique identifier (Long)
-        :param birthdate: date of birth
         :param name: name of the patient (firstname + lastname)
+        :param birthdate: date of birth
+        :param case_date: date the data set for this patient was created
         """
-        self.id = patient_id
-        self.name = name
-        self.birthdate = birthdate
-        self.day = birthdate.day
-        self.month = birthdate.month
-        self.year = birthdate.year
+        self.id: int = patient_id
+        self.name: str = name
+        self.birthdate: datetime.date = birthdate
+        self.day: int = birthdate.day
+        self.month: int = birthdate.month
+        self.year: int = birthdate.year
+        self.case_date: datetime.date = case_date
         self.conditions = list()
         self.high_measurements = list()
         self.procedures = list()
@@ -91,8 +93,7 @@ class Patient:
 
         :return: age in years
         """
-        current_date = datetime.date.today()
-        return current_date.year - self.year - ((current_date.month, current_date.day) < (self.month, self.day))
+        return self.case_date.year - self.year - ((self.case_date.month, self.case_date.day) < (self.month, self.day))
 
     def has_fever(self) -> bool:
         """

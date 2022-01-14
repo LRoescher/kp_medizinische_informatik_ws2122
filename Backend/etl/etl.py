@@ -9,7 +9,7 @@ from Backend.analysis.patient import Patient
 from Backend.common.config import DbConfig, generate_config
 from Backend.common.database import DBManager
 from Backend.common.omop_enums import OmopTableEnum, OmopPersonFieldsEnum, OmopLocationFieldsEnum, \
-    OmopProviderFieldsEnum, OmopConditionOccurrenceFieldsEnum, SnomedConcepts
+    OmopProviderFieldsEnum, OmopConditionOccurrenceFieldsEnum, SnomedConcepts, OmopObservationPeriodFieldsEnum
 from Backend.etl import extract, transform
 
 
@@ -103,6 +103,21 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager) -> bool:
                      OmopLocationFieldsEnum.ZIP.value: ['Unbekannt']}
     omop_location_df: pd.DataFrame = pd.DataFrame(data_location)
 
+    # Set current date as observation start and end date
+    current_date: datetime.date = datetime.date.today()
+    # Generate unused case id
+    try:
+        case_id: int = db_manager.generate_case_id()
+    except AttributeError:
+        logging.error("Error during database access.")
+        return False
+    data_observation_period = {OmopObservationPeriodFieldsEnum.ID.value: [case_id],
+                               OmopObservationPeriodFieldsEnum.PERSON_ID.value: [patient.id],
+                               OmopObservationPeriodFieldsEnum.START_DATE.value: [current_date],
+                               OmopObservationPeriodFieldsEnum.END_DATE.value: [current_date],
+                               OmopObservationPeriodFieldsEnum.TYPE_CONCEPT_ID.value: [32817]}
+    omop_observation_period_df: pd.DataFrame = pd.DataFrame(data_observation_period)
+
     data_provider = {OmopProviderFieldsEnum.PROVIDER_ID.value: [DBManager.PROVIDER_ID]}
     omop_provider_df: pd.DataFrame = pd.DataFrame(data_provider)
 
@@ -128,7 +143,7 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager) -> bool:
         OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID.value: patient.conditions,
         OmopConditionOccurrenceFieldsEnum.CONDITION_START_DATE.value: [current_date] * entries,
         OmopConditionOccurrenceFieldsEnum.CONDITION_TYPE_CONCEPT_ID.value: [44786627] * entries
-        }
+    }
     omop_condition_occurrence_df: pd.DataFrame = pd.DataFrame(data_condition_occurrence)
 
     # Load dataframe into the omop database
@@ -140,6 +155,7 @@ def run_etl_job_for_patient(patient: Patient, db_manager: DBManager) -> bool:
                                       DBManager.PROVIDER_ID):
             db_manager.save(OmopTableEnum.PROVIDER, omop_provider_df)
         db_manager.save(OmopTableEnum.PERSON, omop_person_df)
+        db_manager.save(OmopTableEnum.OBSERVATION_PERIOD, omop_observation_period_df)
         db_manager.save(OmopTableEnum.CONDITION_OCCURRENCE, omop_condition_occurrence_df)
         logging.info("Done loading a single Patient into the database.")
         return True

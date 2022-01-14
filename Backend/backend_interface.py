@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 from datetime import date
@@ -122,8 +123,13 @@ class BackendManager(Interface):
 
         # Get birthday data
         birthdate: date = patient_data['birthdate']
+        # Set case date to today
+        case_date: date = datetime.date.today()
 
-        patient: Patient = Patient(patient_id=patient_id, name=patient_data['name'], birthdate=birthdate)
+        patient: Patient = Patient(patient_id=patient_id,
+                                   name=patient_data['name'],
+                                   birthdate=birthdate,
+                                   case_date=case_date)
         try:
             # Get snomed ids from patient_data and add as conditions
             if patient_data['hasCovid']:
