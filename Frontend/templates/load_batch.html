@@ -44,9 +44,9 @@
       $("#finish_progress").show();
       var id = "finish_progress";
       var failure = false;
-      $(".progress-bar").css("transition-duration", "60s");
-      update_progress(id, 49);
-
+      //$(".progress-bar").css("transition-duration", "60s");
+      //update_progress(id, 49);
+      var interval = interval_upload_progress(id, 0, 49, 820);
 
       // etl
       $.ajax({
@@ -57,18 +57,19 @@
         processData: false,
         success: function(response){
           if(response.success){
+            clearInterval(interval);
             update_progress(id, 50);
-            $(".progress-bar").css("transition-duration", "23s");
 
             // analyse data
-            update_progress(id, 99);
+            interval = interval_upload_progress(id, 50, 99, 470);
             $.ajax({
               url: "{{ url_for('data_manager.analyse_data') }}",
-              type: 'get',
+              type: 'post',
               //data: fd,
               contentType: false,
               processData: false,
               success: function(response){
+                clearInterval(interval);;
                 if(response.success){
                   update_progress(id, 100);
                   $("#step_etl").removeClass("in-progress")
@@ -82,6 +83,7 @@
                   error(id);
                 }},
               error: function(response){
+                clearInterval(interval);
                 error(id)
                 console.log(response.statusText);
                 // TODO: display msg
@@ -89,15 +91,18 @@
             });
             
           }else if (response.msg){
+            clearInterval(interval);
             error(id);
             // TODO: display msg
             failure = true;
           }
           else{
+            clearInterval(interval);
             error(id);
             failure = true;
           }},
         error: function(response){
+          clearInterval(interval);
           error(id)
           console.log(response.statusText);
           // TODO: display msg
@@ -240,8 +245,8 @@
     $("#"+id + " .upload_empty").hide();
     $("#"+id + " .upload_progress").show();
     update_progress(id, 10);
-    if (id != "config"){uploads++}
-    update_progress(id, 99);
+    if (id != "config"){uploads++};
+    var interval = interval_upload_progress(id, 0, 99, 3);
 
     var fd = new FormData();
     fd.append('key', id);
@@ -256,6 +261,7 @@
       contentType: false,
       processData: false,
       success: function(response){
+        clearInterval(interval);
         complete = response.complete;
         if(response.success){
           update_progress(id, 100);
@@ -271,6 +277,7 @@
           upload_file_finished(id, false, complete);
         }},
       error: function(response){
+        clearInterval(interval);
         error(id)
         console.log(response.statusText);
         upload_file_finished(id, false, complete);
@@ -280,23 +287,46 @@
   }
 
   /**
+  * update the round progress bar stepwise
+  * @function interval_upload_progress
+  * @param {string} id - of the drop_zone
+  * @param {int} start_pct - the counter should start
+  * @param {int} target_pct - the counter should reache
+  * @param {int} time_per_step - before the pct is increased (by 1) again in ms
+  * @return {Object} interval
+  */
+  function interval_upload_progress(id, start_pct, target_pct, time_per_step){
+    $("#"+id+" .progress-bar").css("transition-duration", time_per_step / 1000+"s");
+    var i = start_pct;
+    interval = setInterval(() => {
+      if (i < target_pct){
+        update_progress(id, ++i);
+      } else {
+        clearInterval(interval);
+      }
+      
+    }, time_per_step);
+    return interval;
+  }
+
+  /**
   * update the round progress bar
   * @function update_progress
   * @param {string} id - of the drop_zone
   * @param {int} pct - the upload is complete
   */
   function update_progress(id, pct) {
-      if(!isNaN(pct) && pct != null) {
-        if(pct > 100) {pct = 100}; // Too High
-        if(pct < 0) {pct = 0};     // Too Low
-        var offset = (( -parseFloat(pct) /100) * 220) - 220; // Getting offset for the SVG
-    
-        $("#"+id+' .progress-bar').attr('stroke-dashoffset',offset);
-        $("#"+id+' .progress-label').text(Number(Math.round(pct+'e2')+'e-2')+'%'); // Rounds to two decimal places
+    if(!isNaN(pct) && pct != null) {
+      if(pct > 100) {pct = 100}; // Too High
+      if(pct < 0) {pct = 0};     // Too Low
+      var offset = (( -parseFloat(pct) /100) * 220) - 220; // Getting offset for the SVG
+  
+      $("#"+id+' .progress-bar').attr('stroke-dashoffset',offset);
+      $("#"+id+' .progress-label').text(Number(Math.round(pct+'e2')+'e-2')+'%'); // Rounds to two decimal places
 
-        // Check for finish
-        (pct === 100)?( complete(id) ):( incomplete(id) );
-      };
+      // Check for finish
+      (pct === 100)?( complete(id) ):( incomplete(id) );
+    };
       
   };
 

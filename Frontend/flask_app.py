@@ -1,6 +1,4 @@
-import logging
-
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 from datetime import timedelta
 from Backend.interface import Interface, TranslationGerman
 from Backend.backend_interface import BackendManager
@@ -10,7 +8,11 @@ from Frontend.blueprint_results import results
 from Frontend.blueprint_data_manager import data_manager
 import os
 
-
+analysis_color: dict = {
+    "hue": 10,
+    "saturation": 80,
+    "lightness": 60
+}
 controller: Interface = BackendManager()
 
 app = Flask(__name__, template_folder='./templates/')
@@ -39,25 +41,50 @@ def translate(key: str) -> str:
 
 @app.context_processor
 def global_template_variables():
+    """
+    make this variables available in all templates
+    """
     return {
         "db_empty": controller.is_db_empty(),
-        "translate": translate
+        "translate": translate,
+        "analysis_color": analysis_color
     }
 
 
 @app.route('/favicon.ico')
 def favicon():
+    """
+    deliver page icon
+    """
     return send_from_directory(os.path.join(app.root_path, 'static'), 'Icons/favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
 @app.route("/")
 def main():
+    """
+    render main page
+    """
     return render_template("main.html", pagename="Startseite")
 
 
 @app.route("/settings")
 def settings():
+    """
+    render setting page
+    """
     return render_template("settings.html", pagename="Einstellungen")
+
+
+@app.route("/settings/color", methods=['POST'])
+def set_color():
+    """
+    set the color for the analysis
+    """
+    analysis_color["hue"] = request.form['hue']
+    analysis_color["saturation"] = request.form['saturation']
+    analysis_color["lightness"] = request.form['lightness']
+
+    return redirect(url_for("settings"))
 
 
 if __name__ == "__main__":

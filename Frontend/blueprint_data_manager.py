@@ -39,6 +39,11 @@ controller: Interface = BackendManager()
 
 
 def check_existing_files() -> Dict[str, bool]:
+    """
+    check if all needed files are there
+
+    :return: dict with name of the file followed by true if the file exists
+    """
     if not os.path.isdir(upload_folder):
         os.mkdir(path=upload_folder)
     return {
@@ -52,6 +57,11 @@ def check_existing_files() -> Dict[str, bool]:
 
 
 def clear_uploads() -> bool:
+    """
+    remove the csv files from the upload directory
+
+    :return: true
+    """
     print("clear data")
     for file in [case_path, diagnosis_path, lab_path, person_path, procedure_path]:
         if os.path.isfile(file):
@@ -61,8 +71,9 @@ def clear_uploads() -> bool:
 
 @data_manager.route("/etl")
 def upload_page():
-    if controller.is_db_empty():
-        redirect(url_for("results.get_analysis"))
+    """
+    render the load_batch template
+    """
     ex_f = check_existing_files()
     config_exists = ex_f["config"]
     del ex_f["config"]
@@ -75,6 +86,9 @@ def upload_page():
 
 @data_manager.route("/etl/run", methods=["POST"])
 def run_etl():
+    """
+    run the etl job
+    """
     controller.reset_config()
     success = controller.run_etl(upload_folder)
     return jsonify({"success": success})
@@ -82,6 +96,11 @@ def run_etl():
 
 @data_manager.route('/etl/upload', methods=['POST'])
 def upload_file():
+    """
+    handle files that are uploaded
+
+    :return: success - the csv is correct; complete - all csvs are uploaded
+    """
     success: bool = True
     complete: bool = True
     msg: str = ""
@@ -135,19 +154,35 @@ def upload_file():
 
 @data_manager.route("/config")
 def download_config():
+    """
+    download the config file
+    """
     return send_file(config_path, as_attachment=True)
 
 
 @data_manager.route("/reset_db")
 def reset_db():
+    """
+    reset the database
+    """
     if controller.reset_db():
         flash("Datenbank erfolgreich zurückgesetzt.", FlashMessageTypes.SUCCESS.value)
     else:
-        flash("Datenbank konnte nicht zurückgesetzt werden..", FlashMessageTypes.FAILURE.value)
+        flash("Datenbank konnte nicht zurückgesetzt werden.", FlashMessageTypes.FAILURE.value)
     return redirect(url_for("settings"))
 
 
-@data_manager.route("/analysis/run")
+@data_manager.route("/analysis/run", methods=['POST', 'GET'])
 def analyse_data():
+    """
+    start the process which analyses the data in the db
+    """
     success = controller.run_analysis()
-    return jsonify({"success": success})
+    if request.method == 'POST':
+        return jsonify({"success": success})
+    else:
+        if success:
+            flash("Daten wurden erfolgreich analysiert.", FlashMessageTypes.SUCCESS.value)
+        else:
+            flash("Analyse der Daten ist fehlgeschlagen.", FlashMessageTypes.FAILURE.value)
+        return redirect(url_for("settings"))

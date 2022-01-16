@@ -10,14 +10,11 @@
 {% endblock %}
 
 {% macro message_box(disease, name, probability) %}
-    {% if probability <= 0.3 %}
-        {% set danger = 'danger_is_low' %}
-    {% elif probability <= 0.6 %}
-        {% set danger = 'danger_is_middle' %}
-    {% else %}
-        {% set danger = 'danger_is_high' %}
-    {% endif %}
-    <div id="result" class="{{danger}}">
+
+    {% set hsla = "hsla("~analysis_color["hue"]~", "~analysis_color["saturation"]~"%, "~analysis_color["lightness"]~"%, " %}
+    {% set color = hsla ~ probability | round(2) ~ ")" %}
+
+    <div id="result" style="background-color:{{ color }}; border-color:{{ color }};">
         Die Wahrscheinlichkeit das <strong>{{ name }}</strong> an {{ disease }} erkrankt ist beträgt <strong>{{ (probability * 100) | round(2) }} %</strong>.
     </div>
 {% endmacro %}

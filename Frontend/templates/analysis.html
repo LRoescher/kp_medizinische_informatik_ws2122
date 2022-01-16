@@ -4,15 +4,22 @@
     <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/analysis.css') }}">
 {% endblock %}
 
-{% macro grid_table_entry(probability) %}
-    {% if probability <= 0.3 %}
-        {% set danger = 'success' %}
-    {% elif probability <= 0.6 %}
-        {% set danger = 'warning' %}
-    {% else %}
-        {% set danger = 'failure' %}
-    {% endif %}
-    <div class="grid_table_entry {{danger}}">{{(probability * 100) | round(2)}}%</div>
+
+{% set hsla = "hsla("~analysis_color["hue"]~", "~analysis_color["saturation"]~"%, "~analysis_color["lightness"]~"%, " %}
+
+{% macro grid_table_line(patient_id, prob_pims, prob_kawasaki) %}
+
+    {% set hsla = "hsla("~analysis_color["hue"]~", "~analysis_color["saturation"]~"%, "~analysis_color["lightness"]~"%, " %}
+    {% set p_color = hsla ~ prob_pims | round(2) ~ ")" %}
+    {% set k_color = hsla ~ prob_kawasaki | round(2) ~ ")" %}
+
+    <a class="grid_table_link grid_table_entry patientname" href="{{url_for('person_data.get_patient_data', patient_id=patient_id)}}">HIGHLIGHTED_NAME</a>
+    <a style="background-color:{{ k_color }}; border-color:{{ k_color }};" class="grid_table_link grid_table_entry" href="{{url_for('.result_kawasaki', patient_id=patient_id)}}">
+        <div>{{(prob_kawasaki * 100) | round(2)}}%</div>
+    </a>
+    <a style="background-color:{{ p_color }}; border-color:{{ p_color }};" class="grid_table_link grid_table_entry" href="{{url_for('.result_pims', patient_id=patient_id)}}">
+        <div>{{(prob_pims * 100) | round(2)}}%</div>
+    </a>
 {% endmacro %}
 
 {% block java_script %}
@@ -21,13 +28,10 @@
         let master_table = [
             {% for patient_id, patient_analysis in analysis_data.items() %}
                 {
-                    "name": "{{ patient_analysis.name }}",
+                    "name": "{{ patient_analysis.name }} - {{ patient_id }}",
                     "prob_kawasaki": {{ patient_analysis.probability_kawasaki }},
                     "prob_pims": {{ patient_analysis.probability_pims }},
-                    "html":
-                        `<a class="grid_table_link patientname" href="{{url_for('person_data.get_patient_data', patient_id=patient_id)}}"><div class="grid_table_entry">HIGHLIGHTED_NAME</div></a>
-                        <a class="grid_table_link" href="{{url_for('.result_kawasaki', patient_id=patient_id)}}">{{grid_table_entry(patient_analysis.probability_kawasaki)}}</a>
-                        <a class="grid_table_link" href="{{url_for('.result_pims', patient_id=patient_id)}}">{{grid_table_entry(patient_analysis.probability_pims)}}</a>`
+                    "html": `{{grid_table_line(patient_id, patient_analysis.probability_pims, patient_analysis.probability_kawasaki)}}`
                 },
             {% endfor %}
         ]
@@ -73,7 +77,6 @@
                 apply_changes(master_table, search_text, high_to_low, order);
             });
             apply_changes(master_table, search_text, high_to_low, order);
-
 
         });
 
@@ -216,7 +219,9 @@
         <br/>
         Mit einem Klick auf einen Patientennamen, können die Daten dieses Patienten bearbeitet werden.
         <br/>
-        Ein Klick auf die berechnete Wahrscheinlichkeit zeigt eine Begr&uuml;ndung für die berechnete Punktzahl an.
+        Ein Klick auf die berechnete Wahrscheinlichkeit zeigt eine Begr&uuml;ndung für die berechnete Punktzahl an. Je höher die
+        Prozentzahl, desto wahrscheinlicher ist die Person erkrankt, selbes wird durch einen intensiveren 
+        <span style="background-color: {{hsla}}100%);border-radius: 10px; padding: 2px">Farbton</span> symbolisiert.
         <br/>
         S&auml;mtliche berechneten Wahrscheinlichkeiten sind ohne Gew&auml;hr. Das System ersetzt in keinem Fall die
         Auswertung durch einen Arzt. Die Ergebnisse m&uuml;ssen immer durch medizinisch geschultes Personal gepr&uuml;ft
@@ -238,7 +243,7 @@
 
     <div class="grid_table">
 
-        <div class="grid_table_head_entry"><span id="name" class="triangle">&#8710;</span> Patientenname</div>
+        <div class="grid_table_head_entry"><span id="name" class="triangle">&#8710;</span> Patientenname - Id</div>
         <div class="grid_table_head_entry"><span id="kawasaki" class="triangle">&#8711;</span> Kawasaki</div>
         <div class="grid_table_head_entry"><span id="pims" class="triangle">&#8711;</span> PIMS</div>
 

@@ -6,9 +6,10 @@ $bg_color_darken: #7cc0d7 !default;
 // message colors
 $msg_color: black;
 $info_bg_color: #BDE5F8;
-$success_bg_color: #DFF2BF;
-$warning_bg_color: #FEEFB3;
-$failure_bg_color: #FFD2D2;
+// https://coolors.co/2e1414-672327-ac552a-b8a432-76ab35
+$success_bg_color: #DFF2BF;// #91C94E; //76AB35; 91C94E
+$warning_bg_color: #FEEFB3; //#c5ad23; //B8A432; CFBC50
+$failure_bg_color: #FFD2D2; //#c95b28; //AC552A; D06F3E
 
 
 @forward './two_elements/_left_bar' with (
