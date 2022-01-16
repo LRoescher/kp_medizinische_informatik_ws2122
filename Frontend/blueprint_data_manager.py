@@ -14,7 +14,7 @@ PERSON = "PERSON.csv"
 PROCEDURE = "PROCEDURE.csv"
 
 data_manager = Blueprint("data_manager", __name__)
-upload_folder = "../upload"
+upload_folder = os.path.join(ROOT_DIR, "upload")
 
 config_path = os.path.join(ROOT_DIR, "config", "config.yml")
 case_path = os.path.join(upload_folder, CASE)

@@ -262,6 +262,9 @@ class Patient:
         if self.has_fever():
             score += 2
             self.reasons_for_kawasaki.append(self.REASON_FEVER)
+        if self.has_exanthem():
+            score += 1
+            self.reasons_for_kawasaki.append(self.REASON_EXANTHEM)
         if self.has_swollen_extremities():
             score += 1
             self.reasons_for_kawasaki.append(self.REASON_SWOLLEN_EXTREMITIES)
@@ -275,10 +278,10 @@ class Patient:
             score += 1
             self.reasons_for_kawasaki.append(self.REASON_ENANTHEM)
         if self.has_inflammation_lab():
-            score += 1
+            score += 0.5
             self.reasons_for_kawasaki.append(self.REASON_INFLAMMATION_LAB)
         if self.has_cardiac_condition():
-            score += 1
+            score += 0.5
             self.reasons_for_kawasaki.append(self.REASON_CARDIAL_CONDITION)
 
         if score >= max_score:
@@ -303,7 +306,7 @@ class Patient:
         self.reasons_for_pims.clear()
 
         score: float = 0.0
-        max_score: float = 11.5 - 1.0
+        max_score: float = 12.5 - 1.0
 
         if self.calculate_age() >= 20:
             self.pims_score = 0.0
@@ -322,6 +325,10 @@ class Patient:
             if not self.has_kawasaki():
                 score += 2
             self.reasons_for_pims.append(self.REASON_FEVER)
+        if self.has_exanthem():
+            if not self.has_kawasaki():
+                score += 1
+            self.reasons_for_pims.append(self.REASON_EXANTHEM)
         if self.has_swollen_extremities():
             if not self.has_kawasaki():
                 score += 1
