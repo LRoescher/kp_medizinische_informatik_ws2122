@@ -222,7 +222,15 @@
         Ein Klick auf die zugeordnete Diagnose Klasse zeigt die jeweilige Begr&uuml;ndung an.
         Die Intensität des <span style="background-color: {{hsla}}100%);border-radius: 10px; padding: 2px">Farbtons</span> dient ausschließlich dazu, Diagnosen effizienter unterscheiden zu können.
         <br/>
-            <table style="{border: 1px solid black; border-collapse: collapse;}">
+        <a class="btn" id="loginLink" onclick="toggleTable();" href="#">Legende</a>
+        <script>
+            function toggleTable() {
+            var lTable = document.getElementById("legend_table");
+            lTable.style.display = (lTable.style.display == "table") ? "none" : "table";
+        }
+        </script>
+
+            <table id="legend_table" style="display: none">
                 <tr>
                     <th>Kawasaki</th>
                     <th>Richtlinie</th>
@@ -230,27 +238,27 @@
                     <th>Richtlinie</th>
                 </tr>
                     <tr>
-                        <td><span style="background-color: {{hsla}}100%;border-radius: 10px; padding: 2px">Kawsaki-Syndrom</span></td>
+                        <td><span style="background-color: {{hsla}}100%);border-radius: 10px; padding: 2px">Kawsaki-Syndrom</span></td>
                         <td></td>
-                        <td><span style="background-color: {{hsla}}100%;border-radius: 10px; padding: 2px">PIMS</span></td>
+                        <td><span style="background-color: {{hsla}}100%);border-radius: 10px; padding: 2px">PIMS</span></td>
                         <td></td>
                     </tr>
                 <tr>
-                    <td><span style="background-color: {{hsla}}75%;border-radius: 10px; padding: 2px">Inkomplettes Kawasaki-Syndrom</span></td>
+                    <td><span style="background-color: {{hsla}}75%);border-radius: 10px; padding: 2px">Inkomplettes Kawasaki-Syndrom</span></td>
                     <td></td>
                     <td></td>
                     <td></td>
                 </tr>
                 <tr>
-                    <td><span style="background-color: {{hsla}}50%;border-radius: 10px; padding: 2px">Verdacht</span></td>
+                    <td><span style="background-color: {{hsla}}50%);border-radius: 10px; padding: 2px">Verdacht</span></td>
                     <td></td>
-                    <td><span style="background-color: {{hsla}}50%;border-radius: 10px; padding: 2px">Verdacht</span></td>
+                    <td><span style="background-color: {{hsla}}50%);border-radius: 10px; padding: 2px">Verdacht</span></td>
                     <td></td>
                 </tr>
                 <tr>
-                    <td><span style="background-color: {{hsla}}0%;border-radius: 10px; padding: 2px">Nicht erkrankt</span></td>
+                    <td><span style="background-color: {{hsla}}0%);border-radius: 10px; padding: 2px">Nicht erkrankt</span></td>
                     <td></td>
-                    <td><span style="background-color: {{hsla}}0%;border-radius: 10px; padding: 2px">Nicht erkrankt</span></td>
+                    <td><span style="background-color: {{hsla}}0%);border-radius: 10px; padding: 2px">Nicht erkrankt</span></td>
                     <td></td>
                 </tr>
             </table>
