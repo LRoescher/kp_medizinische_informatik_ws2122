@@ -243,54 +243,42 @@ a.btn {
   background-color: #FFD2D2;
 }
 
-.grid_table {
-  display: grid;
-  grid-template-columns: auto auto auto ;
-  grid-auto-rows: max-content;
-}
-
-.grid_table_head_entry {
-  text-align: center;
-  font-size: 1.5em;
-  border-bottom-style: solid;
-  border-bottom-color: lightgrey;
-  border-bottom-width: 1px;
-  border-right-style: solid;
-  border-right-color: lightgrey;
-  border-right-width: 1px;
-}
-
-.grid_table_head_entry:nth-child(3n) {
-  border-right-style: none;
-}
-
-.grid_table_entry {
-  padding-top: 3px;
-  padding-bottom: 3px;
-  padding-left: 5%;
-  padding-right: 2%;
-  border-right-style: solid;
-  border-right-color: lightgrey;
-  border-right-width: 1px;
-}
-
-.grid_table_entry:nth-child(3n) {
-  border-right-style: none;
-}
-
-#result {
+#color_pic {
   margin: 1%;
-  padding: 1%;
+  width: 100%;
+}
+
+#color_bar {
+  height: 25px;
+  margin: 1%;
   border-radius: 15px;
+  text-align: center;
+  display: grid;
+  grid-template-columns: 25% 25% 25% 25%;
 }
 
-#reason ul {
-  padding-left: 5%;
+.short_btn {
+  width: 40%;
 }
 
-a {
-  text-decoration: none;
-  color: black;
+.on_line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/*# sourceMappingURL=result.css.map */
+.box {
+  margin: 1%;
+}
+
+.range {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.range_input {
+  width: 70%;
+}
+
+/*# sourceMappingURL=settings.css.map */
