@@ -57,6 +57,7 @@ class DecisionReasons(TypedDict):
     disease: Disease
     probability: float
     pro: List[str]  # strs have to be equal to PatientData
+    missing: List[str]
 
 
 # Übersetzung der Symptome ins Deutsche
@@ -88,6 +89,21 @@ TranslationGerman = {
     "hasPericarditis": "Perikarditits",
     # Hat Myokarditis (Herzmuskelenzündung)
     "hasMyocarditis": "Myokarditis"
+}
+
+
+TranslationPercentage = {
+    1.0: "Kawsaki-Syndrom",
+    0.75: "Inkomplettes Kawasaki-Syndrom",
+    0.5: "Verdacht",
+    0.0: "Nicht erkrankt"
+}
+
+
+TranslationPercentagePims = {
+    1.0: "PIMS",
+    0.5: "Verdacht",
+    0.0: "Nicht erkrankt"
 }
 
 
