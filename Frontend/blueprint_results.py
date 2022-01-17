@@ -11,11 +11,17 @@ results = Blueprint("results", __name__)
 
 @results.route("/all")
 def get_analysis():
+    """
+    render analysis template
+    """
     return render_template("analysis.html", pagename="Analyse", analysis_data=controller.analysis_data)
 
 
 @results.route("/pims/<int:patient_id>")
 def result_pims(patient_id: PatientId):
+    """
+    render the result template for the given patient and pims
+    """
     return render_template("result.html",
                            pagename="Pims",
                            patient_id=patient_id,
@@ -27,6 +33,9 @@ def result_pims(patient_id: PatientId):
 
 @results.route("/kawasaki/<int:patient_id>")
 def result_kawasaki(patient_id: PatientId):
+    """
+    render the result template for the given patient and kawasaki
+    """
     return render_template("result.html",
                            pagename="Kawasaki",
                            patient_id=patient_id,

@@ -253,11 +253,20 @@ class Patient:
         score: float = 0.0
         max_score: float = 8.0 - 1.0
 
-        # Return 0.0 if not in age range
+        # Not kawasaki -> Return 0.0 if not in age range
         if self.calculate_age() > 8:
             self.kawasaki_score = 0.0
             return self.kawasaki_score
         self.reasons_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
+
+        # Complete kawasaki -> 100%
+        # fever + 4/5 symptoms
+
+        # Incomplete kawasaki -> 75%
+        # fever + < 4 symptomes
+
+        # Maybe kawsaki -> 50%
+        # no fever but other symptoms
 
         if self.has_fever():
             score += 2

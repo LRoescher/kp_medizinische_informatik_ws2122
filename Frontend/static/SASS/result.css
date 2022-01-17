@@ -279,8 +279,9 @@ a.btn {
 }
 
 #result {
-  margin-bottom: 2%;
-  margin-top: 2%;
+  margin: 1%;
+  padding: 1%;
+  border-radius: 15px;
 }
 
 #reason ul {

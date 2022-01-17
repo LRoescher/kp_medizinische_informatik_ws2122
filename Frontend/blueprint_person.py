@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, request, url_for, flash
 from Backend.interface import PatientId, Interface, PatientData
-from typing import Optional
+from typing import Optional, Dict
 from Backend.backend_interface import BackendManager
 from Frontend.FlashMessageTypes import FlashMessageTypes
 from datetime import date, datetime
@@ -13,7 +13,12 @@ person_data = Blueprint("person_data", __name__)
 
 
 @person_data.context_processor
-def py_types():
+def py_types() -> Dict[str, type]:
+    """
+    make some py-types accessible in the templates
+
+    :return: types to use in the templates
+    """
     return {
         "int": int,
         "bool": bool,
@@ -25,6 +30,11 @@ def py_types():
 
 @person_data.route("/")
 def get_empty_patient_data():
+    """
+    generate empty patient data template
+
+    :return: render the empty patient template
+    """
     data = PatientData(birthdate=datetime.date.today(),
                         # Full name
                         name="",
@@ -58,7 +68,12 @@ def get_empty_patient_data():
 
 @person_data.route("/<int:patient_id>")
 def get_patient_data(patient_id: PatientId):
-    # ToDo: translate to german
+    """
+    get data for the patient with the given id
+
+    :param patient_id:
+    :return: render template with patient data
+    """
     return render_template("person_data.html",
                            pagename="Patientendaten",
                            patient_id=patient_id,
@@ -67,6 +82,11 @@ def get_patient_data(patient_id: PatientId):
 
 
 def get_patient_data_from_request() -> Optional[PatientData]:
+    """
+    extract the patient data from the request
+
+    :return: None or the PatientData
+    """
     patient_data: PatientData = {}
     for key, data_type in PatientData.__annotations__.items():
         if key in request.form:
@@ -87,6 +107,9 @@ def get_patient_data_from_request() -> Optional[PatientData]:
 
 @person_data.route("/save", methods=['POST'])
 def add_patient_data():
+    """
+    add a new patietn
+    """
     patient_data = get_patient_data_from_request()
 
     if patient_data is None:
@@ -105,6 +128,9 @@ def add_patient_data():
 
 @person_data.route("/<int:patient_id>/save", methods=['POST'])
 def update_patient_data(patient_id: PatientId):
+    """
+    update data of an existing patient
+    """
     patient_data = get_patient_data_from_request()
 
     if patient_data is None:

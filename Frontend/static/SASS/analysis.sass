@@ -52,17 +52,20 @@ input:focus-visible
     vertical-align: middle
     font-size: 50%
 
-.patientname .grid_table_entry:hover
+.patientname .grid_table_link
+    padding-left: 5px
+
+.patientname .grid_table_link:hover
     background-color: $bg_color_lighten
 
-.grid_table_entry:hover
-    opacity: 0.7
+.grid_table_link:hover
+    opacity: 0.5
     cursor: pointer
 
-.grid_table_entry:nth-child(3n+2)
+.grid_table_link:nth-child(3n+2)
     text-align: center
 
-.grid_table_entry:nth-child(3n)
+.grid_table_link:nth-child(3n)
     text-align: center
 
 .search_highlight

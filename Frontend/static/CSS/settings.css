@@ -243,73 +243,42 @@ a.btn {
   background-color: #FFD2D2;
 }
 
-form {
-  display: grid;
-  grid-template-rows: 33% 33% 33%;
-}
-
-svg {
-  height: 0;
-  width: 0;
-  margin: 0;
-  padding: 0;
-}
-
-#two_elements_content_frame {
-  margin: 15%;
-}
-
-.login_grid_entry {
-  display: flex;
-  padding: 2%;
-}
-
-.login_grid_entry input {
+#color_pic {
+  margin: 1%;
   width: 100%;
-  margin: 0;
-  padding: 0;
 }
 
-.login_icon {
-  height: 100%;
-  width: 15%;
-  margin: 0;
-  padding: 0;
-  background-color: #7cc0d7;
-  border-bottom-left-radius: 15px;
-  border-top-left-radius: 15px;
-}
-
-input {
-  border: solid 1px lightblue;
-  border-top-right-radius: 15px;
-  border-bottom-right-radius: 15px;
-  background-color: #d2eaf1;
-  font-size: 1.3em;
-}
-
-input:hover {
-  outline-width: 2px;
-  outline-color: #7cc0d7;
-}
-
-input:focus {
-  outline-width: 2px;
-  outline-color: #7cc0d7;
-}
-
-input:focus-visible {
-  outline-width: 2px;
-  outline-color: #7cc0d7;
-}
-
-.login {
+#color_bar {
+  height: 25px;
+  margin: 1%;
   border-radius: 15px;
-  background-color: #7cc0d7;
+  text-align: center;
+  display: grid;
+  grid-template-columns: 25% 25% 25% 25%;
 }
 
-.login:hover {
-  opacity: 0.75;
+.short_btn {
+  width: 40%;
 }
 
-/*# sourceMappingURL=login.css.map */
+.on_line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.box {
+  margin: 1%;
+}
+
+.range {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.range_input {
+  width: 70%;
+}
+
+/*# sourceMappingURL=settings.css.map */

@@ -243,28 +243,42 @@ a.btn {
   background-color: #FFD2D2;
 }
 
-.grid_table {
-  display: grid;
-  grid-template-columns: auto ;
-  grid-auto-rows: max-content;
-}
-
-.grid_table_head_entry {
-  text-align: center;
-  font-size: 1.5em;
-}
-
-.grid_table_entry {
-  padding-top: 3px;
-  padding-bottom: 3px;
-  padding-left: 5%;
-  padding-right: 2%;
-}
-
-.grid_table_entry button {
+#color_pic {
+  margin: 1%;
   width: 100%;
-  height: 4em;
-  font-size: 2em;
 }
 
-/*# sourceMappingURL=main.css.map */
+#color_bar {
+  height: 25px;
+  margin: 1%;
+  border-radius: 15px;
+  text-align: center;
+  display: grid;
+  grid-template-columns: 25% 25% 25% 25%;
+}
+
+.short_btn {
+  width: 40%;
+}
+
+.on_line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.box {
+  margin: 1%;
+}
+
+.range {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.range_input {
+  width: 70%;
+}
+
+/*# sourceMappingURL=settings.css.map */

@@ -1,7 +1,7 @@
 {% extends "Layout/layout.html" %}
 
 {% block stylesheets %}
-    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/main.css') }}">
+    <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename='CSS/settings.css') }}">
 {% endblock %}
 
 
@@ -9,18 +9,160 @@
     Einstellungen
 {% endblock %}
 
+{% block java_script %}
+    {% set hue = analysis_color['hue'] %}
+    {% set saturation = analysis_color['saturation'] %}
+    {% set lightness = analysis_color['lightness'] %}
+    <script type="text/javascript">
+        
+        var hue = {{ analysis_color['hue'] }};  
+        var saturation = {{ analysis_color['saturation'] }};
+        var lightness = {{ analysis_color['lightness'] }};
+
+        
+        $(document).ready(function(){
+            $("#color_pic").hide();
+            $("#reset_db").hide();
+            setColor(hue, saturation, lightness);
+            colorBar(hue, saturation, lightness);
+
+            $("#hue").on("input", (event) => {
+                hue = event.target.value;
+                colorBar(hue, saturation, lightness);
+            });
+
+            $("#saturation").on("input", (event) => {
+                saturation = event.target.value;
+                colorBar(hue, saturation, lightness);
+            });
+
+            $("#lightness").on("input", (event) => {
+                lightness = event.target.value;
+                colorBar(hue, saturation, lightness);
+            });
+
+            $(".cancel").click(() => {
+                console.log("cancel");
+                $("#color_pic").hide();
+                $("#reset_db").hide();
+                $("#settings").show();
+            });
+
+            $("#btn_reset_db").click(() => {
+                $("#color_pic").hide();
+                $("#settings").hide();
+                $("#reset_db").show();
+            });
+
+            $("#btn_select_color").click(() => {
+                
+                $("#settings").hide();
+                $("#reset_db").hide();
+                $("#color_pic").show();
+
+                setColor(hue, saturation, lightness);
+                colorBar(hue, saturation, lightness);
+            });
+
+            $("#set_color").click(() => {
+                $.post("{{ url_for('set_color') }}", {
+                    "hue": hue,
+                    "saturation": saturation,
+                    "lightness": lightness
+                }, () => {
+                    $("#color_pic").hide();
+                    $("#reset_db").hide();
+                    $("#settings").show();
+                });
+            });
+
+        });
+
+        function colorBar(hue, saturation, lightness){
+            $("#color_100").css("background-color", "hsla("+hue+", "+saturation+"%, "+lightness+"%, 100%)");
+            $("#color_75").css("background-color", "hsla("+hue+", "+saturation+"%, "+lightness+"%, 75%)");
+            $("#color_50").css("background-color", "hsla("+hue+", "+saturation+"%, "+lightness+"%, 50%)");
+            $("#color_25").css("background-color", "hsla("+hue+", "+saturation+"%, "+lightness+"%, 25%)");
+        }
+
+        function setColor(hue, saturation, lightness){
+            $("#hue").val(hue);
+            $("#saturation").val(saturation);
+            $("#lightness").val(lightness);
+        }
+
+    </script>
+{% endblock %}
+
 {% block content %}
 
-    <a href="{{ url_for('data_manager.download_config') }}" class="btn">
-        Konfigurationsdatei herunterladen
-    </a>
+    <div id="settings">
 
-    <a {% if not db_empty %} href="{{ url_for('data_manager.analyse_data') }}" {% endif %} class="btn  {% if db_empty %} disabled {% endif %}">
-        Analyse neustarten
-    </a>
+        <a href="{{ url_for('data_manager.download_config') }}" class="btn">
+            Konfigurationsdatei herunterladen
+        </a>
 
-    <a {% if not db_empty %} href="{{ url_for('data_manager.reset_db') }}" {% endif %} class="btn  {% if db_empty %} disabled {% endif %}">
-        Datenbank zurücksetzen
-    </a>
+        <a {% if not db_empty %} href="{{ url_for('data_manager.analyse_data') }}" {% endif %} class="btn  {% if db_empty %} disabled {% endif %}">
+            Analyse neustarten
+        </a>
+
+        <a {% if not db_empty %} id="btn_reset_db" {% endif %} class="btn  {% if db_empty %} disabled {% endif %}">
+            Datenbank zurücksetzen
+        </a>
+
+        <a id="btn_select_color" class="btn">
+            Warnfarbe für Erkrankungen wählen
+        </a>
+    </div>
+
+    <div id="color_pic">
+        <div class="disclaimer">
+            Die gewählte Farbe wird verwendet um die Wahrscheinlichkeit einer Erkrankung mit Pims oder Kawasaki darzustellen.         
+        </div>
+
+        <div id="color_bar">
+            <div id="color_100">100%</div>
+            <div id="color_75">75%</div>
+            <div id="color_50">50%</div>
+            <div id="color_25">25%</div>
+        </div>
+
+        <div class="box">
+            <div class="range">
+                <label for="hue">Farbton:</label>
+                <input type="range" id="hue" class="range_input" name="hue" min=0 max=360 />
+            </div>
+
+            <div class="range">
+                <label for="saturation">Sättigung:</label>
+                <input type="range" id="saturation" class="range_input" name="saturation" min=0 max=100 />
+            </div>
+
+            <div class="range">
+                <label for="lightness">Helligkeit:</label>
+                <input type="range" id="lightness" class="range_input" name="lightness" min=0 max=100 />
+            </div>
+        </div>
+
+        <div class="on_line">
+            <a class="cancel btn cancle short_btn">Abbrechen</a>
+            <a id="set_color" class="btn continue short_btn">Speichern</a>
+        </div>
+
+    </div>
+
+    <div id="reset_db">
+        <div class="disclaimer">
+            Alle Daten gehen verloren! Sind Sie sicher das Sie die Datenbank zurücksetzen wollen?
+            
+        </div>
+        <div class="on_line">
+            <a class="cancel btn short_btn">Abbrechen</a>
+            <a id="reseting_db" class="btn short_btn" href="{{ url_for('data_manager.reset_db') }}">Zurücksetzen</a>
+        </div>
+        
+
+    </div>
 
 {% endblock %}
+
