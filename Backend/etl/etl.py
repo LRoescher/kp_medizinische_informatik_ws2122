@@ -196,9 +196,9 @@ def update_patient(old_patient: Patient, update: Patient, db_manager: DBManager)
                                      patient_id=old_patient.id,
                                      concept_id=SnomedConcepts.ERUPTION.value)
 
-        if old_patient.has_mouth_or_mucosa_inflammation() and not update.has_mouth_or_mucosa_inflammation():
+        if old_patient.has_enanthem() and not update.has_enanthem():
             db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
-        if not old_patient.has_mouth_or_mucosa_inflammation() and update.has_mouth_or_mucosa_inflammation():
+        if not old_patient.has_enanthem() and update.has_enanthem():
             _add_concept_for_patient(db_manager=db_manager,
                                      patient_id=old_patient.id,
                                      concept_id=SnomedConcepts.DISORDER_OF_ORAL_SOFT_TISSUE.value)
