@@ -92,7 +92,7 @@ TranslationGerman = {
 }
 
 
-TranslationPercentage = {
+TranslationPercentageKawasaki = {
     1.0: "Kawsaki-Syndrom",
     0.75: "Inkomplettes Kawasaki-Syndrom",
     0.5: "Verdacht",

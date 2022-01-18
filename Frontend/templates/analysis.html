@@ -13,12 +13,15 @@
     {% set p_color = hsla ~ prob_pims | round(2) ~ ")" %}
     {% set k_color = hsla ~ prob_kawasaki | round(2) ~ ")" %}
 
+    {% set prob_pims = translation_pims[prob_pims] %}
+    {% set prob_kawasaki = translation_kawasaki[prob_kawasaki] %}
+
     <a class="grid_table_link grid_table_entry patientname" href="{{url_for('person_data.get_patient_data', patient_id=patient_id)}}">HIGHLIGHTED_NAME</a>
     <a style="background-color:{{ k_color }}; border-color:{{ k_color }};" class="grid_table_link grid_table_entry" href="{{url_for('.result_kawasaki', patient_id=patient_id)}}">
-        <div>{{(prob_kawasaki * 100) | round(2)}}%</div>
+        <div>{{ prob_kawasaki }}</div>
     </a>
     <a style="background-color:{{ p_color }}; border-color:{{ p_color }};" class="grid_table_link grid_table_entry" href="{{url_for('.result_pims', patient_id=patient_id)}}">
-        <div>{{(prob_pims * 100) | round(2)}}%</div>
+        <div>{{ prob_pims }}</div>
     </a>
 {% endmacro %}
 
@@ -231,14 +234,19 @@
 
     <div id="filter">
         <input id="searchbar" type="text" placeholder=" Suchen .. "/>
-        <select id="sort_order">
-            <option value="NKP">Patientenname - Kawasaki - Pims</option>
-            <option value="NPK">Patientenname - Pims - Kawasaki</option>
-            <option value="PKN">Pims - Kawasaki - Patientenname</option>
-            <option value="PNK">Pims - Patientenname - Kawasaki</option>
-            <option value="KNP">Kawasaki - Patientenname - Pims</option>
-            <option value="KPN">Kawasaki - Pims - Patientenname</option>
-        </select>
+        <div class="tooltip">
+            <select id="sort_order">
+                <option value="NKP">Patientenname - Kawasaki - Pims</option>
+                <option value="NPK">Patientenname - Pims - Kawasaki</option>
+                <option value="PKN">Pims - Kawasaki - Patientenname</option>
+                <option value="PNK">Pims - Patientenname - Kawasaki</option>
+                <option value="KNP">Kawasaki - Patientenname - Pims</option>
+                <option value="KPN">Kawasaki - Pims - Patientenname</option>
+            </select>
+
+            <span class="tooltiptext">Sortierreihenfolge</span>
+        </div>
+
     </div>
 
     <div class="grid_table">

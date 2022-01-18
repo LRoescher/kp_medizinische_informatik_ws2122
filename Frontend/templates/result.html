@@ -15,7 +15,7 @@
     {% set color = hsla ~ probability | round(2) ~ ")" %}
 
     <div id="result" style="background-color:{{ color }}; border-color:{{ color }};">
-        Die Wahrscheinlichkeit, dass <strong>{{ name }}</strong> an {{ disease }} erkrankt ist, beträgt <strong>{{ (probability * 100) | round(2) }} %</strong>.
+        Die {{ disease }} Diagnose für den Patienten <strong>{{ name }}</strong> lautet: <strong>{{ translation_pims[probability] }}</strong>.
     </div>
 {% endmacro %}
 
@@ -37,13 +37,32 @@
     {{ message_box(decision_reason_data.disease.value, patient_data.name, decision_reason_data.probability) }}
     <br/>
 
-    <div id="reason">
+    <div class="reason">
         {% if decision_reason_data.pro|length == 0 %}
             Keines der für die Erkrankung mit {{ decision_reason_data.disease.value }} typischen Symptome wurde festgestellt.
         {% else %}
             Die Entscheidung begründet sich mit dem Auftreten der folgenden Kriterien:
             <ul>
                 {% for reason in decision_reason_data.pro %}
+                    <li>{{ translate(reason) }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if decision_reason_data.missing|length != 0 and decision_reason_data.probability < 1.0 and decision_reason_data.probability > 0 %}
+            Der Datensatz enthält die folgenden Informationen nicht, welche auf eine Erkrankung hindeuten. Bitte ergänzen Sie diese ggf. 
+            <a class="link" href="{{ url_for('person_data.update_patient_data', patient_id=patient_id)}}">hier!</a> 
+            <ul>
+                {% for reason in decision_reason_data.missing %}
+                    <li>{{ translate(reason) }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if decision_reason_data.con|length != 0 and decision_reason_data.probability < 1.0 and decision_reason_data.probability > 0 %}
+            Die folgende Kriterien die typischerweise im zusammenhang mit einer Erkrankung Auftreten liegen nicht vor: 
+            <ul>
+                {% for reason in decision_reason_data.con %}
                     <li>{{ translate(reason) }}</li>
                 {% endfor %}
             </ul>

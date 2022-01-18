@@ -1,6 +1,6 @@
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 from datetime import timedelta
-from Backend.interface import Interface, TranslationGerman
+from Backend.interface import Interface, TranslationGerman, TranslationPercentagePims, TranslationPercentageKawasaki
 from Backend.backend_interface import BackendManager
 from Frontend.blueprint_person import person_data
 from Frontend.blueprint_login import access_control
@@ -47,7 +47,9 @@ def global_template_variables():
     return {
         "db_empty": controller.is_db_empty(),
         "translate": translate,
-        "analysis_color": analysis_color
+        "analysis_color": analysis_color,
+        "translation_kawasaki": TranslationPercentageKawasaki,
+        "translation_pims": TranslationPercentagePims
     }
 
 

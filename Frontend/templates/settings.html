@@ -82,7 +82,7 @@
             $("#color_100").css("background-color", "hsla("+hue+", "+saturation+"%, "+lightness+"%, 100%)");
             $("#color_75").css("background-color", "hsla("+hue+", "+saturation+"%, "+lightness+"%, 75%)");
             $("#color_50").css("background-color", "hsla("+hue+", "+saturation+"%, "+lightness+"%, 50%)");
-            $("#color_25").css("background-color", "hsla("+hue+", "+saturation+"%, "+lightness+"%, 25%)");
+            $("#color_0").css("background-color", "hsla("+hue+", "+saturation+"%, "+lightness+"%, 0%)");
         }
 
         function setColor(hue, saturation, lightness){
@@ -121,10 +121,10 @@
         </div>
 
         <div id="color_bar">
-            <div id="color_100">100%</div>
-            <div id="color_75">75%</div>
-            <div id="color_50">50%</div>
-            <div id="color_25">25%</div>
+            <div id="color_100">{{ translation_kawasaki[1.0] }}</div>
+            <div id="color_75">{{ translation_kawasaki[0.75] }}</div>
+            <div id="color_50">{{ translation_kawasaki[0.5] }}</div>
+            <div id="color_0">{{ translation_kawasaki[0.0] }}</div>
         </div>
 
         <div class="box">
