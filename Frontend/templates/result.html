@@ -14,8 +14,16 @@
     {% set hsla = "hsla("~analysis_color["hue"]~", "~analysis_color["saturation"]~"%, "~analysis_color["lightness"]~"%, " %}
     {% set color = hsla ~ probability | round(2) ~ ")" %}
 
+
     <div id="result" style="background-color:{{ color }}; border-color:{{ color }};">
-        Die {{ disease }} Diagnose für den Patienten <strong>{{ name }}</strong> lautet: <strong>{{ translation_pims[probability] }}</strong>.
+        Die {{ disease }} Diagnose für den Patienten <strong>{{ name }}</strong> lautet:
+        <strong>
+            {% if disease == "Kawasaki-Syndrom" %}
+                {{ translation_kawasaki[probability] }}
+            {% else %}
+                {{ translation_pims[probability] }}
+            {% endif %}
+        </strong>.
     </div>
 {% endmacro %}
 
