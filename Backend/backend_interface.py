@@ -256,7 +256,7 @@ class BackendManager(Interface):
                     'hasCovid': patient.has_covid(),
                     'hasFever': patient.has_fever(),
                     'hasExanthem': patient.has_exanthem(),
-                    'hasEnanthem': patient.has_mouth_or_mucosa_inflammation(),
+                    'hasEnanthem': patient.has_enanthem(),
                     'hasSwollenExtremeties': patient.has_swollen_extremities(),
                     'hasConjunctivitis': patient.has_conjunctivitis(),
                     'hasSwollenLymphnodes': patient.has_lymphadenopathy(),
@@ -286,20 +286,14 @@ class BackendManager(Interface):
                     decision_reasons = {
                         'disease': Disease.KAWASAKI,
                         'probability': patient.kawasaki_score,
-                        'pro': patient.reasons_for_kawasaki
+                        'pro': patient.reasons_for_kawasaki,
+                        'missing': patient.missing_for_kawasaki
                     }
                 elif disease == Disease.PIMS:
                     decision_reasons = {
                         'disease': Disease.PIMS,
                         'probability': patient.pims_score,
-                        'pro': patient.reasons_for_pims
+                        'pro': patient.reasons_for_pims,
+                        'missing': patient.missing_for_pims
                     }
                 return decision_reasons
-
-
-if __name__ == "__main__":
-    r = BackendManager()
-    # print(r.analysis_data)
-    # print(r.get_decision_reason(PatientId(2426), Disease.KAWASAKI))
-    # print(r.get_decision_reason(PatientId(2426), Disease.PIMS))
-    # print(r.dbManager.delete_condition_for_patient(1547, 444413))
