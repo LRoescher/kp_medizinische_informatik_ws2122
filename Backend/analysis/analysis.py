@@ -2,7 +2,6 @@ import datetime
 import logging
 from typing import List, Optional
 from Backend.analysis.patient import Patient
-from Backend.common.config import generate_config
 from Backend.common.database import DBManager
 from Backend.common.omop_enums import OmopPersonFieldsEnum, OmopTableEnum, OmopObservationPeriodFieldsEnum
 
@@ -109,10 +108,3 @@ def evaluate_all_in_database(db_manager: DBManager) -> List[Patient]:
     except (TypeError, AttributeError):
         logging.error("Error during evaluation. List of Patients might be incomplete")
     return patients
-
-
-if __name__ == "__main__":
-    db_config = generate_config()[1]
-    dbManager = DBManager(db_config, clear_tables=False)
-    result = evaluate_all_in_database(dbManager)
-    print(result)

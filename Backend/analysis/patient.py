@@ -21,7 +21,7 @@ class Patient:
     REASON_YOUNGER_THAN_TWENTY: str = "0-19 Jahre alt"
     REASON_FEVER: str = "Fieber"
     REASON_EXANTHEM: str = "Exanthem"
-    REASON_ENANTHEM: str = "Entzündung von Mund und/oder Zunge"
+    REASON_ENANTHEM: str = "Enanthem"
     REASON_SWOLLEN_EXTREMITIES: str = "Geschwollene Extremitäten"
     REASON_CONJUNCTIVITIS: str = "Konjunktivitis"
     REASON_SWOLLEN_LYMPHNODES: str = "Lymphadenopathie"
@@ -54,7 +54,9 @@ class Patient:
         self.kawasaki_score: float = 0.0
         self.pims_score: float = 0.0
         self.reasons_for_kawasaki = list()
+        self.missing_for_kawasaki = list()
         self.reasons_for_pims = list()
+        self.missing_for_pims = list()
 
     def __str__(self):
         return f"{self.id}: {self.day}-{self.month}-{self.year}, Kawsawki: {self.kawasaki_score}, " \
@@ -150,7 +152,7 @@ class Patient:
                                SnomedConcepts.GENERALIZED_ENLARGED_LYMPH_NODES.value]
         return any(x in lymphadenopathy_ids for x in self.conditions)
 
-    def has_mouth_or_mucosa_inflammation(self):
+    def has_enanthem(self):
         """
         Returns True if the patient has a condition that corresponds to an inflammation of the mouth, tongue, lips are
         mucosa ("skin inside of the body").
@@ -249,55 +251,94 @@ class Patient:
         a set of reasons for the decision
         """
         self.reasons_for_kawasaki.clear()
-
-        score: float = 0.0
-        max_score: float = 8.0 - 1.0
+        self.missing_for_kawasaki.clear()
 
         # Not kawasaki -> Return 0.0 if not in age range
         if self.calculate_age() > 8:
+            self.missing_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
+            if self.has_fever():
+                self.reasons_for_kawasaki.append(self.REASON_FEVER)
+            else:
+                self.missing_for_kawasaki.append(self.REASON_FEVER)
+
+            self._calculate_kawasaki_side_symptoms()
             self.kawasaki_score = 0.0
             return self.kawasaki_score
+
         self.reasons_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
 
-        # Complete kawasaki -> 100%
-        # fever + 4/5 symptoms
-
-        # Incomplete kawasaki -> 75%
-        # fever + < 4 symptomes
-
-        # Maybe kawsaki -> 50%
-        # no fever but other symptoms
-
         if self.has_fever():
-            score += 2
             self.reasons_for_kawasaki.append(self.REASON_FEVER)
-        if self.has_exanthem():
-            score += 1
-            self.reasons_for_kawasaki.append(self.REASON_EXANTHEM)
-        if self.has_swollen_extremities():
-            score += 1
-            self.reasons_for_kawasaki.append(self.REASON_SWOLLEN_EXTREMITIES)
-        if self.has_conjunctivitis():
-            score += 1
-            self.reasons_for_kawasaki.append(self.REASON_CONJUNCTIVITIS)
-        if self.has_lymphadenopathy():
-            score += 1
-            self.reasons_for_kawasaki.append(self.REASON_SWOLLEN_LYMPHNODES)
-        if self.has_mouth_or_mucosa_inflammation():
-            score += 1
-            self.reasons_for_kawasaki.append(self.REASON_ENANTHEM)
-        if self.has_inflammation_lab():
-            score += 0.5
-            self.reasons_for_kawasaki.append(self.REASON_INFLAMMATION_LAB)
-        if self.has_cardiac_condition():
-            score += 0.5
-            self.reasons_for_kawasaki.append(self.REASON_CARDIAL_CONDITION)
+            num_of_symptoms: int = self._calculate_kawasaki_side_symptoms()
 
-        if score >= max_score:
-            self.kawasaki_score = 1.0
+            if num_of_symptoms >= 4:
+                # Complete kawasaki: fever + min. 4/5 symptoms
+                self.kawasaki_score = 1.0
+                return self.kawasaki_score
+            elif num_of_symptoms >= 1:
+                # Incomplete kawasaki
+                self.kawasaki_score = 0.75
+                return self.kawasaki_score
+            else:
+                # Maybe kawasaki
+                self.kawasaki_score = 0.5
+                return self.kawasaki_score
         else:
-            self.kawasaki_score = score / max_score
-        return self.kawasaki_score
+            # no fever --> not kawasaki, but maybe data is incomplete
+            self.missing_for_kawasaki.append(self.REASON_FEVER)
+            num_of_symptoms: int = self._calculate_kawasaki_side_symptoms()
+
+            if num_of_symptoms < 1:
+                # No kawasaki symptoms at all
+                self.kawasaki_score = 0.0
+                return self.kawasaki_score
+            else:
+                # some kawasaki symptoms
+                self.kawasaki_score = 0.5
+                return self.kawasaki_score
+
+    def _calculate_kawasaki_side_symptoms(self) -> int:
+        """
+        Calculates the number of side symptoms of a patient. Also edits the lists reasons-for-kawasaki and
+        missing-for-kawasaki.
+        The 5 side conditions (enanthem, exanthem, swollen extremities, conjunctivitis and lymphadenopathy) are checked.
+        If they are present they are added to the pro-kawasaki-list. If not, they are added to the missing list.
+        The number of side symptoms is returned.
+        :return: number of side symptoms the patient has
+        """
+        num_of_symptoms = 0
+        if self.has_exanthem():
+            num_of_symptoms += 1
+            self.reasons_for_kawasaki.append(self.REASON_EXANTHEM)
+        else:
+            self.missing_for_kawasaki.append(self.REASON_EXANTHEM)
+
+        if self.has_swollen_extremities():
+            num_of_symptoms += 1
+            self.reasons_for_kawasaki.append(self.REASON_SWOLLEN_EXTREMITIES)
+        else:
+            self.missing_for_kawasaki.append(self.REASON_SWOLLEN_EXTREMITIES)
+
+        if self.has_conjunctivitis():
+            num_of_symptoms += 1
+            self.reasons_for_kawasaki.append(self.REASON_CONJUNCTIVITIS)
+        else:
+            self.missing_for_kawasaki.append(self.REASON_CONJUNCTIVITIS)
+
+        if self.has_lymphadenopathy():
+            num_of_symptoms += 1
+            self.reasons_for_kawasaki.append(self.REASON_SWOLLEN_LYMPHNODES)
+        else:
+            self.missing_for_kawasaki.append(self.REASON_SWOLLEN_LYMPHNODES)
+
+        if self.has_enanthem():
+            num_of_symptoms += 1
+            self.reasons_for_kawasaki.append(self.REASON_ENANTHEM)
+        else:
+            self.missing_for_kawasaki.append(self.REASON_ENANTHEM)
+
+        return num_of_symptoms
+
 
     def calculate_pims_score(self) -> (float, Set[str]):
         """
@@ -350,7 +391,7 @@ class Patient:
             if not self.has_kawasaki():
                 score += 1
             self.reasons_for_pims.append(self.REASON_SWOLLEN_LYMPHNODES)
-        if self.has_mouth_or_mucosa_inflammation():
+        if self.has_enanthem():
             if not self.has_kawasaki():
                 score += 1
             self.reasons_for_pims.append(self.REASON_ENANTHEM)

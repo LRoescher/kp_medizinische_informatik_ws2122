@@ -1,4 +1,5 @@
 @use 'Layout/layout'
+@use 'Widgets/_tooltip'
 @use 'Widgets/_grid_table' as grid_table
 
 $bg_color: lightblue !default
@@ -22,7 +23,8 @@ input
 
     background-color: $bg_color_lighten
     height: 80%
-    width: 40%
+
+    padding-inline-start: 10px
 
 option:hover,
 select:hover,
