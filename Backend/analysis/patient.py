@@ -31,6 +31,7 @@ class Patient:
     REASON_EFFUSION: str = "Flüssigkeitsansammlungen"
     REASON_COVID: str = "Covid-19 Erkrankung"
     REASON_HAS_KAWASAKI: str = "Kawasaki-Syndrom"
+    REASON_KAWASAKI_SYMPTOMS: str = "Exanthem, Enanthem, Konjunktivitis oder geschwollene, gerötete Extremitäten"
 
     def __init__(self, patient_id: int, name: str, birthdate: datetime.date, case_date: datetime.date):
         """
@@ -339,7 +340,6 @@ class Patient:
 
         return num_of_symptoms
 
-
     def calculate_pims_score(self) -> (float, Set[str]):
         """
         Calculates a score (probability) for the patient having PIMS. The score will be between 0.0 and 1.0.
@@ -355,65 +355,158 @@ class Patient:
         """
         self.reasons_for_pims.clear()
 
-        score: float = 0.0
-        max_score: float = 12.5 - 1.0
+        # Age < 20
+        # Fever (kawasaki implies fever)
+        # Elevated inflammation markers
+        # evidence of Covid-19
+        # min. two
+        # EXANTHEM, ENANTHEM, CONJUNCTIVITIS or SWOLLEN EXTREMITIES
+        # Cardial component
+        # gastrointestinal component
+
+        if self.calculate_age() < 20 and (self.has_fever() or self.has_kawasaki()) and self.has_covid() \
+                and self.has_inflammation_lab():
+            self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
+            self.reasons_for_pims.append(self.REASON_FEVER)
+            self.reasons_for_pims.append(self.REASON_COVID)
+            self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
+            # potential pims
+            num_of_side_symptoms: int = 0
+            if self.has_kawasaki():
+                self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
+                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+                num_of_side_symptoms += 1
+            elif self.has_exanthem() or self.has_enanthem() or self.has_conjunctivitis() or self.has_swollen_extremities():
+                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+                num_of_side_symptoms += 1
+            else:
+                self.missing_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+
+            if self.has_cardiac_condition():
+                self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
+                num_of_side_symptoms += 1
+            else:
+                self.missing_for_pims.append(self.REASON_CARDIAL_CONDITION)
+
+            if self.has_gastro_intestinal_condition():
+                self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
+                num_of_side_symptoms += 1
+            else:
+                self.missing_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
+
+            if num_of_side_symptoms >= 2:
+                # "Complete" PIMS
+                self.pims_score = 1.0
+                return self.pims_score
+            else:
+                # Not enough symptoms for PIMS
+                self.pims_score = 0.75
+                return self.pims_score
 
         if self.calculate_age() >= 20:
+            # Wrong age -> Score is 0.0
+            self.missing_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
+            # Setting fields for reasons for and missing for pims
+            if self.has_inflammation_lab():
+                self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
+            else:
+                self.missing_for_pims.append(self.REASON_INFLAMMATION_LAB)
+
+            if self.has_covid():
+                self.reasons_for_pims.append(self.REASON_COVID)
+            else:
+                self.missing_for_pims.append(self.REASON_COVID)
+
+            if self.has_gastro_intestinal_condition():
+                self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
+            else:
+                self.missing_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
+
+            if self.has_cardiac_condition():
+                self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
+            else:
+                self.missing_for_pims.append(self.REASON_CARDIAL_CONDITION)
+
+            if self.has_kawasaki():
+                self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
+                self.reasons_for_pims.append(self.REASON_FEVER)
+                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+            elif self.has_exanthem() or self.has_enanthem() or self.has_conjunctivitis() \
+                    or self.has_swollen_extremities():
+                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+            else:
+                self.missing_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+
+            if self.has_fever() and not self.has_kawasaki():
+                self.reasons_for_pims.append(self.REASON_FEVER)
+            elif not self.has_fever() and not self.has_kawasaki():
+                self.missing_for_pims.append(self.REASON_FEVER)
+
             self.pims_score = 0.0
             return self.pims_score
-        self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
 
-        if self.has_covid():
-            score += 2
-            self.reasons_for_pims.append(self.REASON_COVID)
-
-        if self.has_kawasaki():
-            score += 7
-            self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
-
-        if self.has_fever():
-            if not self.has_kawasaki():
-                score += 2
-            self.reasons_for_pims.append(self.REASON_FEVER)
-        if self.has_exanthem():
-            if not self.has_kawasaki():
-                score += 1
-            self.reasons_for_pims.append(self.REASON_EXANTHEM)
-        if self.has_swollen_extremities():
-            if not self.has_kawasaki():
-                score += 1
-            self.reasons_for_pims.append(self.REASON_SWOLLEN_EXTREMITIES)
-        if self.has_conjunctivitis():
-            if not self.has_kawasaki():
-                score += 1
-            self.reasons_for_pims.append(self.REASON_CONJUNCTIVITIS)
-        if self.has_lymphadenopathy():
-            if not self.has_kawasaki():
-                score += 1
-            self.reasons_for_pims.append(self.REASON_SWOLLEN_LYMPHNODES)
-        if self.has_enanthem():
-            if not self.has_kawasaki():
-                score += 1
-            self.reasons_for_pims.append(self.REASON_ENANTHEM)
-        if self.has_inflammation_lab():
-            score += 1
-            self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
-        if self.has_cardiac_condition():
-            score += 1
-            self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
-        if self.has_gastro_intestinal_condition():
-            score += 1
-            self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
-        if self.has_effusion():
-            score += 0.5
-            self.reasons_for_pims.append(self.REASON_EFFUSION)
-
-        if score >= max_score:
-            self.pims_score = 1.0
         else:
-            self.pims_score = score / max_score
+            # Correct age -> Count conditions
+            self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
+            num_of_side_symptoms: int = 0
+            if self.has_fever() and not self.has_kawasaki():
+                self.reasons_for_pims.append(self.REASON_FEVER)
+                num_of_side_symptoms += 1
+            elif not self.has_fever() and not self.has_kawasaki():
+                self.missing_for_pims.append(self.REASON_FEVER)
 
-        return self.pims_score
+            if self.has_kawasaki() and self.has_fever():
+                self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
+                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+                self.reasons_for_pims.append(self.REASON_FEVER)
+                num_of_side_symptoms += 1  # Fever is attributed above
+            elif self.has_kawasaki() and not self.has_fever():
+                self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
+                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+                self.reasons_for_pims.append(self.REASON_FEVER)
+                num_of_side_symptoms += 1.5  # Fever and other kawasaki symptoms are implied by Kawasaki diagnosis
+            elif self.has_exanthem() or self.has_enanthem() or self.has_conjunctivitis() or self.has_swollen_extremities():
+                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+                num_of_side_symptoms += 0.5
+            else:
+                self.missing_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+
+            if self.has_cardiac_condition():
+                self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
+                num_of_side_symptoms += 0.5
+            else:
+                self.missing_for_pims.append(self.REASON_CARDIAL_CONDITION)
+
+            if self.has_gastro_intestinal_condition():
+                self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
+                num_of_side_symptoms += 0.5
+            else:
+                self.missing_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
+
+            if self.has_covid():
+                self.reasons_for_pims.append(self.REASON_COVID)
+                num_of_side_symptoms += 1
+            else:
+                self.missing_for_pims.append(self.REASON_COVID)
+
+            if self.has_inflammation_lab():
+                self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
+                num_of_side_symptoms += 1
+            else:
+                self.missing_for_pims.append(self.REASON_INFLAMMATION_LAB)
+
+            if num_of_side_symptoms >= 2.5:
+                # many conditions, but not the right combination:
+                self.pims_score = 0.75
+                return self.pims_score
+            elif num_of_side_symptoms > 1:
+                # some conditions
+                self.pims_score = 0.5
+                return self.pims_score
+            else:
+                # not enough conditions
+                self.pims_score = 0.0
+                return self.pims_score
 
     def has_ascites(self):
         """

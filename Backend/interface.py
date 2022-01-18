@@ -102,6 +102,7 @@ TranslationPercentage = {
 
 TranslationPercentagePims = {
     1.0: "PIMS",
+    0.75: "Erhöhter Verdacht",
     0.5: "Verdacht",
     0.0: "Nicht erkrankt"
 }

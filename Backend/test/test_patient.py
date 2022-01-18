@@ -925,72 +925,499 @@ class TestPatient(TestCase):
         self.assertEqual(len(patient8.reasons_for_kawasaki), 1)
         self.assertEqual(len(patient8.missing_for_kawasaki), 6)
 
-    def test_calculate_pims_score(self):
+    def test_calculate_pims_score_full_diagnosis(self):
         # Prepare
+        # Set correct age
         case_date = datetime.date.fromisoformat("2020-02-02")
         date_one = datetime.date.fromisoformat("2019-01-03")
-        date_hundred = datetime.date.fromisoformat("1920-02-02")
-        # Patient with no conditions and correct age
-        patient1: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
-        # Patient with one major condition and correct age and covid
-        patient1b: Patient = Patient(2, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
-        # Patient with all (major) conditions and correct age
-        patient1c: Patient = Patient(2, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
-        # Patient with all conditions that get evaluated
-        patient1d: Patient = Patient(5, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
-        # Patients with same conditions as above, but incorrect age
-        patient2: Patient = Patient(3, name=self.TEST_NAME, birthdate=date_hundred, case_date=case_date)
-        patient2b: Patient = Patient(4, name=self.TEST_NAME, birthdate=date_hundred, case_date=case_date)
-        patient2c: Patient = Patient(4, name=self.TEST_NAME, birthdate=date_hundred, case_date=case_date)
+        date_two = datetime.date.fromisoformat("2012-07-08")
+        date_three = datetime.date.fromisoformat("2002-05-11")
 
-        patient1b.add_condition(SnomedConcepts.FEVER.value)
-        patient1b.add_condition(SnomedConcepts.COVID_19.value)
-        patient2b.add_condition(SnomedConcepts.FEVER.value)
-        patient2b.add_condition(SnomedConcepts.COVID_19.value)
+        # Case 1: Fever, Covid, Inflammation Lab (CRP high), Kawasaki-Symptoms, Cardial Symptoms
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+        patient.add_condition(SnomedConcepts.FEVER.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+        patient.add_condition(SnomedConcepts.ERUPTION.value)
+        patient.add_condition(SnomedConcepts.PERICARDITIS.value)
 
-        patient1c.add_condition(SnomedConcepts.COVID_19.value)
-        patient1c.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
-        patient1c.add_condition(SnomedConcepts.PERICARDITIS.value)
-        patient1c.add_condition(SnomedConcepts.PLEURAL_EFFUSION.value)
-        patient1c.add_condition(SnomedConcepts.FEVER.value)
-        patient1c.add_condition(SnomedConcepts.DISORDER_OF_LIP.value)
-        patient1c.add_condition(SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
-        patient1c.add_condition(SnomedConcepts.LYMPHADENOPATHY.value)
-        patient1c.add_condition(SnomedConcepts.SWELLING_LOWER_LIMB.value)
-        patient1c.add_condition(SnomedConcepts.ERUPTION.value)
-        patient2c.add_condition(SnomedConcepts.COVID_19.value)
-        patient2c.add_condition(SnomedConcepts.FEVER.value)
-        patient2c.add_condition(SnomedConcepts.DISORDER_OF_LIP.value)
-        patient2c.add_condition(SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
-        patient2c.add_condition(SnomedConcepts.LYMPHADENOPATHY.value)
-        patient2c.add_condition(SnomedConcepts.SWELLING_LOWER_LIMB.value)
-        patient2c.add_condition(SnomedConcepts.ERUPTION.value)
-        patient2c.add_condition(SnomedConcepts.PERICARDITIS.value)
-        patient2c.add_condition(SnomedConcepts.PLEURAL_EFFUSION.value)
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 1.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
+        self.assertEqual(len(present), 6)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertEqual(len(missing), 1)
 
-        patient1d.add_condition(SnomedConcepts.COVID_19.value)
-        patient1d.add_condition(SnomedConcepts.FEVER.value)
-        patient1d.add_condition(SnomedConcepts.DISORDER_OF_LIP.value)
-        patient1d.add_condition(SnomedConcepts.OTHER_CONJUNCTIVITIS.value)
-        patient1d.add_condition(SnomedConcepts.LYMPHADENOPATHY.value)
-        patient1d.add_condition(SnomedConcepts.SWELLING_LOWER_LIMB.value)
-        patient1d.add_condition(SnomedConcepts.ERUPTION.value)
-        patient1d.add_condition(SnomedConcepts.PERICARDITIS.value)
-        patient1d.add_condition(SnomedConcepts.PLEURAL_EFFUSION.value)
-        patient1d.add_condition(SnomedConcepts.KAWASAKI.value)
-        patient1d.add_high_measurement(3020460)  # Add high CRP (LOINC 3020460)
+        # Case 2: Fever (implied by kawasaki), Covid, Inflammation Lab (CRP high), Kawasaki, Gastro-symptoms
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_two, case_date=case_date)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+        patient.add_condition(SnomedConcepts.KAWASAKI.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+        patient.add_condition(SnomedConcepts.ERUPTION.value)
+        patient.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
 
-        # Asserts
-        self.assertEqual(patient1.calculate_pims_score(), 0.0)
-        self.assertEqual(0.0, patient2.calculate_pims_score(), 0.0)
-        self.assertEqual(0.0, patient2b.calculate_pims_score(), 0.0)
-        self.assertEqual(0.0, patient2c.calculate_pims_score(), 0.0)
-        # Score should be greater than 0.0 with a symptom and correct age
-        self.assertGreater(patient1b.calculate_pims_score(), 0.0)
-        # Score should be 1.0 with all major symptoms
-        self.assertEqual(1.0, patient1c.calculate_pims_score())
-        # Score should be 1.0 with all symptoms and not higher
-        self.assertLessEqual(patient1d.calculate_pims_score(), 1.0)
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 1.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertEqual(len(present), 7)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertEqual(len(missing), 1)
+
+        # Case 3: Fever, Covid, Inflammation Lab (CRP high), Gastro-symptoms, Cardial Symptoms
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_three, case_date=case_date)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+        patient.add_condition(SnomedConcepts.FEVER.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+        patient.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
+        patient.add_condition(SnomedConcepts.PERICARDITIS.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 1.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
+        self.assertEqual(len(present), 6)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
+        self.assertEqual(len(missing), 1)
+
+    def test_calculate_pims_score_increased_prob(self):
+        case_date = datetime.date.fromisoformat("2020-02-02")
+        date_one = datetime.date.fromisoformat("2019-01-03")
+
+        # Case 1: Fever, Covid, Inflammation Lab (CRP high)
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+        patient.add_condition(SnomedConcepts.FEVER.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.75)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertEqual(len(present), 4)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
+        self.assertEqual(len(missing), 3)
+
+        # Case 2: Kawasaki (implies Fever and symptoms), Covid, Inflammation Lab (CRP high)
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+        patient.add_condition(SnomedConcepts.KAWASAKI.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.75)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertEqual(len(present), 6)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertEqual(len(missing), 2)
+
+        # Case 3: Kawasaki (implies Fever and symptoms), Cardial and Gastrointestinal conditions
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_condition(SnomedConcepts.KAWASAKI.value)
+        patient.add_condition(SnomedConcepts.PERICARDITIS.value)
+        patient.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.75)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertEqual(len(present), 6)
+        self.assertTrue(patient.REASON_COVID in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertEqual(len(missing), 2)
+
+        # Case 4: Kawasaki symptoms, cardiac and gastrointestinal conditions, Inflammation in lab
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_condition(SnomedConcepts.DISORDER_OF_LIP.value)
+        patient.add_condition(SnomedConcepts.PERICARDITIS.value)
+        patient.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.75)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertEqual(len(present), 5)
+        self.assertTrue(patient.REASON_COVID in missing)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertEqual(len(missing), 2)
+
+        # Case 5: All symptoms but covid
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_condition(SnomedConcepts.DISORDER_OF_LIP.value)
+        patient.add_condition(SnomedConcepts.PERICARDITIS.value)
+        patient.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
+        patient.add_condition(SnomedConcepts.FEVER.value)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.75)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertEqual(len(present), 6)
+        self.assertTrue(patient.REASON_COVID in missing)
+        self.assertEqual(len(missing), 1)
+
+        # Case 6: All symptoms but fever (no kawasaki)
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_condition(SnomedConcepts.DISORDER_OF_LIP.value)
+        patient.add_condition(SnomedConcepts.PERICARDITIS.value)
+        patient.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.75)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertEqual(len(present), 6)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertEqual(len(missing), 1)
+
+        # Case 7: All symptoms but inflammation lab
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_condition(SnomedConcepts.DISORDER_OF_LIP.value)
+        patient.add_condition(SnomedConcepts.PERICARDITIS.value)
+        patient.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+        patient.add_condition(SnomedConcepts.FEVER.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.75)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertEqual(len(present), 6)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertEqual(len(missing), 1)
+
+        # Case 8: All symptoms including kawasaki but not cardiac or gastrointestinal
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_condition(SnomedConcepts.DISORDER_OF_LIP.value)
+        patient.add_condition(SnomedConcepts.KAWASAKI.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+        patient.add_condition(SnomedConcepts.FEVER.value)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.75)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertEqual(len(present), 6)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertEqual(len(missing), 2)
+
+        # case 9: covid + kawasaki
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_condition(SnomedConcepts.KAWASAKI.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.75)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertEqual(len(present), 5)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertEqual(len(missing), 3)
+
+    def test_calculate_pims_score_low_prob(self):
+        case_date = datetime.date.fromisoformat("2020-02-02")
+        date_one = datetime.date.fromisoformat("2014-11-11")
+
+        # Case 1: Covid, Inflammation Lab (CRP high)
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.5)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertEqual(len(present), 3)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
+        self.assertEqual(len(missing), 4)
+
+        # Case 2: Covid, Fever
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+        patient.add_condition(SnomedConcepts.FEVER.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.5)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertEqual(len(present), 3)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertEqual(len(missing), 4)
+
+    def test_calculate_pims_score_zero(self):
+        # Prepare
+        # Set correct age
+        case_date = datetime.date.fromisoformat("2020-02-02")
+        date_valid = datetime.date.fromisoformat("2019-01-03")
+        date_invalid = datetime.date.fromisoformat("1995-07-08")
+
+        # Case 1:Patient with enough conditions, but too old
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_invalid, case_date=case_date)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+        patient.add_condition(SnomedConcepts.FEVER.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+        patient.add_condition(SnomedConcepts.ERUPTION.value)
+        patient.add_condition(SnomedConcepts.PERICARDITIS.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
+        self.assertEqual(len(present), 5)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in missing)
+        self.assertEqual(len(missing), 2)
+
+        # Case 2: Same age, but other condition combination (kawasaki)
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_invalid, case_date=case_date)
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+        patient.add_condition(SnomedConcepts.KAWASAKI.value)
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+        patient.add_condition(SnomedConcepts.ERUPTION.value)
+        patient.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
+        self.assertEqual(len(present), 6)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in missing)
+        self.assertEqual(len(missing), 2)
+
+        # Case 3: No conditions but correct age group
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertEqual(len(present), 1)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
+        self.assertTrue(patient.REASON_COVID in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertEqual(len(missing), 6)
+
+        # Case 4: just one condition
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
+
+        patient.add_high_measurement(SnomedConcepts.CRP.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
+        self.assertEqual(len(present), 2)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
+        self.assertTrue(patient.REASON_COVID in missing)
+        self.assertEqual(len(missing), 5)
+
+        # Case 5: just one condition
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
+
+        patient.add_condition(SnomedConcepts.FEVER.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_FEVER in present)
+        self.assertEqual(len(present), 2)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
+        self.assertTrue(patient.REASON_COVID in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertEqual(len(missing), 5)
+
+        # Case 6: just one condition
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
+
+        patient.add_condition(SnomedConcepts.COVID_19.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertEqual(len(present), 2)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertEqual(len(missing), 5)
+
+        # Case 7: just one condition
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
+
+        patient.add_condition(SnomedConcepts.SWELLING_LOWER_LIMB.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
+        self.assertEqual(len(present), 2)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_COVID in missing)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertEqual(len(missing), 5)
+
+        # Case 8: just one condition
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
+
+        patient.add_condition(SnomedConcepts.MYOCARDITIS.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
+        self.assertEqual(len(present), 2)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_COVID in missing)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertEqual(len(missing), 5)
+
+        # Case 9: just one condition
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
+
+        patient.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.0)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
+        self.assertEqual(len(present), 2)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_COVID in missing)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertEqual(len(missing), 5)
 
     def test_has_ascites(self):
         # Prepare

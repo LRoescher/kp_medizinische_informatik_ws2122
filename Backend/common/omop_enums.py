@@ -105,13 +105,10 @@ class SnomedConcepts(Enum):
     ASCITES = 200528  # R18
     PLEURAL_EFFUSION = 254061  # J90
     PERICARDIAL_EFFUSION = 4108814  # I31.3
-    # ToDo: ETL-Job anpassen. Hier werden icd codes verwendet nicht icd 10 gm codes, omop nicht aktuell
-    # U08.9 Covid in der Eigenanamnese (ICD10 nicht GM!)-> 4214956, 37311061
-    # U09.9 Post-Covid (ICD10 nicht GM!)-> 4214956, 37311061
-    # U10.9 Multisystemisches Entzündungssyndrom in Verbindung mit COVID-19 (Pims) -> 703578
     COVID_19 = 37311061
     COVID_19_VIRUS_NOT_IDENTIFIED = 37311060
     COVID_19_IN_PERSONAL_HISTORY = 37311061
     POST_COVID = 705076
     PIMS = 703578
     KAWASAKI = 314381
+    CRP = 3020460
