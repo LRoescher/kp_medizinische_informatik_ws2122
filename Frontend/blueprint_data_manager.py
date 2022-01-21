@@ -30,10 +30,12 @@ diagnosis_head = ["PROVIDER_ID", "PATIENT_ID", "ADMISSION_NUMBER", "ADMISSION_DA
 lab_head = ["IDENTIFIER", "STATUS", "CATEGORY", "PARAMETER_NAME", "PARAMETER_LOINC", "Patientidentifikator",
             "TEST_DATE", "NUMERIC_VALUE", "TEXTUAL_VALUE", "UNIT", "NORMAL_VALUES", "IS_NORMAL", "DEVIATION",
             "COMMENT", "UCUM_UNIT"]
+lab_head_alt = ["IDENTIFIER", "STATUS", "CATEGORY", "PARAMETER_NAME", "PARAMETER_LOINC", "PATIENT_ID",
+                "TEST_DATE", "NUMERIC_VALUE", "TEXTUAL_VALUE", "UNIT", "NORMAL_VALUES", "IS_NORMAL", "DEVIATION",
+                "COMMENT", "UCUM_UNIT"]
 person_head = ["PROVIDER_ID", "PATIENT_ID", "NAME", "FORNAME", "GENDER", "BIRTHDATE", "CITY", "ZIP", "DEATH",
                "DEATH_DATE", "DATE_OF_LIFE", "INSURANCE", "INSURANCE_ID"]
 procedure_head = ["ID", "OPS_VERSION", "OPS_CODE", "PATIENT_ID", "EXECUTION_DATE"]
-
 
 controller: Interface = BackendManager()
 
@@ -47,13 +49,13 @@ def check_existing_files() -> Dict[str, bool]:
     if not os.path.isdir(upload_folder):
         os.mkdir(path=upload_folder)
     return {
-            "config": True if os.path.isfile(config_path) else False,
-            "case": True if os.path.isfile(case_path) else False,
-            "diagnosis": True if os.path.isfile(diagnosis_path) else False,
-            "lab": True if os.path.isfile(lab_path) else False,
-            "person": True if os.path.isfile(person_path) else False,
-            "procedure": True if os.path.isfile(procedure_path) else False,
-        }
+        "config": True if os.path.isfile(config_path) else False,
+        "case": True if os.path.isfile(case_path) else False,
+        "diagnosis": True if os.path.isfile(diagnosis_path) else False,
+        "lab": True if os.path.isfile(lab_path) else False,
+        "person": True if os.path.isfile(person_path) else False,
+        "procedure": True if os.path.isfile(procedure_path) else False,
+    }
 
 
 def clear_uploads() -> bool:
@@ -138,9 +140,11 @@ def upload_file():
 
         if check_list is not None:
             with open(path) as f:
-                if set(check_list) != set(f.readline().strip().replace(" ", "").split(";")):
-                    success = False
-                    os.remove(path)
+                actual_head = f.readline().strip().replace(" ", "").split(";")
+                if set(check_list) != set(actual_head):
+                    if key != 'lab' or set(lab_head_alt) != set(actual_head):
+                        success = False
+                        os.remove(path)
         print("check", success)
 
         complete = all(check_existing_files().values())

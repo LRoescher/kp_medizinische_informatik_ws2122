@@ -162,14 +162,26 @@ def generate_measurement_table(lab_df: pd.DataFrame, loader: DBManager) -> pd.Da
     # Change datatype of column ID to int
     lab_df = lab_df.astype({'IDENTIFIER': int})
     # Copy values from original dataframe to omop compliant version
-    omop_measurement_df: pd.DataFrame = lab_df[['IDENTIFIER', 'PARAMETER_NAME', 'PARAMETER_LOINC',
-                                                'Patientidentifikator', 'TEST_DATE', 'NUMERIC_VALUE',
-                                                'UCUM_UNIT', 'IS_NORMAL', 'DEVIATION']].copy(deep=True)
-    # Get Patient-ID from Patientidentifikator
-    for index, row in omop_measurement_df.iterrows():
-        patientidentifikator: str = row['Patientidentifikator']
-        patientidentifikator = patientidentifikator[-4:]
-        omop_measurement_df.at[index, 'Patientidentifikator'] = int(patientidentifikator)
+
+    # Get correct column in source data. Either 'Patientidentifikator' or 'PATIENT_ID
+    if 'Patientidentifikator' in lab_df.columns:
+        print("Patientidentifikator")
+        omop_measurement_df: pd.DataFrame = lab_df[['IDENTIFIER', 'PARAMETER_NAME', 'PARAMETER_LOINC',
+                                                    'Patientidentifikator', 'TEST_DATE', 'NUMERIC_VALUE',
+                                                    'UCUM_UNIT', 'IS_NORMAL', 'DEVIATION']].copy(deep=True)
+        # Get Patient-ID from Patientidentifikator
+        for index, row in omop_measurement_df.iterrows():
+            patientidentifikator: str = row['Patientidentifikator']
+            patientidentifikator = patientidentifikator[-4:]
+            omop_measurement_df.at[index, 'Patientidentifikator'] = int(patientidentifikator)
+    elif 'PATIENT_ID' in lab_df.columns:
+        print("Patient-Id")
+        omop_measurement_df: pd.DataFrame = lab_df[['IDENTIFIER', 'PARAMETER_NAME', 'PARAMETER_LOINC',
+                                                    'PATIENT_ID', 'TEST_DATE', 'NUMERIC_VALUE',
+                                                    'UCUM_UNIT', 'IS_NORMAL', 'DEVIATION']].copy(deep=True)
+    else:
+        print("Nothing")
+        raise ValueError("No Patient-Id found in lab csv file.")
 
     # Translate IS_NORMAL and DEVIATION values to value_as_concept_id and delete old columns
     # 4124457 = normal range, 4328749 = high, 4267416 = low
@@ -233,7 +245,7 @@ def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: DBMa
     # Append primary and secondary ICD code tables
     omop_condition_occurrence: pd.DataFrame = pd.concat([primary_condition_df, secondary_condition_df],
                                                         ignore_index=True)
-    
+
     # Get Snomed Ids for ICD 10 GM codes
     omop_condition_occurrence['condition_concept_id'] = [loader.get_snomed_id(icd, 'ICD10GM') for icd in
                                                          omop_condition_occurrence['condition_source_value']]
@@ -241,7 +253,7 @@ def generate_condition_occurrence_table(diagnosis_df: pd.DataFrame, loader: DBMa
     # Refactor condition_start_date
     omop_condition_occurrence['condition_start_date'] = pd.to_datetime(
         omop_condition_occurrence['condition_start_date'],
-        format='%d.%m.%Y')
+        format='%Y-%m-%d')
 
     # Generate condition_occurrence_id
     for index, row in omop_condition_occurrence.iterrows():

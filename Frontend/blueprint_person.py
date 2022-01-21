@@ -108,7 +108,7 @@ def get_patient_data_from_request() -> Optional[PatientData]:
 @person_data.route("/save", methods=['POST'])
 def add_patient_data():
     """
-    add a new patietn
+    add a new patient
     """
     patient_data = get_patient_data_from_request()
 
