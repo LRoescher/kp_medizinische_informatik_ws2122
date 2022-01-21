@@ -40,16 +40,14 @@ class PatientData(TypedDict):
     hasSwollenLymphnodes: bool
     # Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen
     hasGastroIntestinalCondition: bool
-    # Aszites (Flüssigkeitsansammlung im Bauchraum)
-    hasAscites: bool
     # Perikardergüsse (Flüssigkeitsansammlung im Herzbeutel)
     hasPericardialEffusions: bool
-    # Pleuraergüsse (Flüssigkeitsansammlung in der Lunge)
-    hasPleuralEffusions: bool
     # Perikarditits (Herzbeutelentzündung)
     hasPericarditis: bool
     # Hat Myokarditis (Herzmuskelenzündung)
     hasMyocarditis: bool
+    # Hat Entzündungsparameter im Blut (CRP, BSG, Procalcitonin)
+    hasInflammationLab: bool
 
 
 class DecisionReasons(TypedDict):
@@ -88,7 +86,8 @@ TranslationGerman = {
     # Perikarditits (Herzbeutelentzündung)
     "hasPericarditis": "Perikarditits",
     # Hat Myokarditis (Herzmuskelenzündung)
-    "hasMyocarditis": "Myokarditis"
+    "hasMyocarditis": "Myokarditis",
+    "hasInflammationLab": "Entzündungsparameter im Blut erhöht"
 }
 
 

@@ -28,7 +28,6 @@ class Patient:
     REASON_CARDIAL_CONDITION: str = "Kardiale Erkrankung"
     REASON_GASTRO_INTESTINAL_CONDITION: str = "Übelkeit, Erbrechen, Bauchschmerzen und/oder Durchfall"
     REASON_INFLAMMATION_LAB: str = "Entzündungsparameter im Blut"
-    REASON_EFFUSION: str = "Flüssigkeitsansammlungen"
     REASON_COVID: str = "Covid-19 Erkrankung"
     REASON_HAS_KAWASAKI: str = "Kawasaki-Syndrom"
     REASON_KAWASAKI_SYMPTOMS: str = "Exanthem, Enanthem, Konjunktivitis oder geschwollene, gerötete Extremitäten"
@@ -180,7 +179,8 @@ class Patient:
         # I40: Myokariditis: .0 (4331309) .1 (4143969) .8/.9 (312653)
         snomed_cor_ids = [SnomedConcepts.PERICARDITIS.value, 4217075, 320116,
                           SnomedConcepts.MYOCARDIAL_INFARCTION.value, 438170, 312327, 4270024, 312327,
-                          SnomedConcepts.MYOCARDITIS.value, 4143969, 312653]
+                          SnomedConcepts.MYOCARDITIS.value, 4143969, 312653,
+                          SnomedConcepts.PERICARDIAL_EFFUSION]
         return any(x in snomed_cor_ids for x in self.conditions)
 
     def has_gastro_intestinal_condition(self):
@@ -206,7 +206,8 @@ class Patient:
         # CRP (different methods): (LOINC 1988-5, 71426-1 -> LOINC-Ids 3020460, 42870365)
         # Erythrocyte sedimentation rate: (4537-7 -> 3013707)
         # Leukocytes: (6690-2 -> 3000905)
-        loinc_ids = [3020460, 42870365, 3013707, 3000905]
+        # Procalictonin (33959-8 -> 3046279)
+        loinc_ids = [3020460, 42870365, 3013707, 3000905, 3046279]
         return any(x in loinc_ids for x in self.high_measurements)
 
     def has_effusion(self):
@@ -508,23 +509,11 @@ class Patient:
                 self.pims_score = 0.0
                 return self.pims_score
 
-    def has_ascites(self):
-        """
-        Returns True if the patient has ascites as a condition.
-        """
-        return 200528 in self.conditions
-
     def has_pericardial_effusions(self):
         """
         Returns True if the patient has pericardial effusions as a condition.
         """
         return 4108814 in self.conditions
-
-    def has_pleural_effusions(self):
-        """
-        Returns True if the patient has pleural effusions as a condition.
-        """
-        return 254061 in self.conditions
 
     def has_pericarditis(self):
         """

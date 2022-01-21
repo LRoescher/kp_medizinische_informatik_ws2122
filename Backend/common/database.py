@@ -7,7 +7,7 @@ from typing import Tuple, Optional, List
 from psycopg2.extensions import register_adapter, AsIs
 from Backend.common.config import generate_config, DbConfig
 from Backend.common.omop_enums import OmopTableEnum, OmopConditionOccurrenceFieldsEnum, OmopPersonFieldsEnum, \
-    SnomedConcepts, OmopObservationPeriodFieldsEnum
+    SnomedConcepts, OmopObservationPeriodFieldsEnum, OmopMeasurementEnum
 
 psycopg2.extensions.register_adapter(np.int64, AsIs)
 
@@ -285,6 +285,18 @@ class DBManager:
             new_id = randrange(10000, 9999999)
         return new_id
 
+    def generate_measurement_id(self):
+        """
+        Generates a unique identifier that is not already taken by an entry in the measurement table.
+
+        :return: an integer that is currently not used by the measurement table as an id
+        """
+        new_id = randrange(10000, 9999999)
+        while self.id_is_taken(OmopTableEnum.MEASUREMENT.value,
+                               OmopMeasurementEnum.ID.value, new_id):
+            new_id = randrange(10000, 9999999)
+        return new_id
+
     def id_is_taken(self, table: str, field: str, new_id: int) -> bool:
         """
         Checks if the given id is taken by an entry for the given field of the given table.
@@ -313,6 +325,41 @@ class DBManager:
         query: str = f"DELETE FROM {self.DB_SCHEMA}.{OmopTableEnum.CONDITION_OCCURRENCE.value} " \
                      f"WHERE {OmopConditionOccurrenceFieldsEnum.PERSON_ID.value} = {person_id} " \
                      f"AND {OmopConditionOccurrenceFieldsEnum.CONDITION_CONCEPT_ID.value} = {condition_id};"
+        try:
+            cursor = self.conn.cursor()
+            # Execute delete query
+            cursor.execute(query)
+            self.conn.commit()
+            logging.info("Successfully performed query.")
+            cursor.close()
+            return True
+        except (Exception, psycopg2.DatabaseError, AttributeError, TypeError, ValueError) as error:
+            logging.error(f"Failed to perform query: \n Query: {query}")
+            logging.error("An error occurred during the database operation:")
+            logging.error(error)
+            try:
+                self.conn.rollback()
+                cursor.close()
+            except (Exception, psycopg2.DatabaseError, AttributeError, TypeError, ValueError) as error2:
+                logging.error("Another error occurred during shutdown. There might be data loss.")
+                logging.error(error2)
+            raise AttributeError("Error during database operation. Check if there is an active connection.")
+
+    def delete_measurement_for_patient(self, person_id: int, measurement_id: int) -> bool:
+        """
+        Deletes the condition with the given condition_concept_id from the person with the given person id.
+        If the combination is not present in the database after the operation, True is returned. This means this method
+        will return True if the combination was not present to begin with.
+        If the transaction fails, this method will return false.
+
+        :person_id: id of the person with the condition
+        :condition_id: concept id of the condition
+        :return: True if the condition was removed
+        """
+        cursor = None
+        query: str = f"DELETE FROM {self.DB_SCHEMA}.{OmopTableEnum.MEASUREMENT.value} " \
+                     f"WHERE {OmopMeasurementEnum.PERSON_ID.value} = {person_id} " \
+                     f"AND {OmopMeasurementEnum.CONCEPT_ID.value} = {measurement_id};"
         try:
             cursor = self.conn.cursor()
             # Execute delete query

@@ -72,6 +72,22 @@ class OmopObservationPeriodFieldsEnum(Enum):
     TYPE_CONCEPT_ID = 'period_type_concept_id'
 
 
+class OmopMeasurementEnum(Enum):
+    """
+    Enum for the fields of the measurement table.
+    """
+    ID = 'measurement_id'
+    PERSON_ID = 'person_id'
+    CONCEPT_ID = 'measurement_concept_id'
+    DATE = 'measurement_date'
+    DATETIME = 'measurement_datetime'
+    TYPE_CONCEPT_ID = 'measurement_type_concept_id'
+    VALUE_NUMBER = "value_as_number"
+    VALUE_CONCEPT = "value_as_concept_id"
+    SOURCE_VALUE = "measurement_source_value"
+    UNIT_SOURCE_VALUE = "unit_source_value"
+
+
 class SnomedConcepts(Enum):
     """
     Enum for conditions known to this program. The values of the fields are the corresponding snomed ids.
@@ -112,3 +128,7 @@ class SnomedConcepts(Enum):
     PIMS = 703578
     KAWASAKI = 314381
     CRP = 3020460
+    LAB = 32856
+    HIGH = 4328749
+    LOW = 4267416
+    NORMAL = 4124457

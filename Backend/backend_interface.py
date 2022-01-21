@@ -148,16 +148,14 @@ class BackendManager(Interface):
                 patient.conditions.append(SnomedConcepts.LYMPHADENOPATHY.value)
             if patient_data['hasGastroIntestinalCondition']:
                 patient.conditions.append(SnomedConcepts.NAUSEA_AND_VOMITING.value)
-            if patient_data['hasAscites']:
-                patient.conditions.append(SnomedConcepts.ASCITES.value)
             if patient_data['hasPericardialEffusions']:
                 patient.conditions.append(SnomedConcepts.PERICARDIAL_EFFUSION.value)
-            if patient_data['hasPleuralEffusions']:
-                patient.conditions.append(SnomedConcepts.PLEURAL_EFFUSION.value)
             if patient_data['hasPericarditis']:
                 patient.conditions.append(SnomedConcepts.PERICARDITIS.value)
             if patient_data['hasMyocarditis']:
                 patient.conditions.append(SnomedConcepts.MYOCARDITIS.value)
+            if patient_data['hasInflammationLab']:
+                patient.high_measurements.append(SnomedConcepts.CRP.value)
         except (KeyError, ValueError, AttributeError) as error:
             logging.error("Error during patient creation from patient_data.")
             logging.error(error)
@@ -261,11 +259,10 @@ class BackendManager(Interface):
                     'hasConjunctivitis': patient.has_conjunctivitis(),
                     'hasSwollenLymphnodes': patient.has_lymphadenopathy(),
                     'hasGastroIntestinalCondition': patient.has_gastro_intestinal_condition(),
-                    'hasAscites': patient.has_ascites(),
                     'hasPericardialEffusions': patient.has_pericardial_effusions(),
-                    'hasPleuralEffusions': patient.has_pleural_effusions(),
                     'hasPericarditis': patient.has_pericarditis(),
-                    'hasMyocarditis': patient.has_myocarditis()
+                    'hasMyocarditis': patient.has_myocarditis(),
+                    'hasInflammationLab': patient.has_inflammation_lab()
                 }
                 return patient_data
         return PatientData()

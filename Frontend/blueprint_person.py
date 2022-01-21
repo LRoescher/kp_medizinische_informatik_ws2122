@@ -36,33 +36,30 @@ def get_empty_patient_data():
     :return: render the empty patient template
     """
     data = PatientData(birthdate=datetime.date.today(),
-                        # Full name
-                        name="",
-                        hasCovid=False,
-                        hasFever=False,
-                        # Ausschlag auf der Haut
-                        hasExanthem=False,
-                        # Entzündung im Mundraum (Lippen, Zunge, Mundschleimhaut)
-                        hasEnanthem=False,
-                        # Geschwollene, gerötete Extremitäten
-                        hasSwollenExtremeties=False,
-                        # Bindehautentzündung
-                        hasConjunctivitis=False,
-                        # Geschwollene Lymphknoten
-                        hasSwollenLymphnodes=False,
-                        # Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen
-                        hasGastroIntestinalCondition=False,
-                        # Aszites (Flüssigkeitsansammlung im Bauchraum)
-                        hasAscites=False,
-                        # Perikardergüsse (Flüssigkeitsansammlung im Herzbeutel)
-                        hasPericardialEffusions=False,
-                        # Pleuraergüsse (Flüssigkeitsansammlung in der Lunge)
-                        hasPleuralEffusions=False,
-                        # Perikarditits (Herzbeutelentzündung)
-                        hasPericarditis=False,
-                        # Hat Myokarditis (Herzmuskelenzündung)
-                        hasMyocarditis=False
-                        )
+                       # Full name
+                       name="",
+                       hasCovid=False,
+                       hasFever=False,
+                       # Ausschlag auf der Haut
+                       hasExanthem=False,
+                       # Entzündung im Mundraum (Lippen, Zunge, Mundschleimhaut)
+                       hasEnanthem=False,
+                       # Geschwollene, gerötete Extremitäten
+                       hasSwollenExtremeties=False,
+                       # Bindehautentzündung
+                       hasConjunctivitis=False,
+                       # Geschwollene Lymphknoten
+                       hasSwollenLymphnodes=False,
+                       # Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen
+                       hasGastroIntestinalCondition=False,
+                       # Perikardergüsse (Flüssigkeitsansammlung im Herzbeutel)
+                       hasPericardialEffusions=False,
+                       # Perikarditits (Herzbeutelentzündung)
+                       hasPericarditis=False,
+                       # Hat Myokarditis (Herzmuskelenzündung)
+                       hasMyocarditis=False,
+                       hasInflammationLab=False
+                       )
     return render_template("person_data.html", patient_data=data, annotations=PatientData.__annotations__)
 
 
@@ -141,5 +138,6 @@ def update_patient_data(patient_id: PatientId):
         flash(f"Patient {patient_data['name']} wurde erfolgreich aktualisiert.", FlashMessageTypes.SUCCESS.value)
         return redirect(url_for('.get_patient_data', patient_id=patient_id))
     else:
-        flash(f"Aktualisieren eines Patienten (id: {patient_id}) {patient_data['name']} schlug fehl.", FlashMessageTypes.FAILURE.value)
+        flash(f"Aktualisieren eines Patienten (id: {patient_id}) {patient_data['name']} schlug fehl.",
+              FlashMessageTypes.FAILURE.value)
         return redirect(url_for(".get_patient_data", patient_id=patient_id))
