@@ -94,15 +94,15 @@ TranslationGerman = {
 TranslationPercentageKawasaki = {
     1.0: "Kawsaki-Syndrom",
     0.75: "Inkomplettes Kawasaki-Syndrom",
-    0.5: "Verdacht",
+    0.5: "Restverdacht",
     0.0: "Nicht erkrankt"
 }
 
 
 TranslationPercentagePims = {
     1.0: "PIMS",
-    0.75: "Erhöhter Verdacht",
-    0.5: "Verdacht",
+    0.75: "Verdacht",
+    0.5: "Restverdacht",
     0.0: "Nicht erkrankt"
 }
 

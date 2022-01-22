@@ -9,21 +9,37 @@
     result
 {% endblock %}
 
-{% macro message_box(disease, name, probability) %}
+{% macro message_box(disease, name, probability, patient_id) %}
 
     {% set hsla = "hsla("~analysis_color["hue"]~", "~analysis_color["saturation"]~"%, "~analysis_color["lightness"]~"%, " %}
     {% set color = hsla ~ probability | round(2) ~ ")" %}
 
 
     <div id="result" style="background-color:{{ color }}; border-color:{{ color }};">
-        Die {{ disease }} Auswertung für den Patienten <strong>{{ name }}</strong> lautet:
-        <strong>
-            {% if disease == "Kawasaki-Syndrom" %}
-                {{ translation_kawasaki[probability] }}
+        {% if disease == "Kawasaki-Syndrom" %}
+            {% if probability == 1.0 %}
+                {{ name }} (Id: {{ patient_id }}) ist am {{ translation_kawasaki[probability] }} erkrankt.
+            {% elif probability == 0.75 %}
+                {{ name }} (Id: {{ patient_id }}) ist an inkomplettem Kawasaki-Syndrom erkrankt.
+            {% elif probability == 0.5 %}
+                Für {{ name }} (Id: {{ patient_id }}) besteht der {{ translation_kawasaki[probability] }} am
+                Kawasaki-Syndrom erkrankt zu sein.
             {% else %}
-                {{ translation_pims[probability] }}
+                {{ name }} (Id: {{ patient_id }}) ist wahrscheinlich nicht am Kawasaki-Syndrom erkrankt.
             {% endif %}
-        </strong>.
+        {% else %}
+            {% if probability == 1.0 %}
+                {{ name }} (Id: {{ patient_id }}) ist am {{ translation_pims[probability] }} erkrankt.
+            {% elif probability == 0.75 %}
+                Für {{ name }} (Id: {{ patient_id }}) besteht der {{ translation_pims[probability] }} an PIMS erkrankt zu
+                sein.
+            {% elif probability == 0.5 %}
+                Für {{ name }} (Id: {{ patient_id }}) besteht der {{ translation_pims[probability] }} an PIMS erkrankt zu
+                sein.
+            {% else %}
+                {{ name }} (Id: {{ patient_id }}) ist wahrscheinlich nicht an PIMS erkrankt.
+            {% endif %}
+    {% endif %}
     </div>
 {% endmacro %}
 
@@ -42,14 +58,14 @@
         <h2 style="text-align: center;">Auswertung zum {{ decision_reason_data.disease.value }}</h2>
     </div>
 
-    {{ message_box(decision_reason_data.disease.value, patient_data.name, decision_reason_data.probability) }}
+    {{ message_box(decision_reason_data.disease.value, patient_data.name, decision_reason_data.probability, patient_id) }}
     <br/>
 
     <div class="reason">
         {% if decision_reason_data.pro|length == 0 %}
-            Keines der für die Erkrankung mit {{ decision_reason_data.disease.value }} typischen Symptome wurde festgestellt.
+            Keines der für die Erkrankung mit {{ decision_reason_data.disease.value }} typischen Kriterien wurde festgestellt.
         {% else %}
-            Die Entscheidung begründet sich mit dem Auftreten der folgenden Kriterien:
+            Für eine Erkrankung spricht das Vorhandensein, der folgenden Kriterien:
             <ul>
                 {% for reason in decision_reason_data.pro %}
                     <li>{{ translate(reason) }}</li>
@@ -57,20 +73,11 @@
             </ul>
         {% endif %}
 
-        {% if decision_reason_data.missing|length != 0 and decision_reason_data.probability < 1.0 and decision_reason_data.probability > 0 %}
-            Der Datensatz enthält die folgenden Informationen nicht, welche auf eine Erkrankung hindeuten. Bitte ergänzen Sie diese ggf. 
-            <a class="link" href="{{ url_for('person_data.update_patient_data', patient_id=patient_id)}}">hier!</a> 
+        {% if decision_reason_data.missing|length != 0 and decision_reason_data.probability < 1.0 %}
+            Gegen eine Erkrankung spricht die Abwesenheit folgender Kriterien. Bitte ergänzen Sie diese ggf.
+            <a class="link" href="{{ url_for('person_data.get_patient_data', patient_id=patient_id)}}">hier!</a>
             <ul>
                 {% for reason in decision_reason_data.missing %}
-                    <li>{{ translate(reason) }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-
-        {% if decision_reason_data.con|length != 0 and decision_reason_data.probability < 1.0 and decision_reason_data.probability > 0 %}
-            Die folgende Kriterien die typischerweise im zusammenhang mit einer Erkrankung Auftreten liegen nicht vor: 
-            <ul>
-                {% for reason in decision_reason_data.con %}
                     <li>{{ translate(reason) }}</li>
                 {% endfor %}
             </ul>

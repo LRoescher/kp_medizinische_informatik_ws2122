@@ -222,10 +222,11 @@
         <br/>
         Mit einem Klick auf einen Patientennamen können die Daten dieses Patienten bearbeitet werden.
         <br/>
-        Ein Klick auf die zugeordnete Diagnose Klasse zeigt die jeweilige Begr&uuml;ndung an.
-        Die Intensität des <span style="background-color: {{hsla}}100%);border-radius: 10px; padding: 2px">Farbtons</span> dient ausschließlich dazu, Diagnosen effizienter unterscheiden zu können.
+        Ein Klick auf die zugeordnete Auswertung zeigt die jeweilige Begr&uuml;ndung an.
+        Die Intensität des <span style="background-color: {{hsla}}100%);border-radius: 10px; padding: 2px">Farbtons</span> dient ausschließlich dazu, die Ergebnisklassen effizienter
+        unterscheiden zu können.
         <br/>
-        <a class="btn" id="loginLink" onclick="toggleTable();" href="#">Legende</a>
+        <a class="btn" id="loginLink" onclick="toggleTable();" href="#">Legende anzeigen/ausblenden</a>
         <script>
             function toggleTable() {
             var lTable = document.getElementById("legend_table");
@@ -249,8 +250,8 @@
                 <tr>
                     <td><span style="background-color: {{hsla}}75%);border-radius: 10px; padding: 2px">Inkomplettes Kawasaki-Syndrom</span></td>
                     <td><a href="https://www.awmf.org/uploads/tx_szleitlinien/185-003l_S2k_Kawasaki-Syndrom_2021-01.pdf" target="_blank">AWMF</a></td>
-                    <td></td>
-                    <td></td>
+                    <td><span style="background-color: {{hsla}}75%);border-radius: 10px; padding: 2px">Erhöhter Verdacht</span></td>
+                    <td>*</td>
                 </tr>
                 <tr>
                     <td><span style="background-color: {{hsla}}50%);border-radius: 10px; padding: 2px">Verdacht</span></td>
@@ -265,14 +266,16 @@
                     <td><a href="https://www.who.int/news-room/commentaries/detail/multisystem-inflammatory-syndrome-in-children-and-adolescents-with-covid-19" target="_blank">WHO</a></td>
                 </tr>
             </table>
+        <br/>
             <div>
-                * Es liegen mehrere Symptome vor, die auf eine Erkrankung hindeuten. Überprüfen Sie ob alle Symptome korrekt eingetragen sind!
+                * Es liegen mehrere Kriterien vor, die auf eine Erkrankung hindeuten. Überprüfen Sie, ob alle
+                Krierterien korrekt eingetragen sind!
             </div>
             </div>
 
         <br/>
-        Das System soll Entscheidungen unterstützen und keinen Falls Diagnosen stellen. Die Ergebnisse m&uuml;ssen daher immer durch medizinisch geschultes Personal gepr&uuml;ft
-        werden.
+        Das System soll bei der Entscheidung unterstützen und nicht als alleiniges Diagnosewerkzeug dienen.
+        Die Ergebnisse m&uuml;ssen daher immer durch medizinisch geschultes Personal gepr&uuml;ft werden.
     </p>
     </div>
 
