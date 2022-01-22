@@ -6,10 +6,13 @@
 
 
 {% set hsla = "hsla("~analysis_color["hue"]~", "~analysis_color["saturation"]~"%, "~analysis_color["lightness"]~"%, " %}
+{% set color_100 = hsla ~ 1.0 ~ ")" %}
+{% set color_75 = hsla ~ 0.75 ~ ")" %}
+{% set color_50 = hsla ~ 0.50 ~ ")" %}
+{% set color_0 = hsla ~ 0.0 ~ ")" %}
 
 {% macro grid_table_line(patient_id, prob_pims, prob_kawasaki) %}
 
-    {% set hsla = "hsla("~analysis_color["hue"]~", "~analysis_color["saturation"]~"%, "~analysis_color["lightness"]~"%, " %}
     {% set p_color = hsla ~ prob_pims | round(2) ~ ")" %}
     {% set k_color = hsla ~ prob_kawasaki | round(2) ~ ")" %}
 
@@ -17,10 +20,10 @@
     {% set prob_kawasaki = translation_kawasaki[prob_kawasaki] %}
 
     <a class="grid_table_link grid_table_entry patientname" href="{{url_for('person_data.get_patient_data', patient_id=patient_id)}}">HIGHLIGHTED_NAME</a>
-    <a style="background-color:{{ k_color }}; border-color:{{ k_color }};" class="grid_table_link grid_table_entry" href="{{url_for('.result_kawasaki', patient_id=patient_id)}}">
+    <a style="background-color:{{ k_color }};" class="grid_table_link grid_table_entry" href="{{url_for('.result_kawasaki', patient_id=patient_id)}}">
         <div>{{ prob_kawasaki }}</div>
     </a>
-    <a style="background-color:{{ p_color }}; border-color:{{ p_color }};" class="grid_table_link grid_table_entry" href="{{url_for('.result_pims', patient_id=patient_id)}}">
+    <a style="background-color:{{ p_color }};" class="grid_table_link grid_table_entry" href="{{url_for('.result_pims', patient_id=patient_id)}}">
         <div>{{ prob_pims }}</div>
     </a>
 {% endmacro %}
@@ -48,6 +51,24 @@
         var order = "NKP"
 
         $(document).ready(function(){
+
+            $(".collapsed").next().hide();
+
+            $("h3").click((event) => {
+                target = $(event.target);
+                if (target.hasClass("collapsed")){
+                    // show legend
+                    target.removeClass("collapsed");
+                    target.addClass("expanded");
+                    target.next().show();
+                } else if(target.hasClass("expanded")){
+                    // hide legend
+                    target.removeClass("expanded");
+                    target.addClass("collapsed");
+                    target.next().hide();
+                }
+                
+            });
 
             search_text = $("#searchbar")[0].value;
             $("#searchbar").keyup(function(event){
@@ -217,63 +238,88 @@
 
 {% block content %}
     <div class="disclaimer">
-    <p>
-        Auf dieser Seite werden s&auml;mtliche Patienten aufgef&uuml;hrt, die momentan in der Datenbank gespeichert sind.
-        <br/>
-        Mit einem Klick auf einen Patientennamen können die Daten dieses Patienten bearbeitet werden.
-        <br/>
-        Ein Klick auf die zugeordnete Diagnose Klasse zeigt die jeweilige Begr&uuml;ndung an.
-        Die Intensität des <span style="background-color: {{hsla}}100%);border-radius: 10px; padding: 2px">Farbtons</span> dient ausschließlich dazu, Diagnosen effizienter unterscheiden zu können.
-        <br/>
-        <a class="btn" id="loginLink" onclick="toggleTable();" href="#">Legende</a>
-        <script>
-            function toggleTable() {
-            var lTable = document.getElementById("legend_table");
-            lTable.style.display = (lTable.style.display == "table") ? "none" : "table";
-        }
-        </script>
-            <div id="legend_table" style="display: none">
-                <table>
+
+        <p class="text">
+            Das System soll Entscheidungen unterstützen und keinen Falls Diagnosen stellen. Die Ergebnisse m&uuml;ssen daher immer durch medizinisch geschultes Personal gepr&uuml;ft
+            werden.
+        </p>
+
+        <h3 id="headline_legend_functionality" class="collapsed">Bedienung</h3>
+        <p id="desc_functionality" class="text">
+            Auf dieser Seite werden s&auml;mtliche Patienten aufgef&uuml;hrt, die momentan in der Datenbank gespeichert sind.
+            <br/>
+            Mit einem Klick auf einen Patientennamen können die Daten dieses Patienten bearbeitet werden.
+            <br/>
+            Ein Klick auf die zugeordnete Diagnose Klasse zeigt die jeweilige Begr&uuml;ndung an.
+            Die Intensität des <span style="background-color: {{hsla}}100%);border-radius: 10px; padding: 2px">Farbtons</span> dient ausschließlich dazu, Diagnosen effizienter unterscheiden zu können.
+        
+        </p>
+
+        <h3 id="headline_legend_kawasaki" class="collapsed legend">Legende Kawasaki</h3>
+        <div id="legend_kawasaki">
+            <table>
                 <tr>
                     <th>Kawasaki</th>
                     <th>Richtlinie</th>
+                </tr>
+                <tr>
+                    <td style="background-color: {{ color_100 }};">{{ translation_kawasaki[1.0] }}</td>
+                    <td><a href="https://www.awmf.org/uploads/tx_szleitlinien/185-003l_S2k_Kawasaki-Syndrom_2021-01.pdf" target="_blank">AWMF</a></td>
+                </tr>
+                <tr>
+                    <td style="background-color: {{ color_75 }};">{{ translation_kawasaki[0.75] }}</td>
+                    <td><a href="https://www.awmf.org/uploads/tx_szleitlinien/185-003l_S2k_Kawasaki-Syndrom_2021-01.pdf" target="_blank">AWMF</a></td>
+                </tr>
+                <tr>
+                    <td style="background-color: {{ color_50 }};">{{ translation_kawasaki[0.5] }}</td>
+                    <td>*</td>
+                </tr>
+                <tr>
+                    <td style="background-color: {{ color_0 }};">{{ translation_kawasaki[0] }}</td>
+                    <td><a href="https://www.awmf.org/uploads/tx_szleitlinien/185-003l_S2k_Kawasaki-Syndrom_2021-01.pdf" target="_blank">AWMF</a></td>
+                </tr>
+            </table>
+
+
+            <p class="text">
+                * Es liegen mehrere Symptome vor, die auf eine Erkrankung hindeuten. Überprüfen Sie ob alle Symptome korrekt eingetragen sind!
+            </p>
+        </div>
+
+
+        <h3 id="headline_legend_pims" class="collapsed">Legende PIMS</h3>
+        <div id="legend_pims">
+            <table>
+                <tr>
                     <th>PIMS</th>
                     <th>Richtlinie</th>
                 </tr>
-                    <tr>
-                        <td><span style="background-color: {{hsla}}100%);border-radius: 10px; padding: 2px">Kawsaki-Syndrom</span></td>
-                        <td><a href="https://www.awmf.org/uploads/tx_szleitlinien/185-003l_S2k_Kawasaki-Syndrom_2021-01.pdf" target="_blank">AWMF</a></td>
-                        <td><span style="background-color: {{hsla}}100%);border-radius: 10px; padding: 2px">PIMS</span></td>
-                        <td><a href="https://www.who.int/news-room/commentaries/detail/multisystem-inflammatory-syndrome-in-children-and-adolescents-with-covid-19" target="_blank">WHO</a></td>
-                    </tr>
                 <tr>
-                    <td><span style="background-color: {{hsla}}75%);border-radius: 10px; padding: 2px">Inkomplettes Kawasaki-Syndrom</span></td>
-                    <td><a href="https://www.awmf.org/uploads/tx_szleitlinien/185-003l_S2k_Kawasaki-Syndrom_2021-01.pdf" target="_blank">AWMF</a></td>
-                    <td></td>
-                    <td></td>
+                    <td style="background-color: {{ color_100 }};">{{ translation_pims[1.0] }}</td>
+                    <td><a href="https://www.who.int/news-room/commentaries/detail/multisystem-inflammatory-syndrome-in-children-and-adolescents-with-covid-19" target="_blank">WHO</a></td>
                 </tr>
                 <tr>
-                    <td><span style="background-color: {{hsla}}50%);border-radius: 10px; padding: 2px">Verdacht</span></td>
-                    <td>*</td>
-                    <td><span style="background-color: {{hsla}}50%);border-radius: 10px; padding: 2px">Verdacht</span></td>
+                    <td style="background-color: {{ color_75 }};">{{ translation_pims[0.75] }}</td>
                     <td>*</td>
                 </tr>
                 <tr>
-                    <td><span style="background-color: {{hsla}}0%);border-radius: 10px; padding: 2px">Nicht erkrankt</span></td>
-                    <td><a href="https://www.awmf.org/uploads/tx_szleitlinien/185-003l_S2k_Kawasaki-Syndrom_2021-01.pdf" target="_blank">AWMF</a></td>
-                    <td><span style="background-color: {{hsla}}0%);border-radius: 10px; padding: 2px">Nicht erkrankt</span></td>
+                    <td style="background-color: {{ color_50 }};">{{ translation_pims[0.5] }}</td>
+                    <td>**</td>
+                </tr>
+                <tr>
+                    <td style="background-color: {{ color_0 }};">{{ translation_pims[0] }}</td>
                     <td><a href="https://www.who.int/news-room/commentaries/detail/multisystem-inflammatory-syndrome-in-children-and-adolescents-with-covid-19" target="_blank">WHO</a></td>
                 </tr>
             </table>
-            <div>
-                * Es liegen mehrere Symptome vor, die auf eine Erkrankung hindeuten. Überprüfen Sie ob alle Symptome korrekt eingetragen sind!
-            </div>
-            </div>
 
-        <br/>
-        Das System soll Entscheidungen unterstützen und keinen Falls Diagnosen stellen. Die Ergebnisse m&uuml;ssen daher immer durch medizinisch geschultes Personal gepr&uuml;ft
-        werden.
-    </p>
+            <p class="text">
+                * Es liegen mehrere Symptome vor, die auf eine Erkrankung hindeuten. Überprüfen Sie ob alle Symptome korrekt eingetragen sind!
+                <br/><br/>
+                ** Es liegen mehrere Symptome vor, die auf eine Erkrankung hindeuten. Überprüfen Sie ob alle Symptome korrekt eingetragen sind!
+            </p>
+        </div>
+
+
     </div>
 
     <div id="filter">

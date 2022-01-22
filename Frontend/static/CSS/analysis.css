@@ -316,6 +316,53 @@ a.btn {
   border-right-style: none;
 }
 
+.collapsed::before, .expanded::before {
+  padding-left: 2%;
+  padding-right: 1%;
+}
+
+.expanded::before {
+  content: "-";
+}
+
+.collapsed::before {
+  content: "+";
+}
+
+.expanded:hover,
+.collapsed:hover {
+  background-color: #d2eaf1;
+  cursor: pointer;
+}
+
+table {
+  width: 80%;
+  margin-right: 10%;
+  margin-left: 10%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid #7cc0d7;
+  text-align: center;
+  padding: 1%;
+}
+
+.text {
+  width: 90%;
+  padding-left: 5%;
+  padding-right: 5%;
+  padding-top: 1%;
+  padding-bottom: 1%;
+}
+
+#desc_functionality,
+#legend_kawasaki,
+#legend_pims {
+  display: none;
+}
+
 #filter {
   margin: 2%;
   display: flex;
@@ -391,7 +438,7 @@ input:focus-visible {
   background: #eeff15;
 }
 
-a {
+.grid_table a {
   text-decoration: none;
   color: black;
 }
