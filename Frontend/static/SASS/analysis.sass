@@ -9,6 +9,53 @@ $bg_color_darken: #7cc0d7 !default
 
 @include grid_table.grid_table(3, ("style": solid, "color": #7cc0d7, "width": 1px))
 
+//  Disclaimer/Legende
+
+%expand_symbol
+    padding-left: 2%
+    padding-right: 1%
+
+.expanded::before
+    @extend %expand_symbol
+    content: "-"
+
+.collapsed::before
+    @extend %expand_symbol
+    content: "+"
+
+.expanded:hover,
+.collapsed:hover
+    background-color: $bg_color_lighten
+    cursor: pointer
+
+table
+    width: 80%
+    margin-right: 10%
+    margin-left: 10%
+    border-collapse: collapse
+    
+
+th,
+td
+    border: 1px solid $bg_color_darken
+    text-align: center
+    padding: 1%
+
+.text
+    width: 90%
+    padding-left: 5%
+    padding-right: 5%
+    padding-top: 1%
+    padding-bottom: 1%
+
+#desc_functionality,
+#legend_kawasaki,
+#legend_pims
+    display: none
+
+
+
+//       Analyse Tabelle    
 #filter
     margin: 2%
     display: flex
@@ -73,6 +120,6 @@ input:focus-visible
 .search_highlight
     background: #eeff15
 
-a
+.grid_table a
     text-decoration: none
     color: black
