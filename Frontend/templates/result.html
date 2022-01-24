@@ -22,7 +22,7 @@
             {% elif probability == 0.75 %}
                 {{ name }} (Id: {{ patient_id }}) ist an inkomplettem Kawasaki-Syndrom erkrankt.
             {% elif probability == 0.5 %}
-                Für {{ name }} (Id: {{ patient_id }}) besteht der {{ translation_kawasaki[probability] }} am
+                Für {{ name }} (Id: {{ patient_id }}) besteht ein {{ translation_kawasaki[probability] }} am
                 Kawasaki-Syndrom erkrankt zu sein.
             {% else %}
                 {{ name }} (Id: {{ patient_id }}) ist wahrscheinlich nicht am Kawasaki-Syndrom erkrankt.
@@ -34,7 +34,7 @@
                 Für {{ name }} (Id: {{ patient_id }}) besteht der {{ translation_pims[probability] }} an PIMS erkrankt zu
                 sein.
             {% elif probability == 0.5 %}
-                Für {{ name }} (Id: {{ patient_id }}) besteht der {{ translation_pims[probability] }} an PIMS erkrankt zu
+                Für {{ name }} (Id: {{ patient_id }}) besteht ein {{ translation_pims[probability] }} an PIMS erkrankt zu
                 sein.
             {% else %}
                 {{ name }} (Id: {{ patient_id }}) ist wahrscheinlich nicht an PIMS erkrankt.
@@ -65,7 +65,7 @@
         {% if decision_reason_data.pro|length == 0 %}
             Keines der für die Erkrankung mit {{ decision_reason_data.disease.value }} typischen Kriterien wurde festgestellt.
         {% else %}
-            Für eine Erkrankung spricht das Vorhandensein, der folgenden Kriterien:
+            Für eine Erkrankung spricht das Vorhandensein der folgenden Kriterien:
             <ul>
                 {% for reason in decision_reason_data.pro %}
                     <li>{{ translate(reason) }}</li>
