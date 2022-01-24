@@ -367,15 +367,18 @@ class Patient:
 
         if self.calculate_age() < 20 and (self.has_fever() or self.has_kawasaki()) and self.has_covid() \
                 and self.has_inflammation_lab():
+            # potential pims
             self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
-            self.reasons_for_pims.append(self.REASON_FEVER)
             self.reasons_for_pims.append(self.REASON_COVID)
             self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
-            # potential pims
+            if self.has_fever():
+                self.reasons_for_pims.append(self.REASON_FEVER)
+            elif not self.has_kawasaki():
+                # Only count fever as missing when there is no Kawasaki
+                self.missing_for_pims.append(self.REASON_FEVER)
             num_of_side_symptoms: int = 0
             if self.has_kawasaki():
                 self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
-                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
                 num_of_side_symptoms += 1
             elif self.has_exanthem() or self.has_enanthem() or self.has_conjunctivitis() or self.has_swollen_extremities():
                 self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
@@ -430,17 +433,16 @@ class Patient:
 
             if self.has_kawasaki():
                 self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
-                self.reasons_for_pims.append(self.REASON_FEVER)
-                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
             elif self.has_exanthem() or self.has_enanthem() or self.has_conjunctivitis() \
                     or self.has_swollen_extremities():
                 self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
             else:
                 self.missing_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
 
-            if self.has_fever() and not self.has_kawasaki():
+            if self.has_fever():
                 self.reasons_for_pims.append(self.REASON_FEVER)
-            elif not self.has_fever() and not self.has_kawasaki():
+            elif not self.has_kawasaki():
+                # Only count fever as missing when there is no Kawasaki
                 self.missing_for_pims.append(self.REASON_FEVER)
 
             self.pims_score = 0.0
@@ -450,21 +452,17 @@ class Patient:
             # Correct age -> Count conditions
             self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
             num_of_side_symptoms: int = 0
-            if self.has_fever() and not self.has_kawasaki():
+            if self.has_fever():
                 self.reasons_for_pims.append(self.REASON_FEVER)
                 num_of_side_symptoms += 1
-            elif not self.has_fever() and not self.has_kawasaki():
+            elif not self.has_kawasaki():
                 self.missing_for_pims.append(self.REASON_FEVER)
 
             if self.has_kawasaki() and self.has_fever():
                 self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
-                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
-                self.reasons_for_pims.append(self.REASON_FEVER)
                 num_of_side_symptoms += 1  # Fever is attributed above
             elif self.has_kawasaki() and not self.has_fever():
                 self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
-                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
-                self.reasons_for_pims.append(self.REASON_FEVER)
                 num_of_side_symptoms += 1.5  # Fever and other kawasaki symptoms are implied by Kawasaki diagnosis
             elif self.has_exanthem() or self.has_enanthem() or self.has_conjunctivitis() or self.has_swollen_extremities():
                 self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)

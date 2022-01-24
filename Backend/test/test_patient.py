@@ -970,11 +970,9 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
         self.assertTrue(patient.REASON_COVID in present)
         self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
-        self.assertTrue(patient.REASON_FEVER in present)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
-        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
-        self.assertEqual(len(present), 7)
+        self.assertEqual(len(present), 5)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertEqual(len(missing), 1)
 
@@ -1036,11 +1034,9 @@ class TestPatient(TestCase):
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
         self.assertTrue(patient.REASON_COVID in present)
-        self.assertTrue(patient.REASON_FEVER in present)
         self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
-        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
-        self.assertEqual(len(present), 6)
+        self.assertEqual(len(present), 4)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertEqual(len(missing), 2)
@@ -1058,10 +1054,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
-        self.assertTrue(patient.REASON_FEVER in present)
         self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
-        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
-        self.assertEqual(len(present), 6)
+        self.assertEqual(len(present), 4)
         self.assertTrue(patient.REASON_COVID in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
         self.assertEqual(len(missing), 2)
@@ -1170,8 +1164,7 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_COVID in present)
         self.assertTrue(patient.REASON_FEVER in present)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
-        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
-        self.assertEqual(len(present), 6)
+        self.assertEqual(len(present), 5)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertEqual(len(missing), 2)
@@ -1188,9 +1181,7 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
         self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
         self.assertTrue(patient.REASON_COVID in present)
-        self.assertTrue(patient.REASON_FEVER in present)
-        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
-        self.assertEqual(len(present), 5)
+        self.assertEqual(len(present), 3)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
@@ -1280,12 +1271,10 @@ class TestPatient(TestCase):
         present = patient.reasons_for_pims
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_COVID in present)
-        self.assertTrue(patient.REASON_FEVER in present)
         self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
-        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in present)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
-        self.assertEqual(len(present), 6)
+        self.assertEqual(len(present), 4)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in missing)
         self.assertEqual(len(missing), 2)
@@ -1419,19 +1408,6 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
         self.assertEqual(len(missing), 5)
 
-    def test_has_ascites(self):
-        # Prepare
-        patient1: Patient = Patient(1, name=self.TEST_NAME, birthdate=self.TEST_BIRTHDATE, case_date=self.TEST_CASEDATE)
-        patient2: Patient = Patient(2, name=self.TEST_NAME, birthdate=self.TEST_BIRTHDATE, case_date=self.TEST_CASEDATE)
-
-        patient1.add_condition(SnomedConcepts.ASCITES.value)
-
-        # Test/Assert
-        self.assertTrue(patient1.has_ascites(),
-                        "Should resolve to true, if the patient has the condition.")
-        self.assertFalse(patient2.has_ascites(),
-                         "Should resolve to false, if the patient hasn't got the condition.")
-
     def test_has_pericardial_effusions(self):
         # Prepare
         patient1: Patient = Patient(1, name=self.TEST_NAME, birthdate=self.TEST_BIRTHDATE, case_date=self.TEST_CASEDATE)
@@ -1443,19 +1419,6 @@ class TestPatient(TestCase):
         self.assertTrue(patient1.has_pericardial_effusions(),
                         "Should resolve to true, if the patient has the condition.")
         self.assertFalse(patient2.has_pericardial_effusions(),
-                         "Should resolve to false, if the patient hasn't got the condition.")
-
-    def test_has_pleural_effusions(self):
-        # Prepare
-        patient1: Patient = Patient(1, name=self.TEST_NAME, birthdate=self.TEST_BIRTHDATE, case_date=self.TEST_CASEDATE)
-        patient2: Patient = Patient(2, name=self.TEST_NAME, birthdate=self.TEST_BIRTHDATE, case_date=self.TEST_CASEDATE)
-
-        patient1.add_condition(SnomedConcepts.PLEURAL_EFFUSION.value)
-
-        # Test/Assert
-        self.assertTrue(patient1.has_pleural_effusions(),
-                        "Should resolve to true, if the patient has the condition.")
-        self.assertFalse(patient2.has_pleural_effusions(),
                          "Should resolve to false, if the patient hasn't got the condition.")
 
     def test_has_pericarditis(self):
