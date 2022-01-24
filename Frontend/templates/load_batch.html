@@ -46,7 +46,7 @@
       var failure = false;
       //$(".progress-bar").css("transition-duration", "60s");
       //update_progress(id, 49);
-      var interval = interval_upload_progress(id, 0, 49, 820);
+      var interval = interval_upload_progress(id, 0, 49, 1200);
 
       // etl
       $.ajax({
@@ -61,7 +61,7 @@
             update_progress(id, 50);
 
             // analyse data
-            interval = interval_upload_progress(id, 50, 99, 470);
+            interval = interval_upload_progress(id, 50, 99, 600);
             $.ajax({
               url: "{{ url_for('data_manager.analyse_data') }}",
               type: 'post',

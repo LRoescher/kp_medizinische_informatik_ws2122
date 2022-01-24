@@ -48,6 +48,8 @@ class PatientData(TypedDict):
     hasMyocarditis: bool
     # Hat Entzündungsparameter im Blut (CRP, BSG, Procalcitonin)
     hasInflammationLab: bool
+    # Hat die Diagnose Kawasaki
+    hasKawasaki: bool
 
 
 class DecisionReasons(TypedDict):
@@ -61,33 +63,20 @@ class DecisionReasons(TypedDict):
 # Übersetzung der Symptome ins Deutsche
 TranslationGerman = {
     "birthdate": "Geburtsdatum",
-    # Full name
     "name": "Name",
     "hasCovid": "Covid19",
     "hasFever": "Fieber",
-    # Ausschlag auf der Haut
     "hasExanthem": "Exanthem",
-    # Entzündung im Mundraum (Lippen, Zunge, Mundschleimhaut)
     "hasEnanthem": "Entzündung von Lippen, Zunge oder Mundschleimhaut",
-    # Geschwollene, gerötete Extremitäten
     "hasSwollenExtremeties": "Geschwollene, gerötete Extremitäten",
-    # Bindehautentzündung
     "hasConjunctivitis": "Bindehautentzündung",
-    # Geschwollene Lymphknoten
     "hasSwollenLymphnodes": "Geschwollene Lymphknoten",
-    # Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen
     "hasGastroIntestinalCondition": "Erbrechen, Übelkeit, Durchfall und/oder Bauchschmerzen",
-    # Aszites (Flüssigkeitsansammlung im Bauchraum)
-    "hasAscites": "Aszites",
-    # Perikardergüsse (Flüssigkeitsansammlung im Herzbeutel)
     "hasPericardialEffusions": "Perikardergüsse",
-    # Pleuraergüsse (Flüssigkeitsansammlung in der Lunge)
-    "hasPleuralEffusions": "Pleuraergüsse",
-    # Perikarditits (Herzbeutelentzündung)
     "hasPericarditis": "Perikarditits",
-    # Hat Myokarditis (Herzmuskelenzündung)
     "hasMyocarditis": "Myokarditis",
-    "hasInflammationLab": "Entzündungsparameter im Blut erhöht"
+    "hasInflammationLab": "Entzündungsparameter im Blut erhöht",
+    "hasKawasaki": "Kawasaki-Syndrom diagnostiziert"
 }
 
 
@@ -158,21 +147,21 @@ class Interface(Singleton, ABC):
 
     @abstractmethod
     def run_etl(self, csv_dir: os.path) -> bool:
-        '''
+        """
         executes etl-job
 
         :param csv_dir: with all needed files
         :return: success
-        '''
+        """
         pass
 
     @abstractmethod
     def run_analysis(self) -> bool:
-        '''
+        """
         analyse data
 
         :return: success
-        '''
+        """
         pass
 
     @property

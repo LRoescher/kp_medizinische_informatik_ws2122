@@ -969,7 +969,7 @@ class TestPatient(TestCase):
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
         self.assertTrue(patient.REASON_COVID in present)
-        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_KAWASAKI in present)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
         self.assertEqual(len(present), 5)
@@ -1034,7 +1034,7 @@ class TestPatient(TestCase):
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
         self.assertTrue(patient.REASON_COVID in present)
-        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_KAWASAKI in present)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
         self.assertEqual(len(present), 4)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
@@ -1054,7 +1054,7 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
-        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_KAWASAKI in present)
         self.assertEqual(len(present), 4)
         self.assertTrue(patient.REASON_COVID in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
@@ -1160,7 +1160,7 @@ class TestPatient(TestCase):
         present = patient.reasons_for_pims
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
-        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_KAWASAKI in present)
         self.assertTrue(patient.REASON_COVID in present)
         self.assertTrue(patient.REASON_FEVER in present)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
@@ -1179,7 +1179,7 @@ class TestPatient(TestCase):
         present = patient.reasons_for_pims
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
-        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_KAWASAKI in present)
         self.assertTrue(patient.REASON_COVID in present)
         self.assertEqual(len(present), 3)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
@@ -1271,7 +1271,7 @@ class TestPatient(TestCase):
         present = patient.reasons_for_pims
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_COVID in present)
-        self.assertTrue(patient.REASON_HAS_KAWASAKI in present)
+        self.assertTrue(patient.REASON_KAWASAKI in present)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in present)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
         self.assertEqual(len(present), 4)

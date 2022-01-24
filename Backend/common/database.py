@@ -179,6 +179,7 @@ class DBManager:
         # Remove trailing !/+ characters, because they are not included in OMOP concepts
         code = code.rstrip("!+")
 
+        # Snomed mappings that are currently not in the omop database
         if code == 'U09' or code == 'U09.9' or code == 'U08' or code == 'U08.9' or code == 'U07.1':
             # (post) Covid (in personal history)
             return SnomedConcepts.COVID_19.value

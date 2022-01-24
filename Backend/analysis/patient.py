@@ -29,7 +29,8 @@ class Patient:
     REASON_GASTRO_INTESTINAL_CONDITION: str = "Übelkeit, Erbrechen, Bauchschmerzen und/oder Durchfall"
     REASON_INFLAMMATION_LAB: str = "Entzündungsparameter im Blut"
     REASON_COVID: str = "Covid-19 Erkrankung"
-    REASON_HAS_KAWASAKI: str = "Kawasaki-Syndrom"
+    REASON_KAWASAKI: str = "Kawasaki-Syndrom"
+    REASON_PIMS: str = "Pediatric Inflammatory Multisystem Syndrome (PIMS)"
     REASON_KAWASAKI_SYMPTOMS: str = "Exanthem, Enanthem, Konjunktivitis oder geschwollene, gerötete Extremitäten"
 
     def __init__(self, patient_id: int, name: str, birthdate: datetime.date, case_date: datetime.date):
@@ -240,6 +241,10 @@ class Patient:
         snomed_kawasaki_id = SnomedConcepts.KAWASAKI.value
         return snomed_kawasaki_id in self.conditions
 
+    def has_pims(self):
+        snomed_pims_id = SnomedConcepts.PIMS.value
+        return snomed_pims_id in self.conditions
+
     def calculate_kawasaki_score(self) -> (float, Set[str]):
         """
         Calculates a score (probability) for the patient having Kawasaki-Disease. The score will be between 0.0 and 1.0.
@@ -255,51 +260,47 @@ class Patient:
         self.reasons_for_kawasaki.clear()
         self.missing_for_kawasaki.clear()
 
-        # Not kawasaki -> Return 0.0 if not in age range
-        if self.calculate_age() > 8:
+        # Count number of present symptoms and update reason/missing lists
+        num_of_symptoms = self._count_kawasaki_symptoms()
+
+        # Kawasaki is already registered as a condition -> Return 100%
+        if self.has_kawasaki():
+            self.reasons_for_kawasaki.append(self.REASON_KAWASAKI)
+            self.kawasaki_score = 1.0
+
+        # Too old -> Not Kawasaki -> Return 0%
+        elif self.calculate_age() > 8:
             self.missing_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
-            if self.has_fever():
-                self.reasons_for_kawasaki.append(self.REASON_FEVER)
-            else:
-                self.missing_for_kawasaki.append(self.REASON_FEVER)
-
-            self._calculate_kawasaki_side_symptoms()
             self.kawasaki_score = 0.0
-            return self.kawasaki_score
 
-        self.reasons_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
-
-        if self.has_fever():
-            self.reasons_for_kawasaki.append(self.REASON_FEVER)
-            num_of_symptoms: int = self._calculate_kawasaki_side_symptoms()
-
-            if num_of_symptoms >= 4:
-                # Complete kawasaki: fever + min. 4/5 symptoms
-                self.kawasaki_score = 1.0
-                return self.kawasaki_score
-            elif num_of_symptoms >= 1:
-                # Incomplete kawasaki
-                self.kawasaki_score = 0.75
-                return self.kawasaki_score
-            else:
-                # Maybe kawasaki
-                self.kawasaki_score = 0.5
-                return self.kawasaki_score
+        # Correct age
         else:
-            # no fever --> not kawasaki, but maybe data is incomplete
-            self.missing_for_kawasaki.append(self.REASON_FEVER)
-            num_of_symptoms: int = self._calculate_kawasaki_side_symptoms()
+            self.reasons_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
 
-            if num_of_symptoms < 1:
-                # No kawasaki symptoms at all
-                self.kawasaki_score = 0.0
-                return self.kawasaki_score
+            # Fever is needed for complete and incomplete kawasaki
+            if self.has_fever():
+                # Fever and at least four other symptoms for complete kawasaki
+                if num_of_symptoms >= 5:
+                    self.kawasaki_score = 1.0
+                # Fever and at least on more symptom for incomplete kawasaki
+                elif num_of_symptoms >= 2:
+                    self.kawasaki_score = 0.75
+                # Might be kawasaki with missing data
+                else:
+                    self.kawasaki_score = 0.5
+
+            # No Fever -> might be incomplete data
             else:
-                # some kawasaki symptoms
-                self.kawasaki_score = 0.5
-                return self.kawasaki_score
+                # At least one kawasaki symptom
+                if num_of_symptoms > 0:
+                    self.kawasaki_score = 0.5
+                # No kawasaki symptoms -> Return 0%
+                else:
+                    self.kawasaki_score = 0.0
 
-    def _calculate_kawasaki_side_symptoms(self) -> int:
+        return self.kawasaki_score
+
+    def _count_kawasaki_symptoms(self) -> int:
         """
         Calculates the number of side symptoms of a patient. Also edits the lists reasons-for-kawasaki and
         missing-for-kawasaki.
@@ -309,6 +310,13 @@ class Patient:
         :return: number of side symptoms the patient has
         """
         num_of_symptoms = 0
+
+        if self.has_fever():
+            num_of_symptoms += 1
+            self.reasons_for_kawasaki.append(self.REASON_FEVER)
+        else:
+            self.missing_for_kawasaki.append(self.REASON_FEVER)
+
         if self.has_exanthem():
             num_of_symptoms += 1
             self.reasons_for_kawasaki.append(self.REASON_EXANTHEM)
@@ -355,6 +363,16 @@ class Patient:
         reasons for the decision
         """
         self.reasons_for_pims.clear()
+        self.missing_for_pims.clear()
+
+        # Count number of present symptoms and update reason/missing lists
+        num_of_symptoms = self._count_pims_symptoms()
+
+        # PIMS is already registered as a condition -> Return 100%
+        if self.has_pims():
+            self.reasons_for_pims.append(self.REASON_PIMS)
+            self.pims_score = 1.0
+            return self.pims_score
 
         # Age < 20
         # Fever (kawasaki implies fever)
@@ -365,140 +383,54 @@ class Patient:
         # Cardial component
         # gastrointestinal component
 
-        if self.calculate_age() < 20 and (self.has_fever() or self.has_kawasaki()) and self.has_covid() \
-                and self.has_inflammation_lab():
-            # potential pims
+        if self.calculate_age() >= 20:
+            self.missing_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
+            self.pims_score = 0.0
+
+        # PIMS needs age < 20, fever (can be implied by kawasaki), inflammation markers, covid-19
+        elif (self.has_fever() or self.has_kawasaki()) and self.has_covid() and self.has_inflammation_lab():
             self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
-            self.reasons_for_pims.append(self.REASON_COVID)
-            self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
-            if self.has_fever():
-                self.reasons_for_pims.append(self.REASON_FEVER)
-            elif not self.has_kawasaki():
-                # Only count fever as missing when there is no Kawasaki
-                self.missing_for_pims.append(self.REASON_FEVER)
+            # Need two of either kawasaki or kawasaki symptoms, caridal condition, gastro-intestinal condition
             num_of_side_symptoms: int = 0
             if self.has_kawasaki():
-                self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
                 num_of_side_symptoms += 1
             elif self.has_exanthem() or self.has_enanthem() or self.has_conjunctivitis() or self.has_swollen_extremities():
-                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
                 num_of_side_symptoms += 1
-            else:
-                self.missing_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
 
             if self.has_cardiac_condition():
-                self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
                 num_of_side_symptoms += 1
-            else:
-                self.missing_for_pims.append(self.REASON_CARDIAL_CONDITION)
 
             if self.has_gastro_intestinal_condition():
-                self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
                 num_of_side_symptoms += 1
-            else:
-                self.missing_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
 
             if num_of_side_symptoms >= 2:
                 # "Complete" PIMS
                 self.pims_score = 1.0
-                return self.pims_score
             else:
                 # Not enough symptoms for PIMS
                 self.pims_score = 0.75
-                return self.pims_score
 
-        if self.calculate_age() >= 20:
-            # Wrong age -> Score is 0.0
-            self.missing_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
-            # Setting fields for reasons for and missing for pims
-            if self.has_inflammation_lab():
-                self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
-            else:
-                self.missing_for_pims.append(self.REASON_INFLAMMATION_LAB)
-
-            if self.has_covid():
-                self.reasons_for_pims.append(self.REASON_COVID)
-            else:
-                self.missing_for_pims.append(self.REASON_COVID)
-
-            if self.has_gastro_intestinal_condition():
-                self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
-            else:
-                self.missing_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
-
-            if self.has_cardiac_condition():
-                self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
-            else:
-                self.missing_for_pims.append(self.REASON_CARDIAL_CONDITION)
-
-            if self.has_kawasaki():
-                self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
-            elif self.has_exanthem() or self.has_enanthem() or self.has_conjunctivitis() \
-                    or self.has_swollen_extremities():
-                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
-            else:
-                self.missing_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
-
-            if self.has_fever():
-                self.reasons_for_pims.append(self.REASON_FEVER)
-            elif not self.has_kawasaki():
-                # Only count fever as missing when there is no Kawasaki
-                self.missing_for_pims.append(self.REASON_FEVER)
-
-            self.pims_score = 0.0
-            return self.pims_score
-
+        # Can't be PIMS -> Count parameters
         else:
-            # Correct age -> Count conditions
             self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
-            num_of_side_symptoms: int = 0
-            if self.has_fever():
-                self.reasons_for_pims.append(self.REASON_FEVER)
-                num_of_side_symptoms += 1
-            elif not self.has_kawasaki():
-                self.missing_for_pims.append(self.REASON_FEVER)
 
-            if self.has_kawasaki() and self.has_fever():
-                self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
-                num_of_side_symptoms += 1  # Fever is attributed above
-            elif self.has_kawasaki() and not self.has_fever():
-                self.reasons_for_pims.append(self.REASON_HAS_KAWASAKI)
-                num_of_side_symptoms += 1.5  # Fever and other kawasaki symptoms are implied by Kawasaki diagnosis
-            elif self.has_exanthem() or self.has_enanthem() or self.has_conjunctivitis() or self.has_swollen_extremities():
-                self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
-                num_of_side_symptoms += 0.5
+            # No conditions at all -> Return 0.0
+            if num_of_symptoms < 1:
+                self.pims_score = 0.0
+
+            # Few PIMS symptoms -> Return 0.5
+            elif num_of_symptoms < 3:
+                self.pims_score = 0.5
+
+            # Most/many symptoms
             else:
-                self.missing_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+                self.pims_score = 0.75
 
-            if self.has_cardiac_condition():
-                self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
-                num_of_side_symptoms += 0.5
-            else:
-                self.missing_for_pims.append(self.REASON_CARDIAL_CONDITION)
-
-            if self.has_gastro_intestinal_condition():
-                self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
-                num_of_side_symptoms += 0.5
-            else:
-                self.missing_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
-
-            if self.has_covid():
-                self.reasons_for_pims.append(self.REASON_COVID)
-                num_of_side_symptoms += 1
-            else:
-                self.missing_for_pims.append(self.REASON_COVID)
-
-            if self.has_inflammation_lab():
-                self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
-                num_of_side_symptoms += 1
-            else:
-                self.missing_for_pims.append(self.REASON_INFLAMMATION_LAB)
-
-            if num_of_side_symptoms >= 2.5:
+            if num_of_symptoms >= 3:
                 # many conditions, but not the right combination:
                 self.pims_score = 0.75
                 return self.pims_score
-            elif num_of_side_symptoms > 1:
+            elif num_of_symptoms > 1:
                 # some conditions
                 self.pims_score = 0.5
                 return self.pims_score
@@ -506,6 +438,52 @@ class Patient:
                 # not enough conditions
                 self.pims_score = 0.0
                 return self.pims_score
+
+    def _count_pims_symptoms(self) -> int:
+        num_of_symptoms: int = 0
+        if self.has_fever():
+            self.reasons_for_pims.append(self.REASON_FEVER)
+            num_of_symptoms += 1
+        else:
+            self.missing_for_pims.append(self.REASON_FEVER)
+
+        if self.has_kawasaki():
+            self.reasons_for_pims.append(self.REASON_KAWASAKI)
+            num_of_symptoms += 1
+            # Fever is implied with kawasaki diagnosis
+            if not self.has_fever():
+                num_of_symptoms += 1
+        elif self.has_exanthem() or self.has_enanthem() or self.has_conjunctivitis() or self.has_swollen_extremities():
+            self.reasons_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+            num_of_symptoms += 1
+        else:
+            self.missing_for_pims.append(self.REASON_KAWASAKI_SYMPTOMS)
+
+        if self.has_cardiac_condition():
+            self.reasons_for_pims.append(self.REASON_CARDIAL_CONDITION)
+            num_of_symptoms += 1
+        else:
+            self.missing_for_pims.append(self.REASON_CARDIAL_CONDITION)
+
+        if self.has_gastro_intestinal_condition():
+            self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
+            num_of_symptoms += 1
+        else:
+            self.missing_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
+
+        if self.has_covid():
+            self.reasons_for_pims.append(self.REASON_COVID)
+            num_of_symptoms += 1
+        else:
+            self.missing_for_pims.append(self.REASON_COVID)
+
+        if self.has_inflammation_lab():
+            self.reasons_for_pims.append(self.REASON_INFLAMMATION_LAB)
+            num_of_symptoms += 1
+        else:
+            self.missing_for_pims.append(self.REASON_INFLAMMATION_LAB)
+
+        return num_of_symptoms
 
     def has_pericardial_effusions(self):
         """
