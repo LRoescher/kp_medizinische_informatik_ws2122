@@ -205,6 +205,9 @@ class BackendManager(Interface):
         return True
 
     def run_etl(self, csv_dir: os.path) -> bool:
+        """
+        Runs the etl job for the csv file on the given path.
+        """
         try:
             run_etl_job_for_csvs(csv_dir, self.db_config)
         except Exception as e:
@@ -213,6 +216,9 @@ class BackendManager(Interface):
         return True
 
     def run_analysis(self) -> bool:
+        """
+        Runs the analysis for all patients currently in the database.
+        """
         try:
             if not self.is_db_empty():
                 self.analyze_all_in_database()

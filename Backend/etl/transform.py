@@ -19,6 +19,7 @@ def generate_provider_table(person_df: pd.DataFrame, case_df: pd.DataFrame) -> p
     omop_provider_df.columns = ['provider_id']
     # Delete duplicates
     omop_provider_df = omop_provider_df.drop_duplicates()
+    omop_provider_df = omop_provider_df.dropna()
     return omop_provider_df
 
 
@@ -165,7 +166,6 @@ def generate_measurement_table(lab_df: pd.DataFrame, loader: DBManager) -> pd.Da
 
     # Get correct column in source data. Either 'Patientidentifikator' or 'PATIENT_ID
     if 'Patientidentifikator' in lab_df.columns:
-        print("Patientidentifikator")
         omop_measurement_df: pd.DataFrame = lab_df[['IDENTIFIER', 'PARAMETER_NAME', 'PARAMETER_LOINC',
                                                     'Patientidentifikator', 'TEST_DATE', 'NUMERIC_VALUE',
                                                     'UCUM_UNIT', 'IS_NORMAL', 'DEVIATION']].copy(deep=True)
@@ -175,7 +175,6 @@ def generate_measurement_table(lab_df: pd.DataFrame, loader: DBManager) -> pd.Da
             patientidentifikator = patientidentifikator[-4:]
             omop_measurement_df.at[index, 'Patientidentifikator'] = int(patientidentifikator)
     elif 'PATIENT_ID' in lab_df.columns:
-        print("Patient-Id")
         omop_measurement_df: pd.DataFrame = lab_df[['IDENTIFIER', 'PARAMETER_NAME', 'PARAMETER_LOINC',
                                                     'PATIENT_ID', 'TEST_DATE', 'NUMERIC_VALUE',
                                                     'UCUM_UNIT', 'IS_NORMAL', 'DEVIATION']].copy(deep=True)

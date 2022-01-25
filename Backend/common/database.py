@@ -412,9 +412,3 @@ class DBManager:
                 logging.error("Another error occurred during shutdown. There might be data loss.")
                 logging.error(error2)
             raise AttributeError("Error during database operation. Check if there is an active connection.")
-
-
-if __name__ == "__main__":
-    db_config = generate_config()[1]
-    db_manager = DBManager(db_config=db_config, clear_tables=False)
-    print(db_manager.get_snomed_id('M30.3', 'ICD10GM'))

@@ -329,8 +329,3 @@ def _add_measurement_for_patient(db_manager: DBManager, patient_id: int, concept
     omop_measurement_df: pd.DataFrame = pd.DataFrame(data_measurement)
     # Save in database
     db_manager.save(OmopTableEnum.MEASUREMENT, omop_measurement_df)
-
-
-if __name__ == "__main__":
-    csv_dir, db_config = generate_config()
-    run_etl_job_for_csvs(csv_dir, db_config)
