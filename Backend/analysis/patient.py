@@ -245,17 +245,19 @@ class Patient:
         snomed_pims_id = SnomedConcepts.PIMS.value
         return snomed_pims_id in self.conditions
 
-    def calculate_kawasaki_score(self) -> (float, Set[str]):
+    def calculate_kawasaki_score(self) -> float:
         """
-        Calculates a score (probability) for the patient having Kawasaki-Disease. The score will be between 0.0 and 1.0.
-        The higher the score, the higher the probability that the patient has Kawasaki.
-        The calculations takes the patients age (should be around 5 years old), his conditions (symptoms of kawasaki are
-        fever, conjunctivitis, swollen/red extremities, lymphadenopathy, inflammation of mouth, lips, tongue or mucosa)
-        into account. Additionally his measurements are checked for signs of inflammation in his blood. Lastly the
-        patient is checked for heart conditions, which are a late stage complication for Kawasaki-Disease.
+        Calculates a score of the patient having Kawasaki-Disease. The score will be between 0.0 and 1.0.
+        A score of 1.0 means that a patient either has the diagnosis Kawasaki-Syndrome or has all symptoms and the
+        correct age. The criteria are fever and 4 of the 5 following symptoms: Conjunctivitis, Lymphadenopathy, Exanthem,
+        Enanthem and swollen extremities.
+        0.75 means incomplete kawasaki-disease (fever and less than four of the mentioned symptoms, but at least one).
+        0.5 means that there is at least one of the symptoms present. 0.0 means that there are no symptoms present or
+        the patient has the wrong age.
 
-        :return: Tuple containing a float in the range of 0.0 and 1.0 indicate the probability for Kawasaki-Disease and
-        a set of reasons for the decision
+        At the same time the pro/con-lists for the kawasaki-disease are updated.
+
+        :return: The score as a float
         """
         self.reasons_for_kawasaki.clear()
         self.missing_for_kawasaki.clear()
@@ -349,18 +351,23 @@ class Patient:
 
         return num_of_symptoms
 
-    def calculate_pims_score(self) -> (float, Set[str]):
+    def calculate_pims_score(self) -> float:
         """
-        Calculates a score (probability) for the patient having PIMS. The score will be between 0.0 and 1.0.
-        The higher the score, the higher the probability that the patient has PIMS.
-        The calculations takes the patients age (should be 0 - 19 years old), his conditions (symptoms of PIMS are
-        fever, conjunctivitis, swollen/red extremities, lymphadenopathy, inflammation of mouth, lips, tongue or mucosa,
-        as well as gastro intestinal conditions or effusions) into account.
-        Additionally his measurements are checked for signs of inflammation in his blood. Lastly the
-        patient is checked for heart conditions, which are a late stage complication for PIMS.
+        Calculates a score for the patient having PIMS. The score will be between 0.0 and 1.0.
+        A score of 1.0 means that the patient has all symptoms or conditions for a diagnosis with PIMS. A score of 0.75
+        means that at least half of the parameters are present and the patient has the correct age. 0.5 means that at
+        least one symptom is present and the patient has the correct age. Lastly, a score of 0.0 means that the patient
+        has either no symptoms colliding with PIMS or is in the wrong age range.
+        For a diagnosis with PIMS the patient has to either have an already existing PIMS-diagnosis or meet all criteria
+        specified by the WHO.
+        According to that, the patient has to be between 0 - 19 years old and has to have the following conditions:
+        Covid-19, Fever, Inflammation markers and two of the following: a heart condition, a gastro-intestinal condition
+        or a kawasaki-symptom (conjunctivitis, swollen/red extremities, lymphadenopathy, inflammation of mouth, lips,
+        tongue or mucosa).
 
-        :return: Tuple containing a float in the range of 0.0 and 1.0 indicate the probability for PIMS and a set of
-        reasons for the decision
+        At the same time the patients list for reasons and missing reasons for PIMS are updated.
+
+        :return: The calculated score as a float
         """
         self.reasons_for_pims.clear()
         self.missing_for_pims.clear()
@@ -372,24 +379,12 @@ class Patient:
         if self.has_pims():
             self.reasons_for_pims.append(self.REASON_PIMS)
             self.pims_score = 1.0
-            return self.pims_score
 
-        # Age < 20
-        # Fever (kawasaki implies fever)
-        # Elevated inflammation markers
-        # evidence of Covid-19
-        # min. two
-        # EXANTHEM, ENANTHEM, CONJUNCTIVITIS or SWOLLEN EXTREMITIES
-        # Cardial component
-        # gastrointestinal component
-
-        if self.calculate_age() >= 20:
-            self.missing_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
+        elif self.calculate_age() >= 20:
             self.pims_score = 0.0
 
         # PIMS needs age < 20, fever (can be implied by kawasaki), inflammation markers, covid-19
         elif (self.has_fever() or self.has_kawasaki()) and self.has_covid() and self.has_inflammation_lab():
-            self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
             # Need two of either kawasaki or kawasaki symptoms, caridal condition, gastro-intestinal condition
             num_of_side_symptoms: int = 0
             if self.has_kawasaki():
@@ -412,35 +407,29 @@ class Patient:
 
         # Can't be PIMS -> Count parameters
         else:
-            self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
-
-            # No conditions at all -> Return 0.0
-            if num_of_symptoms < 1:
-                self.pims_score = 0.0
-
-            # Few PIMS symptoms -> Return 0.5
-            elif num_of_symptoms < 3:
-                self.pims_score = 0.5
-
-            # Most/many symptoms
-            else:
-                self.pims_score = 0.75
-
             if num_of_symptoms >= 3:
                 # many conditions, but not the right combination:
                 self.pims_score = 0.75
-                return self.pims_score
-            elif num_of_symptoms > 1:
+            elif num_of_symptoms >= 1:
                 # some conditions
                 self.pims_score = 0.5
-                return self.pims_score
             else:
                 # not enough conditions
                 self.pims_score = 0.0
-                return self.pims_score
+
+        return self.pims_score
 
     def _count_pims_symptoms(self) -> int:
+        """
+        Updates the pro/con lists for the PIMS-condition. Returns the number of symptoms present.
+        """
         num_of_symptoms: int = 0
+
+        if self.calculate_age() < 20:
+            self.reasons_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
+        else:
+            self.missing_for_pims.append(self.REASON_YOUNGER_THAN_TWENTY)
+
         if self.has_fever():
             self.reasons_for_pims.append(self.REASON_FEVER)
             num_of_symptoms += 1

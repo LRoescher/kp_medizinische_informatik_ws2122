@@ -73,7 +73,7 @@
             </ul>
         {% endif %}
 
-        {% if decision_reason_data.missing|length != 0 and decision_reason_data.probability < 1.0 %}
+        {% if decision_reason_data.missing|length != 0 %}
             Gegen eine Erkrankung spricht die Abwesenheit folgender Kriterien. Bitte ergänzen Sie diese ggf.
             <a class="link" href="{{ url_for('person_data.get_patient_data', patient_id=patient_id)}}">hier!</a>
             <ul>

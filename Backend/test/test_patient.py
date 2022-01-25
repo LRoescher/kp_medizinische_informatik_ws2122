@@ -974,7 +974,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in present)
         self.assertEqual(len(present), 5)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
-        self.assertEqual(len(missing), 1)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertEqual(len(missing), 2)
 
         # Case 3: Fever, Covid, Inflammation Lab (CRP high), Gastro-symptoms, Cardial Symptoms
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_three, case_date=case_date)
@@ -1039,7 +1040,8 @@ class TestPatient(TestCase):
         self.assertEqual(len(present), 4)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
-        self.assertEqual(len(missing), 2)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertEqual(len(missing), 3)
 
         # Case 3: Kawasaki (implies Fever and symptoms), Cardial and Gastrointestinal conditions
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1058,7 +1060,8 @@ class TestPatient(TestCase):
         self.assertEqual(len(present), 4)
         self.assertTrue(patient.REASON_COVID in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
-        self.assertEqual(len(missing), 2)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertEqual(len(missing), 3)
 
         # Case 4: Kawasaki symptoms, cardiac and gastrointestinal conditions, Inflammation in lab
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1185,7 +1188,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
-        self.assertEqual(len(missing), 3)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertEqual(len(missing), 4)
 
     def test_calculate_pims_score_low_prob(self):
         case_date = datetime.date.fromisoformat("2020-02-02")
@@ -1277,7 +1281,8 @@ class TestPatient(TestCase):
         self.assertEqual(len(present), 4)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in missing)
-        self.assertEqual(len(missing), 2)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertEqual(len(missing), 3)
 
         # Case 3: No conditions but correct age group
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
@@ -1302,7 +1307,7 @@ class TestPatient(TestCase):
         patient.add_high_measurement(SnomedConcepts.CRP.value)
 
         patient.calculate_pims_score()
-        self.assertEqual(patient.pims_score, 0.0)
+        self.assertEqual(patient.pims_score, 0.5)
         present = patient.reasons_for_pims
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
@@ -1321,7 +1326,7 @@ class TestPatient(TestCase):
         patient.add_condition(SnomedConcepts.FEVER.value)
 
         patient.calculate_pims_score()
-        self.assertEqual(patient.pims_score, 0.0)
+        self.assertEqual(patient.pims_score, 0.5)
         present = patient.reasons_for_pims
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
@@ -1340,7 +1345,7 @@ class TestPatient(TestCase):
         patient.add_condition(SnomedConcepts.COVID_19.value)
 
         patient.calculate_pims_score()
-        self.assertEqual(patient.pims_score, 0.0)
+        self.assertEqual(patient.pims_score, 0.5)
         present = patient.reasons_for_pims
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
@@ -1359,7 +1364,7 @@ class TestPatient(TestCase):
         patient.add_condition(SnomedConcepts.SWELLING_LOWER_LIMB.value)
 
         patient.calculate_pims_score()
-        self.assertEqual(patient.pims_score, 0.0)
+        self.assertEqual(patient.pims_score, 0.5)
         present = patient.reasons_for_pims
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
@@ -1378,7 +1383,7 @@ class TestPatient(TestCase):
         patient.add_condition(SnomedConcepts.MYOCARDITIS.value)
 
         patient.calculate_pims_score()
-        self.assertEqual(patient.pims_score, 0.0)
+        self.assertEqual(patient.pims_score, 0.5)
         present = patient.reasons_for_pims
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
@@ -1396,7 +1401,7 @@ class TestPatient(TestCase):
         patient.add_condition(SnomedConcepts.NAUSEA_AND_VOMITING.value)
 
         patient.calculate_pims_score()
-        self.assertEqual(patient.pims_score, 0.0)
+        self.assertEqual(patient.pims_score, 0.5)
         present = patient.reasons_for_pims
         missing = patient.missing_for_pims
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
@@ -1407,6 +1412,54 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_FEVER in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
         self.assertEqual(len(missing), 5)
+
+    def test_calculate_pims_with_existing_diagnosis(self):
+        # Prepare
+        # Set correct age
+        case_date = datetime.date.fromisoformat("2020-02-02")
+        date_valid = datetime.date.fromisoformat("2019-01-03")
+        date_invalid = datetime.date.fromisoformat("1995-07-08")
+
+        # Case 1:Patient with pims and correct age
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
+        patient.add_condition(SnomedConcepts.PIMS.value)
+        # Case 1:Patient with pims and correct age
+        patient2: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_invalid, case_date=case_date)
+        patient2.add_condition(SnomedConcepts.PIMS.value)
+        patient2.add_condition(SnomedConcepts.COVID_19.value)
+
+        # Test
+        patient.calculate_pims_score()
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        patient2.calculate_pims_score()
+        present2 = patient2.reasons_for_pims
+        missing2 = patient2.missing_for_pims
+
+        # Assert
+        self.assertEqual(patient.pims_score, 1.0)
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_PIMS in present)
+        self.assertTrue(patient.REASON_COVID in present)
+        self.assertEqual(len(present), 3)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertEqual(len(missing), 5)
+
+        self.assertEqual(patient2.pims_score, 1.0)
+        self.assertTrue(patient2.REASON_PIMS in present2)
+        self.assertTrue(patient2.REASON_COVID in present2)
+        self.assertEqual(len(present2), 2)
+        self.assertTrue(patient2.REASON_YOUNGER_THAN_TWENTY in missing2)
+        self.assertTrue(patient2.REASON_GASTRO_INTESTINAL_CONDITION in missing2)
+        self.assertTrue(patient2.REASON_CARDIAL_CONDITION in missing2)
+        self.assertTrue(patient2.REASON_KAWASAKI_SYMPTOMS in missing2)
+        self.assertTrue(patient2.REASON_INFLAMMATION_LAB in missing2)
+        self.assertTrue(patient2.REASON_FEVER in missing2)
+        self.assertEqual(len(missing2), 6)
 
     def test_has_pericardial_effusions(self):
         # Prepare
