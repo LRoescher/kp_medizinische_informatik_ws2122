@@ -21,6 +21,8 @@ Das Projekt ist in verschiedene Verzeichnisse unterteilt:
 
 Die Anwendung ist in Kombination mit einer laufenden OMOP-Datenbank zu verwenden. Über die Konfigurationsdatei im *config*-Verzeichnis kann die entsprechende Verbindung eingestellt werden. Dies ist auch noch über die Web-Oberfläche nach Start der Anwendung möglich.
 
+Zu Testzwecken existiert ein Test-Benutzerkonto mit dem Benutzernamen *admin* und dem Passwort *password*.
+
 #### Lokale Ausführung
 
 Die Anwendung kann lokal gestartet werden, indem die Datei *flask_app.py* im *Frontend*-Verzeichnis ausgeführt wird. Alternativ kann auch das Shell-Script *start_app.sh* aus dem Hauptverzeichnis gestartet werden.
