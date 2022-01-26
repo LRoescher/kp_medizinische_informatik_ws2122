@@ -953,7 +953,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
         self.assertEqual(len(present), 6)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
-        self.assertEqual(len(missing), 1)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 2)
 
         # Case 2: Fever (implied by kawasaki), Covid, Inflammation Lab (CRP high), Kawasaki, Gastro-symptoms
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_two, case_date=case_date)
@@ -975,7 +976,8 @@ class TestPatient(TestCase):
         self.assertEqual(len(present), 5)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
-        self.assertEqual(len(missing), 2)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 3)
 
         # Case 3: Fever, Covid, Inflammation Lab (CRP high), Gastro-symptoms, Cardial Symptoms
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_three, case_date=case_date)
@@ -997,7 +999,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in present)
         self.assertEqual(len(present), 6)
         self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
-        self.assertEqual(len(missing), 1)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 2)
 
     def test_calculate_pims_score_increased_prob(self):
         case_date = datetime.date.fromisoformat("2020-02-02")
@@ -1021,7 +1024,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
-        self.assertEqual(len(missing), 3)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 4)
 
         # Case 2: Kawasaki (implies Fever and symptoms), Covid, Inflammation Lab (CRP high)
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1041,7 +1045,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
-        self.assertEqual(len(missing), 3)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 4)
 
         # Case 3: Kawasaki (implies Fever and symptoms), Cardial and Gastrointestinal conditions
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1061,7 +1066,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_COVID in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
-        self.assertEqual(len(missing), 3)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 4)
 
         # Case 4: Kawasaki symptoms, cardiac and gastrointestinal conditions, Inflammation in lab
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1082,7 +1088,8 @@ class TestPatient(TestCase):
         self.assertEqual(len(present), 5)
         self.assertTrue(patient.REASON_COVID in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
-        self.assertEqual(len(missing), 2)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 3)
 
         # Case 5: All symptoms but covid
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1104,7 +1111,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_FEVER in present)
         self.assertEqual(len(present), 6)
         self.assertTrue(patient.REASON_COVID in missing)
-        self.assertEqual(len(missing), 1)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 2)
 
         # Case 6: All symptoms but fever (no kawasaki)
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1126,7 +1134,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_COVID in present)
         self.assertEqual(len(present), 6)
         self.assertTrue(patient.REASON_FEVER in missing)
-        self.assertEqual(len(missing), 1)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 2)
 
         # Case 7: All symptoms but inflammation lab
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1148,7 +1157,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_FEVER in present)
         self.assertEqual(len(present), 6)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
-        self.assertEqual(len(missing), 1)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 2)
 
         # Case 8: All symptoms including kawasaki but not cardiac or gastrointestinal
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1170,7 +1180,8 @@ class TestPatient(TestCase):
         self.assertEqual(len(present), 5)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
-        self.assertEqual(len(missing), 2)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 3)
 
         # case 9: covid + kawasaki
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1189,7 +1200,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
-        self.assertEqual(len(missing), 4)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 5)
 
     def test_calculate_pims_score_low_prob(self):
         case_date = datetime.date.fromisoformat("2020-02-02")
@@ -1212,7 +1224,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
         self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
-        self.assertEqual(len(missing), 4)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 5)
 
         # Case 2: Covid, Fever
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_one, case_date=case_date)
@@ -1231,7 +1244,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
-        self.assertEqual(len(missing), 4)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 5)
 
     def test_calculate_pims_score_zero(self):
         # Prepare
@@ -1260,7 +1274,8 @@ class TestPatient(TestCase):
         self.assertEqual(len(present), 5)
         self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in missing)
-        self.assertEqual(len(missing), 2)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 3)
 
         # Case 2: Same age, but other condition combination (kawasaki)
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_invalid, case_date=case_date)
@@ -1282,7 +1297,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
         self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
-        self.assertEqual(len(missing), 3)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 4)
 
         # Case 3: No conditions but correct age group
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
@@ -1299,7 +1315,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
         self.assertTrue(patient.REASON_COVID in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
-        self.assertEqual(len(missing), 6)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 7)
 
         # Case 4: just one condition
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
@@ -1318,7 +1335,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_FEVER in missing)
         self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
         self.assertTrue(patient.REASON_COVID in missing)
-        self.assertEqual(len(missing), 5)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 6)
 
         # Case 5: just one condition
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
@@ -1337,7 +1355,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
         self.assertTrue(patient.REASON_COVID in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
-        self.assertEqual(len(missing), 5)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 6)
 
         # Case 6: just one condition
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
@@ -1356,7 +1375,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
-        self.assertEqual(len(missing), 5)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 6)
 
         # Case 7: just one condition
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
@@ -1375,7 +1395,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_COVID in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
-        self.assertEqual(len(missing), 5)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 6)
 
         # Case 8: just one condition
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
@@ -1393,7 +1414,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_COVID in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
-        self.assertEqual(len(missing), 5)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 6)
 
         # Case 9: just one condition
         patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
@@ -1411,7 +1433,27 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_COVID in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
-        self.assertEqual(len(missing), 5)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 6)
+
+        # Case 10: just one condition
+        patient: Patient = Patient(1, name=self.TEST_NAME, birthdate=date_valid, case_date=case_date)
+
+        patient.add_high_measurement(SnomedConcepts.D_DIMER.value)
+
+        patient.calculate_pims_score()
+        self.assertEqual(patient.pims_score, 0.5)
+        present = patient.reasons_for_pims
+        missing = patient.missing_for_pims
+        self.assertTrue(patient.REASON_YOUNGER_THAN_TWENTY in present)
+        self.assertTrue(patient.REASON_COAGULOPATHY in present)
+        self.assertEqual(len(present), 2)
+        self.assertTrue(patient.REASON_CARDIAL_CONDITION in missing)
+        self.assertTrue(patient.REASON_COVID in missing)
+        self.assertTrue(patient.REASON_FEVER in missing)
+        self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
+        self.assertTrue(patient.REASON_GASTRO_INTESTINAL_CONDITION in missing)
+        self.assertEqual(len(missing), 6)
 
     def test_calculate_pims_with_existing_diagnosis(self):
         # Prepare
@@ -1447,7 +1489,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient.REASON_KAWASAKI_SYMPTOMS in missing)
         self.assertTrue(patient.REASON_INFLAMMATION_LAB in missing)
         self.assertTrue(patient.REASON_FEVER in missing)
-        self.assertEqual(len(missing), 5)
+        self.assertTrue(patient.REASON_COAGULOPATHY in missing)
+        self.assertEqual(len(missing), 6)
 
         self.assertEqual(patient2.pims_score, 1.0)
         self.assertTrue(patient2.REASON_PIMS in present2)
@@ -1459,7 +1502,8 @@ class TestPatient(TestCase):
         self.assertTrue(patient2.REASON_KAWASAKI_SYMPTOMS in missing2)
         self.assertTrue(patient2.REASON_INFLAMMATION_LAB in missing2)
         self.assertTrue(patient2.REASON_FEVER in missing2)
-        self.assertEqual(len(missing2), 6)
+        self.assertTrue(patient2.REASON_COAGULOPATHY in missing2)
+        self.assertEqual(len(missing2), 7)
 
     def test_has_pericardial_effusions(self):
         # Prepare

@@ -158,6 +158,8 @@ class BackendManager(Interface):
                 patient.high_measurements.append(SnomedConcepts.CRP.value)
             if patient_data['hasKawasaki']:
                 patient.conditions.append(SnomedConcepts.KAWASAKI.value)
+            if patient_data['hasCoagulopathy']:
+                patient.high_measurements.append(SnomedConcepts.D_DIMER.value)
         except (KeyError, ValueError, AttributeError) as error:
             logging.error("Error during patient creation from patient_data.")
             logging.error(error)
@@ -271,7 +273,8 @@ class BackendManager(Interface):
                     'hasPericarditis': patient.has_pericarditis(),
                     'hasMyocarditis': patient.has_myocarditis(),
                     'hasInflammationLab': patient.has_inflammation_lab(),
-                    'hasKawasaki': patient.has_kawasaki()
+                    'hasKawasaki': patient.has_kawasaki(),
+                    'hasCoagulopathy': patient.has_coagulopathy()
                 }
                 return patient_data
         return PatientData()

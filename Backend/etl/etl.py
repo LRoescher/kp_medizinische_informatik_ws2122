@@ -293,6 +293,13 @@ def update_patient(old_patient: Patient, update: Patient, db_manager: DBManager)
                                        patient_id=old_patient.id,
                                        concept_id=SnomedConcepts.KAWASAKI.value)
 
+        if old_patient.has_coagulopathy() and not update.has_coagulopathy():
+            db_manager.delete_measurement_for_patient(old_patient.id, SnomedConcepts.D_DIMER.value)
+        if not old_patient.has_coagulopathy() and update.has_coagulopathy():
+            _add_measurement_for_patient(db_manager=db_manager,
+                                         patient_id=old_patient.id,
+                                         concept_id=SnomedConcepts.D_DIMER.value)
+
         logging.info("Done updating the patient.")
         return True
     except AttributeError:

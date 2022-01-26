@@ -32,6 +32,7 @@ class Patient:
     REASON_KAWASAKI: str = "Kawasaki-Syndrom"
     REASON_PIMS: str = "Pediatric Inflammatory Multisystem Syndrome (PIMS)"
     REASON_KAWASAKI_SYMPTOMS: str = "Exanthem, Enanthem, Konjunktivitis oder geschwollene, gerötete Extremitäten"
+    REASON_COAGULOPATHY = "Gerinnungsstörung"
 
     def __init__(self, patient_id: int, name: str, birthdate: datetime.date, case_date: datetime.date):
         """
@@ -398,6 +399,9 @@ class Patient:
             if self.has_gastro_intestinal_condition():
                 num_of_side_symptoms += 1
 
+            if self.has_coagulopathy():
+                num_of_side_symptoms += 1
+
             if num_of_side_symptoms >= 2:
                 # "Complete" PIMS
                 self.pims_score = 1.0
@@ -454,6 +458,12 @@ class Patient:
         else:
             self.missing_for_pims.append(self.REASON_CARDIAL_CONDITION)
 
+        if self.has_coagulopathy():
+            self.reasons_for_pims.append(self.REASON_COAGULOPATHY)
+            num_of_symptoms += 1
+        else:
+            self.missing_for_pims.append(self.REASON_COAGULOPATHY)
+
         if self.has_gastro_intestinal_condition():
             self.reasons_for_pims.append(self.REASON_GASTRO_INTESTINAL_CONDITION)
             num_of_symptoms += 1
@@ -491,3 +501,13 @@ class Patient:
         Returns True if the patient has myocarditis as a condition.
         """
         return 4331309 in self.conditions
+
+    def has_coagulopathy(self):
+        """
+        Returns True if the patient has markers for coagulopathy in his/her blood.
+        """
+        ids = [SnomedConcepts.PTT_BLOOD.value,
+               SnomedConcepts.PTT_PLASMA.value,
+               SnomedConcepts.D_DIMER.value,
+               SnomedConcepts.PT.value]
+        return any(x in ids for x in self.high_measurements)
