@@ -34,6 +34,6 @@ Die Anwendung ist anschließend unter http://localhost:8080/ über einen Browser
 Alternativ kann die Anwendung auch als Docker-Container betrieben werden. Im Hauptverzeichnis ist dafür ein Dockerfile hinterlegt.
 Dieses Dockerfile kann mit dem Kommandozeilenbefehl *docker build -f ./dockerfile -t decision_system:v1 .* ausgeführt werden. Die benötigten Abhängigkeiten werden während des Builds automatisch heruntergeladen.
 
-Der Docker-Container kann dann beispielsweise mit dem Befehl *docker run -d -p 80:8080 decision_system:v1* gestartet werden.
+Der Docker-Container kann dann beispielsweise mit dem Befehl *docker run -d -p 8080:8080 decision_system:v1* gestartet werden.
 
 Die Anwendung ist anschließend unter *localhost* auf dem angegebenen Port über einen Browser erreichbar. Beachten Sie dabei, dass die Konfigurationsdatei die richtige Einstellung zur Datenbank enthält und passen Sie diese ggf. über das Frontend an. Docker-Container benötigen in der Regel als Hostname der Datenbank die IP-Adresse des entsprechenden Systems (Die Angabe von 'localhost' würde daher nicht funktionieren).
