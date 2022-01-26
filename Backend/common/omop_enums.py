@@ -132,3 +132,7 @@ class SnomedConcepts(Enum):
     HIGH = 4328749
     LOW = 4267416
     NORMAL = 4124457
+    PTT_BLOOD = 3013466
+    PTT_PLASMA = 3018677
+    D_DIMER = 3052648
+    PT = 3033658

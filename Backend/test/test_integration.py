@@ -74,7 +74,8 @@ class TestIntegration(TestCase):
             'hasPericarditis': False,
             'hasMyocarditis': False,
             'hasInflammationLab': False,
-            'hasKawasaki': False
+            'hasKawasaki': False,
+            'hasCoagulopathy': False
         }
         result_id = backend_manager.add_patient(patient_data)
 
@@ -107,6 +108,7 @@ class TestIntegration(TestCase):
         self.assertFalse(patient['hasConjunctivitis'])
         self.assertFalse(patient['hasInflammationLab'])
         self.assertFalse(patient['hasGastroIntestinalCondition'])
+        self.assertFalse(patient['hasCoagulopathy'])
 
         # Updating patient
         new_birthdate = datetime.date.fromisoformat("2010-01-01")
@@ -125,7 +127,8 @@ class TestIntegration(TestCase):
             'hasPericarditis': True,
             'hasMyocarditis': True,
             'hasInflammationLab': True,
-            'hasKawasaki': True
+            'hasKawasaki': True,
+            'hasCoagulopathy': True
         }
         result = backend_manager.update_patient(result_id, update_data)
 
@@ -145,7 +148,6 @@ class TestIntegration(TestCase):
         self.assertIsNotNone(decision_reason2['probability'])
         self.assertEqual(decision_reason2['probability'], 1.0)
 
-
         # Check if fields are correctly updated
         self.assertEqual(patient['name'], 'Alfred Beispiel2')
         self.assertEqual(patient['birthdate'], new_birthdate)
@@ -162,6 +164,7 @@ class TestIntegration(TestCase):
         self.assertTrue(patient['hasConjunctivitis'])
         self.assertTrue(patient['hasInflammationLab'])
         self.assertTrue(patient['hasGastroIntestinalCondition'])
+        self.assertTrue(patient['hasCoagulopathy'])
 
         # Test with full PIMS score
         update_data: PatientData = {
@@ -179,15 +182,18 @@ class TestIntegration(TestCase):
             'hasPericarditis': True,
             'hasMyocarditis': True,
             'hasInflammationLab': True,
-            'hasKawasaki': True
+            'hasKawasaki': True,
+            'hasCoagulopathy': False
         }
         result = backend_manager.update_patient(result_id, update_data)
         self.assertTrue(result, "Should return true if the update was successful.")
 
         # Get according decision reason
+        patient = backend_manager.get_patient_data(PatientId(result_id))
         decision_reason = backend_manager.get_decision_reason(PatientId(result_id), Disease.PIMS)
         # Check decision reason
         self.assertEqual(decision_reason['probability'], 1.0)
+        self.assertFalse(patient['hasCoagulopathy'])
 
         # Reset db to keep database consistent.
         self.assertTrue(backend_manager.reset_db())
