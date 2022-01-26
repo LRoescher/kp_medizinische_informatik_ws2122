@@ -27,7 +27,7 @@ Die Anwendung kann lokal gestartet werden, indem die Datei *flask_app.py* im *Fr
 
 Ggf. sind zunächst die im *requirements.txt* aufgeführten Abhängigkeiten zu installieren.
 
-Die Anwendung ist anschließend unter http://192.168.2.132:8080/ über einen Browser erreichbar.
+Die Anwendung ist anschließend unter http://localhost:8080/ über einen Browser erreichbar.
 
 #### Ausführung als Docker-Container
 
