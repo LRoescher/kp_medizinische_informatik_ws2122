@@ -75,6 +75,7 @@ class TestIntegration(TestCase):
             'hasMyocarditis': False,
             'hasInflammationLab': False,
             'hasKawasaki': False,
+            'hasPims': False,
             'hasCoagulopathy': False
         }
         result_id = backend_manager.add_patient(patient_data)
@@ -101,6 +102,7 @@ class TestIntegration(TestCase):
         self.assertFalse(patient['hasPericarditis'])
         self.assertFalse(patient['hasExanthem'])
         self.assertFalse(patient['hasKawasaki'])
+        self.assertFalse(patient['hasPims'])
         self.assertFalse(patient['hasSwollenExtremeties'])
         self.assertFalse(patient['hasSwollenLymphnodes'])
         self.assertFalse(patient['hasMyocarditis'])
@@ -128,6 +130,7 @@ class TestIntegration(TestCase):
             'hasMyocarditis': True,
             'hasInflammationLab': True,
             'hasKawasaki': True,
+            'hasPims': False,
             'hasCoagulopathy': True
         }
         result = backend_manager.update_patient(result_id, update_data)
@@ -165,6 +168,7 @@ class TestIntegration(TestCase):
         self.assertTrue(patient['hasInflammationLab'])
         self.assertTrue(patient['hasGastroIntestinalCondition'])
         self.assertTrue(patient['hasCoagulopathy'])
+        self.assertFalse(patient['hasPims'])
 
         # Test with full PIMS score
         update_data: PatientData = {
@@ -183,6 +187,7 @@ class TestIntegration(TestCase):
             'hasMyocarditis': True,
             'hasInflammationLab': True,
             'hasKawasaki': True,
+            'hasPims': False,
             'hasCoagulopathy': False
         }
         result = backend_manager.update_patient(result_id, update_data)
@@ -194,6 +199,37 @@ class TestIntegration(TestCase):
         # Check decision reason
         self.assertEqual(decision_reason['probability'], 1.0)
         self.assertFalse(patient['hasCoagulopathy'])
+
+        # Test with full PIMS score
+        update_data: PatientData = {
+            'name': "Alfred Beispiel2",
+            'birthdate': new_birthdate,
+            'hasCovid': False,
+            'hasFever': True,
+            'hasExanthem': True,
+            'hasEnanthem': True,
+            'hasSwollenExtremeties': True,
+            'hasConjunctivitis': True,
+            'hasSwollenLymphnodes': True,
+            'hasGastroIntestinalCondition': True,
+            'hasPericardialEffusions': True,
+            'hasPericarditis': True,
+            'hasMyocarditis': True,
+            'hasInflammationLab': True,
+            'hasKawasaki': True,
+            'hasPims': True,
+            'hasCoagulopathy': False
+        }
+        result = backend_manager.update_patient(result_id, update_data)
+        self.assertTrue(result, "Should return true if the update was successful.")
+
+        # Get according decision reason
+        patient = backend_manager.get_patient_data(PatientId(result_id))
+        decision_reason = backend_manager.get_decision_reason(PatientId(result_id), Disease.PIMS)
+        # Check decision reason
+        self.assertEqual(decision_reason['probability'], 1.0)
+        self.assertTrue(patient['hasPims'])
+        self.assertFalse(patient['hasCovid'])
 
         # Reset db to keep database consistent.
         self.assertTrue(backend_manager.reset_db())

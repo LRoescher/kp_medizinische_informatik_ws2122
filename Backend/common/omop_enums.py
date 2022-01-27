@@ -125,7 +125,8 @@ class SnomedConcepts(Enum):
     COVID_19_VIRUS_NOT_IDENTIFIED = 37311060
     COVID_19_IN_PERSONAL_HISTORY = 37311061
     POST_COVID = 705076
-    PIMS = 703578
+    # Actual PIMS-Id is 703578, but not in our database, this is a replacement
+    PIMS = 434821
     KAWASAKI = 314381
     CRP = 3020460
     LAB = 32856

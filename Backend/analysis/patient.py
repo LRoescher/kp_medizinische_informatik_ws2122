@@ -1,7 +1,5 @@
 import datetime
 
-from typing import Set
-
 from Backend.common.omop_enums import SnomedConcepts
 
 
@@ -234,8 +232,7 @@ class Patient:
         snomed_covid_ids = [SnomedConcepts.COVID_19.value,
                             SnomedConcepts.COVID_19_VIRUS_NOT_IDENTIFIED.value,
                             SnomedConcepts.COVID_19_IN_PERSONAL_HISTORY.value,
-                            SnomedConcepts.POST_COVID.value,
-                            SnomedConcepts.PIMS.value]
+                            SnomedConcepts.POST_COVID.value]
         return any(x in snomed_covid_ids for x in self.conditions)
 
     def has_kawasaki(self):
