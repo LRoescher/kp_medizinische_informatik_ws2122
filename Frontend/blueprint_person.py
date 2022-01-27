@@ -59,8 +59,9 @@ def get_empty_patient_data():
                        # Hat Myokarditis (Herzmuskelenzündung)
                        hasMyocarditis=False,
                        hasInflammationLab=False,
+                       hasCoagulopathy=False,
                        hasKawasaki=False,
-                       hasCoagulopathy=False
+                       hasPims=False
                        )
     return render_template("person_data.html", patient_data=data, annotations=PatientData.__annotations__)
 

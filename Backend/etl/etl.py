@@ -300,6 +300,13 @@ def update_patient(old_patient: Patient, update: Patient, db_manager: DBManager)
                                          patient_id=old_patient.id,
                                          concept_id=SnomedConcepts.D_DIMER.value)
 
+        if old_patient.has_pims() and not update.has_pims():
+            db_manager.delete_condition_for_patient(old_patient.id, SnomedConcepts.PIMS.value)
+        if not old_patient.has_pims() and update.has_pims():
+            _add_condition_for_patient(db_manager=db_manager,
+                                       patient_id=old_patient.id,
+                                       concept_id=SnomedConcepts.PIMS.value)
+
         logging.info("Done updating the patient.")
         return True
     except AttributeError:

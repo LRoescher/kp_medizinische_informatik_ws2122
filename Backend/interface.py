@@ -50,6 +50,8 @@ class PatientData(TypedDict):
     hasInflammationLab: bool
     # Hat die Diagnose Kawasaki
     hasKawasaki: bool
+    # Hat die Diagnose PIMS
+    hasPims: bool
     # Hat eine Gerinnungsstörung
     hasCoagulopathy: bool
 
@@ -79,6 +81,7 @@ TranslationGerman = {
     "hasMyocarditis": "Myokarditis",
     "hasInflammationLab": "Entzündungsparameter im Blut erhöht",
     "hasKawasaki": "Kawasaki-Syndrom diagnostiziert",
+    "hasPims": "PIMS diagnostiziert",
     "hasCoagulopathy": "Gerinnungsstörung"
 }
 

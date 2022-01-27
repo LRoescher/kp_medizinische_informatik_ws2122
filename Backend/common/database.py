@@ -186,6 +186,9 @@ class DBManager:
         elif code == 'U07.2':
             # Covid (suspected)
             return SnomedConcepts.COVID_19_VIRUS_NOT_IDENTIFIED.value
+        elif code == 'U10.9':
+            # Alternative code for PIMS, because the database is not up to date
+            return SnomedConcepts.PIMS.value
 
         cursor = None
 
