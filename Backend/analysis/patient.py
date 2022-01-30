@@ -269,13 +269,11 @@ class Patient:
             self.kawasaki_score = 1.0
 
         # Too old -> Not Kawasaki -> Return 0%
-        elif self.calculate_age() > 8:
-            self.missing_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
+        elif self.calculate_age() >= 8:
             self.kawasaki_score = 0.0
 
         # Correct age
         else:
-            self.reasons_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
 
             # Fever is needed for complete and incomplete kawasaki
             if self.has_fever():
@@ -310,6 +308,11 @@ class Patient:
         :return: number of side symptoms the patient has
         """
         num_of_symptoms = 0
+
+        if self.calculate_age() < 8:
+            self.reasons_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
+        else:
+            self.missing_for_kawasaki.append(self.REASON_YOUNGER_THAN_EIGHT)
 
         if self.has_fever():
             num_of_symptoms += 1
