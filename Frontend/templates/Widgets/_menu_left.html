@@ -32,26 +32,19 @@
         </a>
 
         <!-- source: <a href="https://www.flaticon.com/free-icons/download" title="download icons">Download icons created by Iconjam - Flaticon</a> -->
-        <form id="pdf_download_form"  method="post">
-            <a class="menu_entry" href="javascript: triggerDownload()" onload="isResult()">
+        {% if pagename == "Pims" or pagename == "Kawasaki" %}
+        <a class="menu_entry" onclick="print()" onload="isResult()">
                 <div class="icon">
                     <img src="{{ url_for('static', filename='Icons/pdf_download.png') }}" alt="Download als PDF">
                 </div>
                 <div  class="full_name">Download als PDF</div>
-                <input type=hidden id="current_url" name = "current_url" />
-                <input type=hidden id="current_html" name = "current_html" />
-
-                <script>
-                    if (!window.location.href.includes("results") || window.location.href.includes("results/all")){
-                        document.getElementById("pdf_download_form").innerHTML = ""
-                    }
-                    function triggerDownload()
-                    {
-                            print();
-                        }
-                </script>
-            </a>
-        </form>
+        </a>
+        {% else %}
+        <div class="small_filler">
+            <div class="icon"></div>
+            <div class="full_name"></div>
+        </div>
+        {% endif %}
 
 
         <div class="filler">
